@@ -46,6 +46,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '888375458694',
     projectId: 'gratitude-app-1c2df',
     authDomain: 'gratitude-app-1c2df.firebaseapp.com',
+    databaseURL: 'https://gratitude-app-1c2df.firebasedatabase.app',
     storageBucket: 'gratitude-app-1c2df.firebasestorage.app',
   );
 

@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "888375458694",
+    "firebase_url": "https://gratitude-app-1c2df-default-rtdb.firebaseio.com",
     "project_id": "gratitude-app-1c2df",
     "storage_bucket": "gratitude-app-1c2df.firebasestorage.app"
   },

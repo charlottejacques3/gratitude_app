@@ -1,4 +1,8 @@
+import 'dart:ffi';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+// import 'package:flutter/foundation.dart';
 
 //firebase imports
 import 'package:firebase_core/firebase_core.dart';
@@ -11,14 +15,11 @@ void main() async {
 
   //firebase stuff
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
   runApp(const MyApp());
 
-  //database variable - is this in the right place?
-  // FirebaseDatabase database = FirebaseDatabase.instance;
-  // print("after running");
 }
 
 class MyApp extends StatelessWidget {
@@ -30,57 +31,41 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Gratitude App',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: MyHomePage(), //const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(), 
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key}); //, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  // final String title;
+  const MyHomePage({super.key});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  List<DynamicTextWidget> dynamicList = [];
+  List<String> currentLogs = [];
+
+  
+  void getLogs() {
+    for (final item in dynamicList) {
+      // print(item.logController.text);
+      String log = item.logController.text;
+      if (log.isNotEmpty) {
+        currentLogs.add(log);
+      }
+      //now it contains hey and hi, probably if i restart then it won't. but after sending the values to the database i'll have to reset the list
+    }
+    print(currentLogs);
+  }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    //rerun every time setState is called
     return Scaffold(
       body: Center(
         child: Column(
@@ -91,13 +76,38 @@ class _MyHomePageState extends State<MyHomePage> {
                 color: Theme.of(context).colorScheme.primary,
               ),
             ),
+            Expanded (
+                child: ListView.builder(
+                  itemCount: dynamicList.length,
+                  prototypeItem: dynamicList.first,//ListTile(
+                  //   title: Text(currentLogs.first)
+                  // ),
+                  itemBuilder: (context, index) {
+                    return dynamicList[index];//ListTile (
+                      // title: Text(currentLogs[index]
+                  //);//);
+                },
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: GratitudeForm(),
             ),
+            
           ],
         ),
       ), 
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          print("the button is pressed");
+          setState(() {
+            dynamicList.add(DynamicTextWidget());
+            getLogs();
+          });
+          print(dynamicList);
+        },
+        child: Icon(Icons.add),
+        ),
     );
   }
 }
@@ -117,13 +127,14 @@ class GratitudeForm extends StatefulWidget {
 class GratitudeFormState extends State<GratitudeForm> {
   final _formKey = GlobalKey<FormState>();
   final myController = TextEditingController();
+  late DatabaseReference dbRef;
 
   @override
   void initState() {
     super.initState();
     Firebase.initializeApp();
     //initializing database GratitudeLogs
-    // dbRef = FirebaseDatabase.instance.ref().child('GratitudeLogs');
+    dbRef = FirebaseDatabase.instance.ref().child('GratitudeLogs');
   }
 
   @override
@@ -150,34 +161,63 @@ class GratitudeFormState extends State<GratitudeForm> {
           ),
           ElevatedButton(
             onPressed: () async {
-              DatabaseReference dbRef = FirebaseDatabase.instance.ref("/GratitudeLogs/123");
-              await dbRef.set({
-                "gratitude_item": myController.text,
-                "date": DateTime.now().toIso8601String(),
-              });
               //validate returns true if the form is valid, false otherwise
-              // Map<String, String> gratitudeLogs = {
-              //     'gratitude_item': myController.text,
-              //     'date': DateTime.now().toIso8601String(),
-              //   };
-              //   //push creates a unique key?
-              //   dbRef.push().set(gratitudeLogs);
-              //   print(myController.text);
-              // if (_formKey.currentState!.validate()) {
-              //   ScaffoldMessenger.of(context).showSnackBar(
-              //     const SnackBar(content: Text('Yay'))
-              //   );
-
-              //   print(myController.text);
-              //   print(DateTime.now().toIso8601String());
-
-                
-              // }
+              if (_formKey.currentState!.validate()) {
+                try {
+                  // await dbRef.set({
+                  //   "gratitude_item": myController.text,
+                  //   "date": DateTime.now().toIso8601String(),
+                  // });
+                  print("in the try blockk");
+                  Map<String, String> gratitudeLogs = {
+                    'gratitude_item': myController.text,
+                    'date': DateTime.now().toIso8601String(),
+                  };
+                  //push creates a unique key
+                  dbRef.push().set(gratitudeLogs);
+                  // GratitudeForm();
+                } catch (e) {
+                  print('error writing data: $e');
+                }
+              }
             }, 
             child: Text('Done')
           ),
         ],
       )
+    );
+  }
+}
+
+// class BasicStateful extends StatefulWidget {
+//   @override
+//   _BasicStatefulState createState() => _BasicStatefulState();
+// }
+
+// class _BasicStatefulState extends State<BasicStateful> {
+//   @override
+//   Widget build(BuildContext context) {
+
+//   }
+// }
+
+class DynamicTextWidget extends StatelessWidget {
+  TextEditingController logController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children:
+        [TextFormField(
+            controller: logController,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter some text';
+              }
+              return null;
+            },
+          )
+        ]
     );
   }
 }
