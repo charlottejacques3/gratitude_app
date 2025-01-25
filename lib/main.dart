@@ -7,6 +7,9 @@ import 'firebase_options.dart';
 //database imports
 import 'package:firebase_database/firebase_database.dart';
 
+//import files
+import 'gratitude_log_page.dart';
+
 void main() async {
 
   //firebase stuff
@@ -45,92 +48,47 @@ class MyHomePage extends StatefulWidget {
 
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<DynamicFormWidget> dynamicForms = [DynamicFormWidget()];
-  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('GratitudeLogs');
+  var currentPageIndex = 0;
+
 
   @override
   Widget build(BuildContext context) {
-    //rerun every time setState is called
-    return Scaffold(
-      body: Center(
-        child: Column(
-          children: [
-            Text(
-              'What are you grateful for today?',
-              style: Theme.of(context).textTheme.displayMedium!.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-            Expanded (
-                child: ListView.builder(
-                  itemCount: dynamicForms.length,
-                  prototypeItem: dynamicForms.first,
-                  itemBuilder: (context, index) {
-                    return dynamicForms[index];
-                },
-              ),
-            ),
-            ElevatedButton(
-              child: Text('Done'),
-              onPressed: () async {
-              try {
-                print("in the try blockk");
+    //reruns every time setState is called
+    
+    //select the correct page to load
+    Widget page;
+    switch (currentPageIndex) {
+      case 0:
+        page = GratitudeLogPage();
+      default:
+        throw UnimplementedError('no widget for $currentPageIndex');
+    }
 
-                //look through all the entries
-                for (final item in dynamicForms) {
-                  String log = item.logController.text;
-                  if (log.isNotEmpty) { //don't add empty entries
-                    //map to a dictionary
-                    Map<String, String> gratitudeLogs = {
-                      'gratitude_item': log,
-                      'date': DateTime.now().toIso8601String(),
-                    };
-                    //push creates a unique key
-                    dbRef.push().set(gratitudeLogs);
-                  }
-                }
-              } catch (e) {
-                print('error writing data: $e');
-              }
-            }, 
-            )
-          ],
-        ),
-      ), 
-      //button to add another form entry
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
+
+    return Scaffold(
+      //navigation
+      bottomNavigationBar: NavigationBar(
+        onDestinationSelected: (int index) {
+          //change currentIndex based on what's been selected
           setState(() {
-            dynamicForms.add(DynamicFormWidget());
+            currentPageIndex = index;
           });
         },
-        child: Icon(Icons.add),
-        ),
-    );
-  }
-}
-
-
-
-class DynamicFormWidget extends StatelessWidget {
-  final TextEditingController logController = TextEditingController();
-
-  //how to dispose of widget after?
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children:
-        [TextFormField(
-            controller: logController,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter some text';
-              }
-              return null;
-            },
-          )
-        ]
+        selectedIndex: currentPageIndex,
+        destinations: [
+          NavigationDestination(
+            icon: Icon(Icons.edit), 
+            label: 'Log',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.book), 
+            label: 'Past Logs',
+          ),
+        ],
+      ),
+      body: Expanded(
+        child: page,
+      )
     );
   }
 }
