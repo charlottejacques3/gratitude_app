@@ -1,8 +1,4 @@
-import 'dart:ffi';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-// import 'package:flutter/foundation.dart';
 
 //firebase imports
 import 'package:firebase_core/firebase_core.dart';
@@ -39,6 +35,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
 
@@ -46,22 +43,10 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  List<DynamicTextWidget> dynamicList = [];
-  List<String> currentLogs = [];
 
-  
-  void getLogs() {
-    for (final item in dynamicList) {
-      // print(item.logController.text);
-      String log = item.logController.text;
-      if (log.isNotEmpty) {
-        currentLogs.add(log);
-      }
-      //now it contains hey and hi, probably if i restart then it won't. but after sending the values to the database i'll have to reset the list
-    }
-    print(currentLogs);
-  }
+class _MyHomePageState extends State<MyHomePage> {
+  List<DynamicFormWidget> dynamicForms = [DynamicFormWidget()];
+  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('GratitudeLogs');
 
   @override
   Widget build(BuildContext context) {
@@ -78,33 +63,46 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             Expanded (
                 child: ListView.builder(
-                  itemCount: dynamicList.length,
-                  prototypeItem: dynamicList.first,//ListTile(
-                  //   title: Text(currentLogs.first)
-                  // ),
+                  itemCount: dynamicForms.length,
+                  prototypeItem: dynamicForms.first,
                   itemBuilder: (context, index) {
-                    return dynamicList[index];//ListTile (
-                      // title: Text(currentLogs[index]
-                  //);//);
+                    return dynamicForms[index];
                 },
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: GratitudeForm(),
-            ),
-            
+            ElevatedButton(
+              child: Text('Done'),
+              onPressed: () async {
+              try {
+                print("in the try blockk");
+
+                //look through all the entries
+                for (final item in dynamicForms) {
+                  String log = item.logController.text;
+                  if (log.isNotEmpty) { //don't add empty entries
+                    //map to a dictionary
+                    Map<String, String> gratitudeLogs = {
+                      'gratitude_item': log,
+                      'date': DateTime.now().toIso8601String(),
+                    };
+                    //push creates a unique key
+                    dbRef.push().set(gratitudeLogs);
+                  }
+                }
+              } catch (e) {
+                print('error writing data: $e');
+              }
+            }, 
+            )
           ],
         ),
       ), 
+      //button to add another form entry
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          print("the button is pressed");
           setState(() {
-            dynamicList.add(DynamicTextWidget());
-            getLogs();
+            dynamicForms.add(DynamicFormWidget());
           });
-          print(dynamicList);
         },
         child: Icon(Icons.add),
         ),
@@ -114,95 +112,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
 
 
-class GratitudeForm extends StatefulWidget {
-  const GratitudeForm({super.key});
+class DynamicFormWidget extends StatelessWidget {
+  final TextEditingController logController = TextEditingController();
 
-  @override
-  GratitudeFormState createState() {
-    return GratitudeFormState();
-  }
-}
-
-
-class GratitudeFormState extends State<GratitudeForm> {
-  final _formKey = GlobalKey<FormState>();
-  final myController = TextEditingController();
-  late DatabaseReference dbRef;
-
-  @override
-  void initState() {
-    super.initState();
-    Firebase.initializeApp();
-    //initializing database GratitudeLogs
-    dbRef = FirebaseDatabase.instance.ref().child('GratitudeLogs');
-  }
-
-  @override
-  void dispose() {
-    //clean up the controller when the widget is disposed
-    myController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Form (
-      key: _formKey,
-      child: Column(
-        children: <Widget>[
-          TextFormField(
-            controller: myController,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter some text';
-              }
-              return null;
-            },
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              //validate returns true if the form is valid, false otherwise
-              if (_formKey.currentState!.validate()) {
-                try {
-                  // await dbRef.set({
-                  //   "gratitude_item": myController.text,
-                  //   "date": DateTime.now().toIso8601String(),
-                  // });
-                  print("in the try blockk");
-                  Map<String, String> gratitudeLogs = {
-                    'gratitude_item': myController.text,
-                    'date': DateTime.now().toIso8601String(),
-                  };
-                  //push creates a unique key
-                  dbRef.push().set(gratitudeLogs);
-                  // GratitudeForm();
-                } catch (e) {
-                  print('error writing data: $e');
-                }
-              }
-            }, 
-            child: Text('Done')
-          ),
-        ],
-      )
-    );
-  }
-}
-
-// class BasicStateful extends StatefulWidget {
-//   @override
-//   _BasicStatefulState createState() => _BasicStatefulState();
-// }
-
-// class _BasicStatefulState extends State<BasicStateful> {
-//   @override
-//   Widget build(BuildContext context) {
-
-//   }
-// }
-
-class DynamicTextWidget extends StatelessWidget {
-  TextEditingController logController = TextEditingController();
+  //how to dispose of widget after?
 
   @override
   Widget build(BuildContext context) {
@@ -221,13 +134,3 @@ class DynamicTextWidget extends StatelessWidget {
     );
   }
 }
-
-
-/*
-SOURCES:
-- Basic form setup: https://docs.flutter.dev/cookbook/forms/validation 
-- Accessing text fields from a form: https://docs.flutter.dev/cookbook/forms/retrieve-input 
-
-- Install Firebase: https://firebase.google.com/docs/flutter/setup?platform=android
-- Firebase database: https://firebase.google.com/docs/database/flutter/start
- */
