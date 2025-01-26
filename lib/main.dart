@@ -4,11 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
-//database imports
-import 'package:firebase_database/firebase_database.dart';
-
 //import files
 import 'gratitude_log_page.dart';
+import 'past_logs_page.dart';
 
 void main() async {
 
@@ -18,7 +16,6 @@ void main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
   runApp(const MyApp());
-
 }
 
 class MyApp extends StatelessWidget {
@@ -60,6 +57,8 @@ class _MyHomePageState extends State<MyHomePage> {
     switch (currentPageIndex) {
       case 0:
         page = GratitudeLogPage();
+      case 1:
+        page = PastLogsPage();
       default:
         throw UnimplementedError('no widget for $currentPageIndex');
     }
