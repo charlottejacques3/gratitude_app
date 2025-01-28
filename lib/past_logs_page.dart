@@ -45,15 +45,12 @@ class _PastLogsPageState extends State<PastLogsPage> {
             print('error with setState $e');
           }
         }
-        
       });
 
-      //sort by date
-      gratitudeLogs.sort((a, b) => a['date'].compareTo(b['date']));
+      //sort by date in reverse order
+      gratitudeLogs.sort((a, b) => b['date'].compareTo(a['date']));
 
       //group by date
-
-      /** ideally: map with key being a date (in sorted order), value being a list of logs */
       for (final item in gratitudeLogs) {
         DateTime date = DateTime.parse(item['date']);
         String formatted;
@@ -94,105 +91,52 @@ class _PastLogsPageState extends State<PastLogsPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-        body: CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              pinned: true,
-              flexibleSpace:
-                Center(
-                  child: Text('Past Logs',
-                    style: Theme.of(context).textTheme.displayMedium!.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
+      appBar: AppBar(
+        centerTitle: true,
+        title: 
+          Text('Past Logs',
+            style: Theme.of(context).textTheme.displayMedium!.copyWith(
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+      ),
+      body: 
+        loading //display "loading text while loading"
+          ? Center(child: CircularProgressIndicator())
+      : CustomScrollView( //otherwise display the logs
+        slivers: [
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, parentIndex) {
+                List<String> lst = categorizedLogs.values.elementAt(parentIndex);
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 10),
+                    Text(categorizedLogs.keys.elementAt(parentIndex),
+                      style: Theme.of(context).textTheme.titleLarge!
                     ),
-                  ),
-                ),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: lst.length,
+                      itemBuilder: (context, childIndex) {
+                        return Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Text(lst[childIndex],
+                              style: Theme.of(context).textTheme.bodyMedium!
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                );
+              },
+              childCount: categorizedLogs.length, // Number of parent items
             ),
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, parentIndex) {
-                  List<String> lst = categorizedLogs.values.elementAt(parentIndex);
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ListTile(
-                        title: Text(categorizedLogs.keys.elementAt(parentIndex))
-                      ),
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount: lst.length,
-                        itemBuilder: (context, childIndex) {
-                            return Text(lst[childIndex]);
-                        },
-                      ),
-                    ],
-                  );
-                },
-                childCount: categorizedLogs.length, // Number of parent items
-              ),
-            ),
-          ],
-        ),
-
-      // body: Center(
-
-      //   child: SingleChildScrollView(
-      //     child: Column(
-      //       mainAxisSize: MainAxisSize.min,
-      //       children: [
-      //         Text(
-      //           'Past Logs',
-      //           style: Theme.of(context).textTheme.displayMedium!.copyWith(
-      //             color: Theme.of(context).colorScheme.primary,
-      //           ),
-      //         ),
-      //         // loading //display "loading text while loading"
-      //           // ? CircularProgressIndicator()
-      //         // : Expanded( //otherwise, display list of logs
-      //         //   child: gratitudeLogs.isNotEmpty
-      //             // ? ListView.builder(
-      //             //   itemCount: gratitudeLogs.length,
-      //             //   prototypeItem: Text(
-      //             //     gratitudeLogs.first['date'] + ': ' + gratitudeLogs.first['gratitude_item']
-      //             //   ),
-      //             //   itemBuilder: (context, index) {
-      //             //     return Text(
-      //             //       gratitudeLogs[index]['date'] + ': ' + gratitudeLogs[index]['gratitude_item']
-      //             //     );
-      //             //   },
-      //             // )
-      //             ListView.builder(
-      //               itemCount: categorizedLogs.length,
-      //               // prototypeItem: ListView(),
-      //               shrinkWrap: true,
-      //               physics: NeverScrollableScrollPhysics(),
-      //               itemBuilder: (context, index) {
-      //                 List<String> lst = categorizedLogs.values.elementAt(index);
-      //                 return ListView(
-      //                   // crossAxisAlignment: CrossAxisAlignment.start,
-      //                   children: [
-      //                     Text(categorizedLogs.keys.elementAt(index)),
-      //                     RepaintBoundary(
-      //                       child: ListView.builder(
-      //                         itemCount: lst.length,
-      //                         prototypeItem: Text('fdsj'),
-      //                         itemBuilder: (context, index) {
-      //                           return Text(lst[index]);
-      //                         },
-      //                         shrinkWrap: true,
-      //                         physics: NeverScrollableScrollPhysics(),
-      //                       ),
-      //                     )
-      //                   ],
-      //                 );
-      //               },
-      //             )
-      //             // : Center(child: Text('No gratitude logs')),
-      //         // )
-      //       ],
-      //     ),
-      //   ),
-      // ),
+          ),
+        ],
+      ),
     );
   }
 }

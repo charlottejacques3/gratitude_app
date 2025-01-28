@@ -21,51 +21,63 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          children: <Widget>[
-            Text(
+      // appBar: AppBar(
+      //   centerTitle: true,
+      //   toolbarHeight: 200,
+      //   flexibleSpace: Text('What are you grateful for today?',
+      //     style: Theme.of(context).textTheme.displayMedium!.copyWith(
+      //       color: Theme.of(context).colorScheme.primary,
+      //     ),
+      //   ),
+      // ),
+      body: Column(
+        children: <Widget>[
+          Center(
+            child: Text(
               'What are you grateful for today?',
               style: Theme.of(context).textTheme.displayMedium!.copyWith(
                 color: Theme.of(context).colorScheme.primary,
               ),
             ),
-            Expanded (
-              child: ListView.builder(
-                itemCount: dynamicForms.length,
-                prototypeItem: dynamicForms.first,
-                itemBuilder: (context, index) {
-                  return dynamicForms[index];
-                },
-              ),
+          ),
+          Expanded (
+            child: ListView.builder(
+              itemCount: dynamicForms.length,
+              prototypeItem: dynamicForms.first,
+              itemBuilder: (context, index) {
+                return dynamicForms[index];
+              },
             ),
-            ElevatedButton(
-              child: Text('Done'),
-              onPressed: () async {
-              try {
-                print("in the try blockk");
+          ),
+          ElevatedButton(
+            child: Text('Done'),
+            onPressed: () async {
+            try {
+              print("in the try blockk");
 
-                //look through all the entries
-                for (final item in dynamicForms) {
-                  String log = item.logController.text;
-                  if (log.isNotEmpty) { //don't add empty entries
-                    //map to a dictionary
-                    Map<String, String> gratitudeLogs = {
-                      'gratitude_item': log,
-                      'date': DateTime.now().toIso8601String(),
-                    };
-                    //push creates a unique key
-                    dbRef.push().set(gratitudeLogs);
-                  }
+              //look through all the entries
+              for (final item in dynamicForms) {
+                String log = item.logController.text;
+                if (log.isNotEmpty) { //don't add empty entries
+                  //map to a dictionary
+                  Map<String, String> gratitudeLogs = {
+                    'gratitude_item': log,
+                    'date': DateTime.now().toIso8601String(),
+                  };
+                  //push creates a unique key
+                  dbRef.push().set(gratitudeLogs);
+
+                  //clear text fields
+                  item.logController.text = '';
                 }
-              } catch (e) {
-                print('error writing data: $e');
               }
-            }, 
-            ),
-          ],
-        ),
-      ), 
+            } catch (e) {
+              print('error writing data: $e');
+            }
+          }, 
+          ),
+        ],
+      ),
       //button to add another form entry
       floatingActionButton: FloatingActionButton(
         onPressed: () {
