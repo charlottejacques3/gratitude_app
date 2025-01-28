@@ -23,7 +23,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
     return Scaffold(
       body: Center(
         child: Column(
-          children: [
+          children: <Widget>[
             Text(
               'What are you grateful for today?',
               style: Theme.of(context).textTheme.displayMedium!.copyWith(
@@ -31,11 +31,11 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
               ),
             ),
             Expanded (
-                child: ListView.builder(
-                  itemCount: dynamicForms.length,
-                  prototypeItem: dynamicForms.first,
-                  itemBuilder: (context, index) {
-                    return dynamicForms[index];
+              child: ListView.builder(
+                itemCount: dynamicForms.length,
+                prototypeItem: dynamicForms.first,
+                itemBuilder: (context, index) {
+                  return dynamicForms[index];
                 },
               ),
             ),

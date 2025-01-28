@@ -85,8 +85,12 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-      body: Expanded(
-        child: page,
+      body: Column(
+        children: [
+          Expanded(
+            child: page,
+          ),
+        ],
       )
     );
   }
