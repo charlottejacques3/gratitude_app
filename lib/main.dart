@@ -7,6 +7,7 @@ import 'firebase_options.dart';
 //import files
 import 'gratitude_log_page.dart';
 import 'past_logs_page.dart';
+import 'reflection_page.dart';
 
 void main() async {
 
@@ -60,6 +61,8 @@ class _MyHomePageState extends State<MyHomePage> {
         page = GratitudeLogPage();
       case 1:
         page = PastLogsPage();
+      case 2:
+        page = ReflectionPage();
       default:
         throw UnimplementedError('no widget for $currentPageIndex');
     }
@@ -83,6 +86,10 @@ class _MyHomePageState extends State<MyHomePage> {
           NavigationDestination(
             icon: Icon(Icons.book), 
             label: 'Past Logs',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.psychology), 
+            label: 'Reflect',
           ),
         ],
       ),

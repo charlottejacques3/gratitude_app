@@ -48,7 +48,7 @@ class _PastLogsPageState extends State<PastLogsPage> {
       });
 
       //sort by date in reverse order
-      gratitudeLogs.sort((a, b) => b['date'].compareTo(a['date']));
+      gratitudeLogs.sort((a, b) => a['date'].compareTo(b['date']));
 
       //group by date
       for (final item in gratitudeLogs) {
@@ -62,6 +62,8 @@ class _PastLogsPageState extends State<PastLogsPage> {
           formatted = 'Yesterday';
         } else if (daysAgo <= 6){
           formatted = DateFormat('EEEE', 'en_US').format(date);
+        } else if (daysAgo <= 364) {
+          formatted = DateFormat('MMMMEEEEd', 'en_US').format(date);
         } else {
           formatted = DateFormat.yMMMMEEEEd().format(date);
         }
@@ -73,6 +75,7 @@ class _PastLogsPageState extends State<PastLogsPage> {
               categorizedLogs[formatted]!.add(item['gratitude_item']);
             } else {
               categorizedLogs[formatted] = [item['gratitude_item']];
+              // categorizedLogs = {formatted: [item['gratitude_item']]} + categorizedLogs;
             }
           });
         }
@@ -108,12 +111,12 @@ class _PastLogsPageState extends State<PastLogsPage> {
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, parentIndex) {
-                List<String> lst = categorizedLogs.values.elementAt(parentIndex);
+                List<String> lst = categorizedLogs.values.elementAt(categorizedLogs.length - 1 - parentIndex);
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(height: 10),
-                    Text(categorizedLogs.keys.elementAt(parentIndex),
+                    Text(categorizedLogs.keys.elementAt(categorizedLogs.length - 1 - parentIndex),
                       style: Theme.of(context).textTheme.titleLarge!
                     ),
                     ListView.builder(

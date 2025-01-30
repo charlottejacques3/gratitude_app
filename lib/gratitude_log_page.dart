@@ -21,33 +21,31 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   centerTitle: true,
-      //   toolbarHeight: 200,
-      //   flexibleSpace: Text('What are you grateful for today?',
-      //     style: Theme.of(context).textTheme.displayMedium!.copyWith(
-      //       color: Theme.of(context).colorScheme.primary,
-      //     ),
-      //   ),
-      // ),
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text('Log Gratitude',
+          style: Theme.of(context).textTheme.displayMedium!.copyWith(
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+      ),
       body: Column(
         children: <Widget>[
+          SizedBox(height: 30),
           Center(
             child: Text(
               'What are you grateful for today?',
-              style: Theme.of(context).textTheme.displayMedium!.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-              ),
+              style: Theme.of(context).textTheme.titleLarge!
             ),
           ),
-          Expanded (
-            child: ListView.builder(
-              itemCount: dynamicForms.length,
-              prototypeItem: dynamicForms.first,
-              itemBuilder: (context, index) {
-                return dynamicForms[index];
-              },
-            ),
+          ListView.builder(
+            itemCount: dynamicForms.length,
+            prototypeItem: dynamicForms.first,
+            scrollDirection: Axis.vertical,
+            shrinkWrap: true,
+            itemBuilder: (context, index) {
+              return dynamicForms[index];
+            },
           ),
           ElevatedButton(
             child: Text('Done'),
@@ -102,15 +100,18 @@ class DynamicFormWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children:
-        [TextFormField(
-            controller: logController,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter some text';
-              }
-              return null;
-            },
-          )
+        [Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextFormField(
+              controller: logController,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter some text';
+                }
+                return null;
+              },
+            ),
+        )
         ]
     );
   }
