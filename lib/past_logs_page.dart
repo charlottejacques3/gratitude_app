@@ -47,7 +47,7 @@ class _PastLogsPageState extends State<PastLogsPage> {
         }
       });
 
-      //sort by date in reverse order
+      //sort by date 
       gratitudeLogs.sort((a, b) => a['date'].compareTo(b['date']));
 
       //group by date
@@ -75,7 +75,6 @@ class _PastLogsPageState extends State<PastLogsPage> {
               categorizedLogs[formatted]!.add(item['gratitude_item']);
             } else {
               categorizedLogs[formatted] = [item['gratitude_item']];
-              // categorizedLogs = {formatted: [item['gratitude_item']]} + categorizedLogs;
             }
           });
         }

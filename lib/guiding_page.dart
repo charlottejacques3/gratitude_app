@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 
-class ReflectionPage extends StatefulWidget {
-  const ReflectionPage({super.key});
+
+class GuidingPage extends StatefulWidget {
+  const GuidingPage({super.key});
 
   @override
-  State<ReflectionPage> createState() => _ReflectionPageState();
+  State<GuidingPage> createState() => _GuidingPageState();
 }
 
 
-class _ReflectionPageState extends State<ReflectionPage> {
+class _GuidingPageState extends State<GuidingPage> {
 
   @override
   Widget build(BuildContext context) {
@@ -16,12 +17,16 @@ class _ReflectionPageState extends State<ReflectionPage> {
       appBar: AppBar(
         centerTitle: true,
         title: 
-          Text('Reflection',
+          Text('~Guidance~',
             style: Theme.of(context).textTheme.displayMedium!.copyWith(
               color: Theme.of(context).colorScheme.primary,
             ),
           ),
       ),
+      body: Column(
+        children: [
+        ],
+      )
     );
   }
 }
