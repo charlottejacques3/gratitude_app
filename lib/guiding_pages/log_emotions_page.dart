@@ -18,7 +18,7 @@ class _LogEmotionsPageState extends State<LogEmotionsPage> {
       appBar: AppBar(
         centerTitle: true,
         title: 
-          Text('~Guidance~',
+          Text('Guidance',
             style: Theme.of(context).textTheme.displayMedium!.copyWith(
               color: Theme.of(context).colorScheme.primary,
             ),
@@ -56,12 +56,18 @@ class _LogEmotionsPageState extends State<LogEmotionsPage> {
             ),
 
             //next button
-            ElevatedButton(
-              onPressed: () {
-                
-              }, 
-              child: Text("Next",
-                textAlign: TextAlign.center,
+            Flexible(
+              fit: FlexFit.loose,
+              child: ElevatedButton(
+                onPressed: () {
+              
+                }, 
+                style: ElevatedButton.styleFrom(
+                  minimumSize: Size(80, 40)
+                ),
+                child: Text("Next",
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
           ]

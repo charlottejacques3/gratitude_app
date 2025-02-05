@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:gratitude_app/guiding_pages/inspiration_page.dart';
 import 'package:gratitude_app/guiding_pages/log_emotions_page.dart';
-
-//import files
-
 
 
 class GuidingPage extends StatefulWidget {
@@ -21,7 +19,7 @@ class _GuidingPageState extends State<GuidingPage> {
       appBar: AppBar(
         centerTitle: true,
         title: 
-          Text('~Guidance~',
+          Text('Guidance',
             style: Theme.of(context).textTheme.displayMedium!.copyWith(
               color: Theme.of(context).colorScheme.primary,
             ),
@@ -50,9 +48,12 @@ class _GuidingPageState extends State<GuidingPage> {
                       alignment: Alignment.center,
                       child: ElevatedButton(
                         onPressed: () {
-                          
+                          Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const InspirationPage())
+                        );
                         },
-                        child: Text("Give me ideas of what I've logged in the past",
+                        child: Text("Give me some inspiration!",
                           textAlign: TextAlign.center,
                         ),
                       ),
