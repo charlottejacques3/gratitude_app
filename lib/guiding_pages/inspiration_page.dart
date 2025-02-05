@@ -28,6 +28,7 @@ class _InspirationPageState extends State<InspirationPage> {
   final TextEditingController logController = TextEditingController();
   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('GratitudeLogs');
   int inspoType = 1;
+  String selectedPastLog = ''; //change to map<dynamic, dynamic>
 
   @override
   void initState() {
@@ -49,14 +50,23 @@ class _InspirationPageState extends State<InspirationPage> {
 
   void generatePastLogs() {
     dbRef.onValue.listen((event) {
+
+      //get list of keys
       DataSnapshot dataSnapshot = event.snapshot;
       Map<dynamic, dynamic> values = dataSnapshot.value as Map<dynamic, dynamic>;
-      print(values);
+      List<dynamic> keys = values.keys.toList();
+      print(keys);
 
-      final random_num = Random().nextInt(values.length);
-      for (var i = 0; i < random_num; i++) {
-        
-      }
+      //pick random key
+      final randomNum = Random().nextInt(values.length);
+      dynamic pastLogKey = keys[randomNum];
+      print(pastLogKey);
+
+      //get the log at that key
+      final log = values[pastLogKey];
+      print(log);
+      // setState(() {
+      // });
     });
   }
 
