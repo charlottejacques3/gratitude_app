@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 
 //database imports
 import 'package:firebase_database/firebase_database.dart';
-import 'package:gratitude_app/gratitude_log_page.dart';
 
 //date formatting
 import 'package:intl/intl.dart';
@@ -91,10 +90,12 @@ class _InspirationPageState extends State<InspirationPage> {
         }
 
       //set selectedPastLog to the log at that key
-      setState(() {
-        selectedPastLog = values[pastLogKey]['gratitude_item'];
-        selectedLogRelativeDate = formatted;
-      });
+      if (mounted) {
+        setState(() {
+          selectedPastLog = values[pastLogKey]['gratitude_item'];
+          selectedLogRelativeDate = formatted;
+        });
+      }
     });
   }
 
