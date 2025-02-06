@@ -49,9 +49,9 @@ class _GuidingPageState extends State<GuidingPage> {
                       child: ElevatedButton(
                         onPressed: () {
                           Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const InspirationPage())
-                        );
+                            context,
+                            MaterialPageRoute(builder: (context) => const InspirationPage())
+                          );
                         },
                         child: Text("Give me some inspiration!",
                           textAlign: TextAlign.center,

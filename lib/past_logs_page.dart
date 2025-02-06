@@ -6,6 +6,9 @@ import 'package:firebase_database/firebase_database.dart';
 //date formatting
 import 'package:intl/intl.dart';
 
+//helper functions
+import 'helper_functions.dart';
+
 class PastLogsPage extends StatefulWidget {
   const PastLogsPage({super.key});
 
@@ -84,10 +87,10 @@ class _PastLogsPageState extends State<PastLogsPage> {
   }
 
   //calculates days between to see whether the logs are from today, yesterday, etc.
-  int calculateDifference(DateTime date) {
-    DateTime now = DateTime.now();
-    return DateTime(now.year, now.month, now.day).difference(DateTime(date.year, date.month, date.day)).inDays;
-  }
+  // int calculateDifference(DateTime date) {
+  //   DateTime now = DateTime.now();
+  //   return DateTime(now.year, now.month, now.day).difference(DateTime(date.year, date.month, date.day)).inDays;
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +106,7 @@ class _PastLogsPageState extends State<PastLogsPage> {
           ),
       ),
       body: 
-        loading //display "loading text while loading"
+        loading //display progress indicator while loading
           ? Center(child: CircularProgressIndicator())
       : CustomScrollView( //otherwise display the logs
         slivers: [

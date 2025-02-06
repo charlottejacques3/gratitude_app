@@ -4,9 +4,13 @@ import 'package:flutter/material.dart';
 
 //database imports
 import 'package:firebase_database/firebase_database.dart';
+import 'package:gratitude_app/gratitude_log_page.dart';
 
 //date formatting
-// import 'package:intl/intl.dart';
+import 'package:intl/intl.dart';
+
+//helper functions
+import '../helper_functions.dart';
 
 
 //type of inspiration constants
@@ -15,8 +19,15 @@ const PROMPT = 1;
 const PICTURE = 2;
 
 
+//callback for setting pre-loading the log page
+// typedef LogCallback = void Function(String val);
+
+
 class InspirationPage extends StatefulWidget {
-  const InspirationPage({super.key});
+
+  // final LogCallback callback;
+
+  const InspirationPage({super.key});//, required this.callback});
 
   @override
   State<InspirationPage> createState() => _InspirationPageState();
@@ -28,7 +39,8 @@ class _InspirationPageState extends State<InspirationPage> {
   final TextEditingController logController = TextEditingController();
   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('GratitudeLogs');
   int inspoType = 1;
-  String selectedPastLog = ''; //change to map<dynamic, dynamic>
+  String selectedPastLog = '';
+  String selectedLogRelativeDate = '';
 
   @override
   void initState() {
@@ -48,6 +60,7 @@ class _InspirationPageState extends State<InspirationPage> {
     }
   }
 
+  //randomly generate a past log from the database
   void generatePastLogs() {
     dbRef.onValue.listen((event) {
 
@@ -55,18 +68,33 @@ class _InspirationPageState extends State<InspirationPage> {
       DataSnapshot dataSnapshot = event.snapshot;
       Map<dynamic, dynamic> values = dataSnapshot.value as Map<dynamic, dynamic>;
       List<dynamic> keys = values.keys.toList();
-      print(keys);
 
       //pick random key
       final randomNum = Random().nextInt(values.length);
       dynamic pastLogKey = keys[randomNum];
-      print(pastLogKey);
 
-      //get the log at that key
-      final log = values[pastLogKey];
-      print(log);
-      // setState(() {
-      // });
+      //format the date
+      DateTime date = DateTime.parse(values[pastLogKey]['date']);
+        String formatted;
+        int daysAgo = calculateDifference(date);
+
+        if (daysAgo == 0) {
+          formatted = 'Today';
+        } else if (daysAgo == 1) {
+          formatted = 'Yesterday';
+        } else if (daysAgo <= 6){
+          formatted = 'On ' + DateFormat('EEEE', 'en_US').format(date);
+        } else if (daysAgo <= 364) {
+          formatted = 'On ' + DateFormat('MMMMEEEEd', 'en_US').format(date);
+        } else {
+          formatted = 'On ' + DateFormat.yMMMMEEEEd().format(date);
+        }
+
+      //set selectedPastLog to the log at that key
+      setState(() {
+        selectedPastLog = values[pastLogKey]['gratitude_item'];
+        selectedLogRelativeDate = formatted;
+      });
     });
   }
 
@@ -82,6 +110,40 @@ class _InspirationPageState extends State<InspirationPage> {
             ),
           ),
       ),
+      body: Container(
+        width: MediaQuery.of(context).size.width,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+
+            //past log
+            Text(selectedLogRelativeDate + ', you were grateful for',
+              style: Theme.of(context).textTheme.titleMedium!,
+            ),
+            Text(selectedPastLog,
+              style: Theme.of(context).textTheme.titleLarge!,
+            ),
+
+            //refresh button
+            ElevatedButton(
+              onPressed: generatePastLogs,
+              child: Text('Refresh'),
+            ),
+
+            //log button
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pop(context, selectedPastLog);
+              }, 
+              child: Text('Log this!')
+            ),
+
+            SizedBox(height: 150)
+          ]
+        ),
+      )
     );
   }
 }

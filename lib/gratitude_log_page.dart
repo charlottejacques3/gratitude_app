@@ -8,17 +8,25 @@ import 'guiding_pages/main_guiding_page.dart';
 
 
 class GratitudeLogPage extends StatefulWidget {
-  const GratitudeLogPage({super.key});
+  const GratitudeLogPage({super.key, });//this.filledInLogs=''});
+
+  // String filledInLogs = '';
 
   @override
   State<GratitudeLogPage> createState() => _GratitudeLogPageState();
+
+  // static _GratitudeLogPageState of(BuildContext context) =>
+  //   context.findAncestorStateOfType<_GratitudeLogPageState>();
 }
 
 
 class _GratitudeLogPageState extends State<GratitudeLogPage> {
   
-  List<DynamicFormWidget> dynamicForms = [DynamicFormWidget()];
+  static String filledInLogs = '';
+  
+  List<DynamicFormWidget> dynamicForms = [DynamicFormWidget(logController: TextEditingController())];
   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('GratitudeLogs');
+
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +48,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
               style: Theme.of(context).textTheme.titleLarge!
             ),
           ),
+          Text(filledInLogs),
           ListView.builder(
             itemCount: dynamicForms.length,
             prototypeItem: dynamicForms.first,
@@ -55,7 +64,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
             child: ElevatedButton(
               onPressed: () {
                 setState(() {
-                  dynamicForms.add(DynamicFormWidget());
+                  dynamicForms.add(DynamicFormWidget(logController: TextEditingController()));
                 });
               }, 
               style: ElevatedButton.styleFrom(
@@ -78,11 +87,19 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                   child: Align(
                     alignment: Alignment.center,
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
+                      onPressed: () async {
+                        final preloaded = await Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const GuidingPage())
                         );
+
+                        //if there is preloaded data from the inspiration page, set it
+                        if (preloaded != null) {
+                            setState(() {
+                              filledInLogs = preloaded;
+                              dynamicForms = [DynamicFormWidget(logController: TextEditingController(text: preloaded))];
+                            });
+                          }
                       },
                       child: Text("I can't think of anything",
                         textAlign: TextAlign.center,
@@ -136,7 +153,11 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
 
 
 class DynamicFormWidget extends StatelessWidget {
-  final TextEditingController logController = TextEditingController();
+
+  // final String initialVal;
+  const DynamicFormWidget({super.key, required this.logController});//required this.initialVal});
+
+  final TextEditingController logController; // = TextEditingController(text: initialVal);
 
   //how to dispose of controller after?
 
@@ -146,6 +167,7 @@ class DynamicFormWidget extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: TextFormField(
           controller: logController,
+          // initialValue: initialVal,
           keyboardType: TextInputType.multiline,
           minLines: 1,
           maxLines: 3,
