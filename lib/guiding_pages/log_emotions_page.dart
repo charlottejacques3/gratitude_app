@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+//import files
+import 'package:gratitude_app/guiding_pages/cbt_page.dart';
+
 
 class LogEmotionsPage extends StatefulWidget {
   const LogEmotionsPage({super.key});
@@ -10,6 +13,7 @@ class LogEmotionsPage extends StatefulWidget {
 
 
 class _LogEmotionsPageState extends State<LogEmotionsPage> {
+
   final TextEditingController logController = TextEditingController();
 
   @override
@@ -18,7 +22,7 @@ class _LogEmotionsPageState extends State<LogEmotionsPage> {
       appBar: AppBar(
         centerTitle: true,
         title: 
-          Text('Guidance',
+          Text('Log Gratitude',
             style: Theme.of(context).textTheme.displayMedium!.copyWith(
               color: Theme.of(context).colorScheme.primary,
             ),
@@ -36,8 +40,8 @@ class _LogEmotionsPageState extends State<LogEmotionsPage> {
             SizedBox(height: 30),
 
             //logging space
-            Padding(
-              padding: const EdgeInsets.all(8.0),
+            Flexible(
+              fit: FlexFit.loose,
               child: TextFormField(
                 controller: logController,
                 keyboardType: TextInputType.multiline,
@@ -60,7 +64,19 @@ class _LogEmotionsPageState extends State<LogEmotionsPage> {
               fit: FlexFit.loose,
               child: ElevatedButton(
                 onPressed: () {
-              
+                  //create reframingLogs map to be passed through children and eventually saved to the database
+                  Map<String, dynamic> reframingLogs = {
+                    'negative_emotions': logController.text,
+                    'date': DateTime.now().toIso8601String(),
+                  };
+                  //push creates a unique key
+                  // dbRef.push().set(emotionLogs);
+
+                  //navigate to next page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => CBTPage(initialReframingLogs: reframingLogs))
+                  );
                 }, 
                 style: ElevatedButton.styleFrom(
                   minimumSize: Size(80, 40)

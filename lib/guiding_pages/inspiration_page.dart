@@ -18,15 +18,9 @@ const PROMPT = 1;
 const PICTURE = 2;
 
 
-//callback for setting pre-loading the log page
-// typedef LogCallback = void Function(String val);
-
-
 class InspirationPage extends StatefulWidget {
 
-  // final LogCallback callback;
-
-  const InspirationPage({super.key});//, required this.callback});
+  const InspirationPage({super.key});
 
   @override
   State<InspirationPage> createState() => _InspirationPageState();
@@ -40,6 +34,7 @@ class _InspirationPageState extends State<InspirationPage> {
   int inspoType = 1;
   String selectedPastLog = '';
   String selectedLogRelativeDate = '';
+  bool loading = true;
 
   @override
   void initState() {
@@ -94,6 +89,7 @@ class _InspirationPageState extends State<InspirationPage> {
         setState(() {
           selectedPastLog = values[pastLogKey]['gratitude_item'];
           selectedLogRelativeDate = formatted;
+          loading = false;
         });
       }
     });
@@ -105,7 +101,7 @@ class _InspirationPageState extends State<InspirationPage> {
       appBar: AppBar(
         centerTitle: true,
         title: 
-          Text('Guidance',
+          Text('Log Gratitude',
             style: Theme.of(context).textTheme.displayMedium!.copyWith(
               color: Theme.of(context).colorScheme.primary,
             ),
@@ -118,6 +114,10 @@ class _InspirationPageState extends State<InspirationPage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
 
+            //display progress indicator if not loaded
+            loading 
+              ? CircularProgressIndicator()
+            :
             //past log
             Text(selectedLogRelativeDate + ', you were grateful for',
               style: Theme.of(context).textTheme.titleMedium!,

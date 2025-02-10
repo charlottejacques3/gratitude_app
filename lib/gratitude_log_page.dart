@@ -22,11 +22,10 @@ class GratitudeLogPage extends StatefulWidget {
 
 class _GratitudeLogPageState extends State<GratitudeLogPage> {
   
-  static String filledInLogs = '';
-  
   List<DynamicFormWidget> dynamicForms = [DynamicFormWidget(logController: TextEditingController())];
   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('GratitudeLogs');
 
+  //list of 
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +47,6 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
               style: Theme.of(context).textTheme.titleLarge!
             ),
           ),
-          Text(filledInLogs),
           ListView.builder(
             itemCount: dynamicForms.length,
             prototypeItem: dynamicForms.first,
@@ -96,7 +94,6 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                         //if there is preloaded data from the inspiration page, set it
                         if (preloaded != null) {
                             setState(() {
-                              filledInLogs = preloaded;
                               dynamicForms = [DynamicFormWidget(logController: TextEditingController(text: preloaded))];
                             });
                           }

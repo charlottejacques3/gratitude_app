@@ -19,7 +19,7 @@ class _GuidingPageState extends State<GuidingPage> {
       appBar: AppBar(
         centerTitle: true,
         title: 
-          Text('Guidance',
+          Text('Log Gratitude',
             style: Theme.of(context).textTheme.displayMedium!.copyWith(
               color: Theme.of(context).colorScheme.primary,
             ),
