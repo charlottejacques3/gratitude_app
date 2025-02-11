@@ -9,13 +9,26 @@ import 'gratitude_log_page.dart';
 import 'past_logs_page.dart';
 import 'reflection_page.dart';
 
-void main() async {
+//messaging service
+// import 'messaging_service.dart';
 
-  //firebase stuff
+void main() async {
+  //database stuff
   WidgetsFlutterBinding.ensureInitialized();
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  //messaging service
+  // print("before trying");
+  // try {
+  //   print("trying");
+  //   final messagingService = MessagingService();
+  //   await messagingService.initializeMessaging(); //call the initialization function
+  //   print("reached the end");
+  // } catch (e) {
+  //   print("error in main function $e");
+  // }
   // debugRepaintRainbowEnabled = true;
   runApp(const MyApp());
 }

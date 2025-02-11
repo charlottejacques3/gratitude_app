@@ -19,6 +19,8 @@ class ReframingPage extends StatefulWidget {
 class _ReframingPageState extends State<ReframingPage> {
 
   TextEditingController logController = TextEditingController();
+  bool needHelp = false;
+
   List<PromptWidget> prompt_widgets = [];
   Map<String, dynamic> reframingLogs = {};
   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('NegativeEmotionLogs');
@@ -65,8 +67,30 @@ class _ReframingPageState extends State<ReframingPage> {
             )
           ),
 
+          !needHelp ?
+          //logging space
+          SliverPadding(
+            padding: const EdgeInsets.all(8.0),
+            sliver: SliverToBoxAdapter(
+              child: TextFormField(
+                controller: logController,
+                keyboardType: TextInputType.multiline,
+                minLines: 5,
+                maxLines: 15,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter some text';
+                  }
+                  return null;
+                },
+              ),
+            ),
+          )
 
-          SliverList(
+          : SliverList(
             delegate: SliverChildBuilderDelegate( 
               (context, index) {
                 return Column (
@@ -107,6 +131,7 @@ class _ReframingPageState extends State<ReframingPage> {
                               //create a new prompt widget
                               setState(() {
                                 prompt_widgets.add(PromptWidget(controllers: newControllers, prompt: selectedPrompt));
+                                needHelp = true;
                               });
                             },
                             child: Text("Give me some help with this",
