@@ -6,8 +6,12 @@ class MessagingService {
   Future<void> initializeMessaging() async {
     try {
       // Request notification permissions (provisional)
+      print("before notication settings");
       final notificationSettings = await _firebaseMessaging.requestPermission(provisional: true);
-
+      print("after notification settings");
+    } catch (e) {
+      print("caught notications settings exception $e");
+    }
       // Handle APNs token for iOS
       final apnsToken = await _firebaseMessaging.getAPNSToken();
       if (apnsToken != null) {
@@ -39,8 +43,6 @@ class MessagingService {
       });
 
       await FirebaseMessaging.instance.setAutoInitEnabled(true);
-    } catch (e) {
-      print("caught messaging service exception $e");
-    }
+    
   }
 }

@@ -27,7 +27,7 @@ class _PastLogsPageState extends State<PastLogsPage> {
   @override
   void initState() {
     super.initState();
-    print('initially mounted: $mounted');
+    // print('initially mounted: $mounted');
     
     dbRef.onValue.listen((event) {
       //re-initialize gratitudeLogs to empty
@@ -82,7 +82,7 @@ class _PastLogsPageState extends State<PastLogsPage> {
           });
         }
       }
-      print('logs: $categorizedLogs');
+      // print('logs: $categorizedLogs');
     });
   }
 
