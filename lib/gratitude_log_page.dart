@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 //database imports
 import 'package:firebase_database/firebase_database.dart';
+import 'package:gratitude_app/notification_service.dart';
 
 //import files
 import 'guiding_pages/main_guiding_page.dart';
@@ -40,6 +41,30 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
       ),
       body: ListView(
         children: <Widget>[
+          ElevatedButton(
+            onPressed: () {
+              try {
+                NotificationService.showInstantNotification(
+                  title: "Title",
+                  body: "Body"
+                );
+              } catch (e) {
+                print("notification service error: $e");
+              }
+            }, 
+            child: Text('send instant notification')
+          ),
+          ElevatedButton(
+            onPressed: () {
+              DateTime scheduleDate = DateTime.now().add(const Duration(seconds: 5));
+              NotificationService.scheduledNotification(
+                title: "Scheduled notification", 
+                body: "body", 
+                scheduledTime: scheduleDate
+              );
+            }, 
+            child: Text('send scheduled notification')
+          ),
           SizedBox(height: 30),
           Center(
             child: Text(

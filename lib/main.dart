@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 
 //firebase imports
 import 'package:firebase_core/firebase_core.dart';
-import 'package:gratitude_app/api/firebase_api.dart';
+// import 'package:gratitude_app/api/firebase_api.dart';
+import 'package:gratitude_app/notification_service.dart';
 // import 'package:gratitude_app/firebase_service.dart';
 import 'firebase_options.dart';
 
@@ -19,6 +20,7 @@ import 'reflection_page.dart';
 // import 'messaging_service.dart';
 // import 'firebase_service.dart';
 // import 'package:firebase_messaging/firebase_messaging.dart'; 
+import 'package:timezone/data/latest.dart' as tz;
 
 void main() async {
   //database stuff
@@ -26,7 +28,13 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  await FirebaseApi().initNotifications();
+
+  //init notifications
+  await NotificationService.initNotifications();
+  tz.initializeTimeZones();
+
+
+  // await FirebaseApi().initNotifications();
   // FirebaseAnalytics analytics = FirebaseAnalytics.instance;
 
     //messaging service
