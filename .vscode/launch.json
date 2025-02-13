@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Flutter",
+        "request": "launch",
+        "type": "dart",
+        "flutterMode": "debug",
+        "noDebug": false,
+        "program": "lib/main.dart", // You can specify a different entry point if needed
+      }
+    ]
+  }
+  

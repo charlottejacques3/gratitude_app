@@ -22,24 +22,49 @@ import 'reflection_page.dart';
 // import 'package:firebase_messaging/firebase_messaging.dart'; 
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:workmanager/workmanager.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
 
 
 //create workmanager function to run notifications in the background
-void callbackDispatcher() {
+void callbackDispatcher() async {
+  //init notifications
+  try {
+  // WidgetsFlutterBinding.ensureInitialized();
+  // await NotificationService.initNotifications();
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  // Initialize for the background isolate
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+  final InitializationSettings initializationSettings =
+      InitializationSettings(android: initializationSettingsAndroid);
+
+  flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  tz.initializeTimeZones();
+  } catch (e) {
+    print("exception caught initializing notifications in callback: $e");
+  }
+
   Workmanager().executeTask((task, inputData) async {
     print('we are doing the task!');
     //schedule notifications
-    // DateTime scheduleDate = DateTime(2025, 2, 12, 22, 00);
-    // DateTime scheduleDate = DateTime.now().add(const Duration(seconds: 30));
-    // NotificationService.scheduledNotification(
-    //   title: "Scheduled notification", 
-    //   body: "body", 
-    //   scheduledTime: scheduleDate
+    DateTime scheduleDate = DateTime(2025, 2, 13, 12, 21);
+    try {
+      // DateTime scheduleDate = DateTime.now().add(const Duration(seconds: 20));
+      NotificationService.scheduledNotification(
+        title: "Scheduled notification", 
+        body: "body", 
+        scheduledTime: scheduleDate
+      );
+    } catch (e) {
+      print("Exception caught while scheduling notification: $e");
+    }
+    // NotificationService.showInstantNotification(
+    //   title: "Testing workmanager",
+    //   body: "Body"
     // );
-    NotificationService.showInstantNotification(
-    title: "Testing workmanager",
-    body: "Body"
-  );
     print("notificaiton has been scheduled");
     return Future.value(true); //indicates the task has been completed successfully
   });
