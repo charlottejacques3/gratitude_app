@@ -21,6 +21,29 @@ import 'reflection_page.dart';
 // import 'firebase_service.dart';
 // import 'package:firebase_messaging/firebase_messaging.dart'; 
 import 'package:timezone/data/latest.dart' as tz;
+import 'package:workmanager/workmanager.dart';
+
+
+//create workmanager function to run notifications in the background
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    print('we are doing the task!');
+    //schedule notifications
+    // DateTime scheduleDate = DateTime(2025, 2, 12, 22, 00);
+    // DateTime scheduleDate = DateTime.now().add(const Duration(seconds: 30));
+    // NotificationService.scheduledNotification(
+    //   title: "Scheduled notification", 
+    //   body: "body", 
+    //   scheduledTime: scheduleDate
+    // );
+    NotificationService.showInstantNotification(
+    title: "Testing workmanager",
+    body: "Body"
+  );
+    print("notificaiton has been scheduled");
+    return Future.value(true); //indicates the task has been completed successfully
+  });
+}
 
 void main() async {
   //database stuff
@@ -33,6 +56,24 @@ void main() async {
   await NotificationService.initNotifications();
   tz.initializeTimeZones();
 
+  //initialize workmanager
+  Workmanager().initialize(
+    callbackDispatcher,
+    isInDebugMode: true //change to false for production!
+  );
+
+  //register periodic task (aka when to choose the time for the daily random notification)
+  // Workmanager().registerPeriodicTask(
+  //   "1", //unique task id
+  //   "repetiveNotificationTask",
+  //   frequency: Duration(hours: 24) //chooses a new time every 24 hours
+  // );
+
+  //for testing: one-off task
+  Workmanager().registerOneOffTask(
+    "1", //unique task id
+    "repetiveNotificationTask",
+  );
 
   // await FirebaseApi().initNotifications();
   // FirebaseAnalytics analytics = FirebaseAnalytics.instance;
@@ -94,6 +135,11 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   var currentPageIndex = 0;
 
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   NotificationService.showRepetitiveNotification();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +159,6 @@ class _MyHomePageState extends State<MyHomePage> {
       default:
         throw UnimplementedError('no widget for $currentPageIndex');
     }
-
 
     return Scaffold(
       //navigation

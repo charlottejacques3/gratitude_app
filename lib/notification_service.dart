@@ -1,5 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
+import 'dart:math';
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin notificationsPlugin = FlutterLocalNotificationsPlugin();
@@ -91,9 +92,45 @@ class NotificationService {
       platformChannelSpecifics, 
       uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.dateAndTime,
-      androidScheduleMode: AndroidScheduleMode.exact
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle
     );
   }
 
-  //on notification tap
+  //show a repetitive notification
+//   static Future<void> showRepetitiveNotification() async {
+//     int randomId = Random().nextInt(1000);
+
+//     final AndroidNotificationDetails _repetitiveAndroidNotificationDetails = 
+//       const AndroidNotificationDetails(
+//         "channelRemainderId",
+//         "channelRemainderName",
+//         channelDescription: "channelRemainderDescription",
+//         importance: Importance.max,
+//         priority: Priority.high,
+//         playSound: true,
+//         enableVibration: true,
+//       );
+
+//   final AndroidNotificationChannel _repetitiveNotificationChannel = 
+//       const AndroidNotificationChannel(
+//         "channelRemainderId",
+//         "channelRemainderName",
+//         description: "channelRemainderDescription",
+//         importance: Importance.high,
+//         playSound: true,
+//         enableVibration: true,
+//       );
+
+//   notificationsPlugin.periodicallyShow(
+//     randomId,
+//     "Repetitive $randomId",
+//     "Testing Zoned Notification $randomId",
+//     RepeatInterval.everyMinute,
+//     NotificationDetails(android: _repetitiveAndroidNotificationDetails),
+//     androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle
+//   );
+//   print(DateTime.now());
+//   }
+
+//   //on notification tap
 }
