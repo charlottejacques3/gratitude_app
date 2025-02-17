@@ -90,15 +90,6 @@ class _PastLogsPageState extends State<PastLogsPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: 
-          Text('Past Logs',
-            style: Theme.of(context).textTheme.displayMedium!.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-      ),
       body: 
         loading //display progress indicator while loading
           ? Center(child: CircularProgressIndicator())

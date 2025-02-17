@@ -1,0 +1,15 @@
+{
+    "random_notifications": true,
+    "random_start_time": {
+        "hours": 9,
+        "minutes": 0
+    }, 
+    "random_end_time": {
+        "hours": 21,
+        "minutes": 0
+    },
+    "scheduled_time": {
+        "hours": 12,
+        "minutes": 0
+    }
+}

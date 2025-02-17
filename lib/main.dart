@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 // import 'package:gratitude_app/api/firebase_api.dart';
 import 'package:gratitude_app/notification_service.dart';
+import 'package:gratitude_app/settings_page.dart';
 // import 'package:gratitude_app/firebase_service.dart';
 import 'firebase_options.dart';
 
@@ -24,20 +25,19 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:workmanager/workmanager.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+//database imports
+import 'package:firebase_database/firebase_database.dart';
+
 
 
 //create workmanager function to run notifications in the background
 void callbackDispatcher() async {
   //init notifications
   try {
-  // WidgetsFlutterBinding.ensureInitialized();
-  // await NotificationService.initNotifications();
-  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
   // Initialize for the background isolate
-  const AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
+  const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
   final InitializationSettings initializationSettings =
       InitializationSettings(android: initializationSettingsAndroid);
 
@@ -49,10 +49,18 @@ void callbackDispatcher() async {
 
   Workmanager().executeTask((task, inputData) async {
     print('we are doing the task!');
+
+    //read from the database
+    DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('Settings');
+    dbRef.onValue.listen((event) {
+      DataSnapshot dataSnapshot = event.snapshot;
+      Map<dynamic, dynamic> values = dataSnapshot.value as Map<dynamic, dynamic>;
+      print(values);
+    });
+
     //schedule notifications
     DateTime scheduleDate = DateTime(2025, 2, 13, 12, 21);
     try {
-      // DateTime scheduleDate = DateTime.now().add(const Duration(seconds: 20));
       NotificationService.scheduledNotification(
         title: "Scheduled notification", 
         body: "body", 
@@ -61,10 +69,6 @@ void callbackDispatcher() async {
     } catch (e) {
       print("Exception caught while scheduling notification: $e");
     }
-    // NotificationService.showInstantNotification(
-    //   title: "Testing workmanager",
-    //   body: "Body"
-    // );
     print("notificaiton has been scheduled");
     return Future.value(true); //indicates the task has been completed successfully
   });
@@ -159,6 +163,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   var currentPageIndex = 0;
+  String pageHeader = '';
 
   // @override
   // void initState() {
@@ -177,15 +182,46 @@ class _MyHomePageState extends State<MyHomePage> {
     switch (currentPageIndex) {
       case 0:
         page = GratitudeLogPage();
+        pageHeader = 'Log Gratitude';
       case 1:
         page = PastLogsPage();
+        pageHeader = 'Past Logs';
       case 2:
         page = ReflectionPage();
+        pageHeader = 'Reflection';
       default:
         throw UnimplementedError('no widget for $currentPageIndex');
     }
 
     return Scaffold(
+      //appbar with settings icon
+      appBar: AppBar(
+        centerTitle: true,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Spacer(),
+            Text(pageHeader, 
+              style: Theme.of(context).textTheme.displayMedium!.copyWith(
+              color: Theme.of(context).colorScheme.primary),
+            ),
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: IconButton(
+                  icon: Icon(Icons.settings),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const SettingsPage())
+                    );
+                  },
+                )
+              ),
+            )
+          ],
+        ),
+      ),
       //navigation
       bottomNavigationBar: NavigationBar(
         onDestinationSelected: (int index) {

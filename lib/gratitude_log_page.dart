@@ -31,14 +31,6 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text('Log Gratitude',
-          style: Theme.of(context).textTheme.displayMedium!.copyWith(
-            color: Theme.of(context).colorScheme.primary,
-          ),
-        ),
-      ),
       body: ListView(
         children: <Widget>[
           ElevatedButton(
