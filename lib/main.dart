@@ -1,5 +1,6 @@
 // import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 //firebase imports
 import 'package:firebase_core/firebase_core.dart';
@@ -13,6 +14,7 @@ import 'firebase_options.dart';
 import 'gratitude_log_page.dart';
 import 'past_logs_page.dart';
 import 'reflection_page.dart';
+import 'helper_functions.dart';
 
 // import 'package:provider/provider.dart';
 
@@ -51,20 +53,64 @@ void callbackDispatcher() async {
     print('we are doing the task!');
 
     //read from the database
-    DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('Settings');
-    dbRef.onValue.listen((event) {
-      DataSnapshot dataSnapshot = event.snapshot;
-      Map<dynamic, dynamic> values = dataSnapshot.value as Map<dynamic, dynamic>;
-      print(values);
-    });
-
-    //schedule notifications
-    DateTime scheduleDate = DateTime(2025, 2, 13, 12, 21);
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    Map<dynamic, dynamic> values = {};
     try {
+      DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('Settings');
+      var dataSnapshot = await dbRef.once();
+      values = dataSnapshot.snapshot.value as Map<dynamic, dynamic>;
+      print(values);
+    } catch (e) {
+      print("error reading from firebase: $e");
+    }
+    print('after');
+
+    DateTime notificationDate;
+
+    //generate time for random notifications - THIS DOESN'T WORK!!
+    if (values['random_notifications']) {
+      print('random');
+
+      //pick a random hour
+      var start = values['random_start_time'];
+      var end = values['random_end_time'];
+      int starttime = start['hours'];
+      int hour = Random().nextInt(end['hours']-start['hours']+1) + starttime;
+
+      //pick a random minute
+      bool withinRange = false;
+      int minute = 0;
+      while (!withinRange) {
+        minute = Random().nextInt(60); //generate a random minute
+        //check if it is within the range
+        if (!((hour == end['hours'] && minute > end['minutes']) ||
+              (hour == start['hours'] && minute < start['minutes']))) {
+          withinRange = true;
+        }
+      }
+
+      //schedule tomorrow's random notification
+      DateTime tmr = DateTime.now().add(Duration(days:1));
+      notificationDate = DateTime(tmr.year, tmr.month, tmr.day, hour, minute);
+      print(notificationDate);
+    }
+
+    //set time to next scheduled notification time
+    else {
+      print('scheduling');
+      notificationDate = nextTime(values['scheduled_time']['hours'], values['scheduled_time']['minutes']);
+      print(notificationDate);
+    }
+    
+    // DateTime scheduleDate = DateTime(2025, 2, 13, 12, 21)?;
+    try {
+      print("in the notification scheduling try block");
       NotificationService.scheduledNotification(
         title: "Scheduled notification", 
         body: "body", 
-        scheduledTime: scheduleDate
+        scheduledTime: DateTime.now().add(Duration(seconds: 30))//notificationDate
       );
     } catch (e) {
       print("Exception caught while scheduling notification: $e");
@@ -92,17 +138,17 @@ void main() async {
   );
 
   //register periodic task (aka when to choose the time for the daily random notification)
-  // Workmanager().registerPeriodicTask(
-  //   "1", //unique task id
-  //   "repetiveNotificationTask",
-  //   frequency: Duration(hours: 24) //chooses a new time every 24 hours
-  // );
+  Workmanager().registerPeriodicTask(
+    Random().nextInt(1000).toString(), //unique task id
+    "repetiveNotificationTask",
+    frequency: Duration(minutes: 15) //chooses a new time every 24 hours
+  );
 
   //for testing: one-off task
-  Workmanager().registerOneOffTask(
-    "1", //unique task id
-    "repetiveNotificationTask",
-  );
+  // Workmanager().registerOneOffTask(
+  //   "1", //unique task id
+  //   "repetiveNotificationTask",
+  // );
 
   // await FirebaseApi().initNotifications();
   // FirebaseAnalytics analytics = FirebaseAnalytics.instance;
@@ -119,6 +165,7 @@ void main() async {
   // }
 
 //debugRepaintRainbowEnabled = true;
+await NotificationService.notificationsPlugin.cancelAll();
   runApp(const MyApp());
 
   // FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
@@ -165,11 +212,12 @@ class _MyHomePageState extends State<MyHomePage> {
   var currentPageIndex = 0;
   String pageHeader = '';
 
-  // @override
-  // void initState() {
-  //   super.initState();
+  @override
+  void initState() {
+    super.initState();
   //   NotificationService.showRepetitiveNotification();
-  // }
+
+  }
 
   @override
   Widget build(BuildContext context) {

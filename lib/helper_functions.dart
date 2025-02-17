@@ -34,7 +34,6 @@ Map<String, String> twenty4ToAmPm(Map<dynamic, dynamic> time) {
   String hrsMins = '';
   String amPm = 'AM';
   final hrs = time['hours'];
-  print('hours datatype ${hrs.runtimeType}');
 
   //process hours
   if (hrs != null) {
@@ -71,4 +70,16 @@ Map<String, String> twenty4ToAmPm(Map<dynamic, dynamic> time) {
   result['hrs_mins'] = hrsMins;
   result['am_pm'] = amPm;
   return result;
+}
+
+
+//return datetime object of the next time this time will occur
+DateTime nextTime(int hour, int minute) {
+  DateTime now = DateTime.now();
+  DateTime todayAtGivenTime = DateTime(now.year, now.month, now.day, hour, minute);
+  if (now.isBefore(todayAtGivenTime)) {
+    return todayAtGivenTime;
+  } else {
+    return todayAtGivenTime.add(const Duration(days: 1));
+  }
 }
