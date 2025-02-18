@@ -21,7 +21,7 @@ class _PastLogsPageState extends State<PastLogsPage> {
 
   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('GratitudeLogs');
   List<Map<dynamic, dynamic>> gratitudeLogs = [];
-  Map<String, List<String>> categorizedLogs = {};
+  Map<String, List<Map<String, String>>> categorizedLogs = {};
   bool loading = true;
 
   @override
@@ -71,18 +71,22 @@ class _PastLogsPageState extends State<PastLogsPage> {
           formatted = DateFormat.yMMMMEEEEd().format(date);
         }
         item['date'] = formatted;
+        Map<String, String> data = {
+          'log': item['gratitude_item'],
+          'type': item['type']
+        };
 
         if (mounted) {
           setState(() {
             if (categorizedLogs.containsKey(formatted)) {
-              categorizedLogs[formatted]!.add(item['gratitude_item']);
+              categorizedLogs[formatted]!.add(data);//item['gratitude_item']);
             } else {
-              categorizedLogs[formatted] = [item['gratitude_item']];
+              categorizedLogs[formatted] = [data];//item['gratitude_item']];
             }
           });
         }
       }
-      // print('logs: $categorizedLogs');
+      print('logs: $categorizedLogs');
     });
   }
 
@@ -98,7 +102,7 @@ class _PastLogsPageState extends State<PastLogsPage> {
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, parentIndex) {
-                List<String> lst = categorizedLogs.values.elementAt(categorizedLogs.length - 1 - parentIndex);
+                List<Map<String, String>> lst = categorizedLogs.values.elementAt(categorizedLogs.length - 1 - parentIndex);
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -113,9 +117,37 @@ class _PastLogsPageState extends State<PastLogsPage> {
                       itemBuilder: (context, childIndex) {
                         return Padding(
                           padding: const EdgeInsets.only(left: 8.0),
-                          child: Text(lst[childIndex],
-                              style: Theme.of(context).textTheme.bodyMedium!
-                          ),
+                          child: Builder(
+                            builder: (context) {
+                              print('before displaying list');
+                              //displaying text
+                              if ('text'.compareTo(lst[childIndex]['type']!) == 0) { 
+                                return Text(lst[childIndex]['log']!,
+                                  style: Theme.of(context).textTheme.bodyMedium!
+                                );
+                              } 
+
+                              //displaying images
+                              else if ('image'.compareTo(lst[childIndex]['type']!) == 0) {
+                                try {
+                                  return Image.network(
+                                    lst[childIndex]['log']!,
+                                    height: 100,
+                                    width: 100,
+                                  );
+                                } catch (e) {
+                                  print('error displaying image: $e');
+                                  return Container();
+                                }   
+                              } else {
+                                print('else case: ${lst[childIndex]['type']}');
+                                return Container();
+                              }
+                            }
+                          )
+                            
+                            //if it's an image (modify this logic if more cases are added!)
+                            
                         );
                       },
                     ),

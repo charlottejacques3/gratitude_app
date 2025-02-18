@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 
 //database imports
 import 'package:firebase_database/firebase_database.dart';
-import 'package:gratitude_app/notification_service.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 //import files
 import 'guiding_pages/main_guiding_page.dart';
+
+//image selection
+import 'package:image_picker/image_picker.dart';
+enum ImageSourceType { gallery, camera }
 
 
 class GratitudeLogPage extends StatefulWidget {
@@ -26,37 +31,79 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
   List<DynamicFormWidget> dynamicForms = [DynamicFormWidget(logController: TextEditingController())];
   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('GratitudeLogs');
 
-  //list of 
+  //images
+  List<String> imageUrls = [];
+
+  //get images
+  // void handleImageUpload(BuildContext context, var source) {
+  //   Navigator.push(context,
+  //   MaterialPageRoute(builder: (context) => ImagePickerWidget(type:source)));
+  // }
+  void handleImageUpload(var source) async {
+    //get image from camera/gallery
+    ImagePicker imagePicker = ImagePicker();
+    XFile? file = await imagePicker.pickImage(source: source);
+    print(file?.path);
+
+    if (file == null) return;
+
+    //create unique filename with the datetime
+    String filename = DateTime.now().toIso8601String();
+    print(filename);
+
+    //create references of folders/files
+    Reference refRoot = FirebaseStorage.instance.ref();
+    Reference refImageDir = refRoot.child('images'); //get reference to storage root
+    Reference refImage = refImageDir.child(filename); //create a reference for the image to be stored
+
+    //store file
+    try {
+      await refImage.putFile(File(file.path));
+      //get downnload url
+      // setState(() async {
+      String url = await refImage.getDownloadURL();
+        
+      // });
+      // print(imageUrl);
+      setState(() {
+        imageUrls.add(url);
+      });
+      print('urls: $imageUrls');
+      print('after download url');
+    } catch(e) {
+      print('error storing images: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: ListView(
         children: <Widget>[
-          ElevatedButton(
-            onPressed: () {
-              try {
-                NotificationService.showInstantNotification(
-                  title: "Title",
-                  body: "Body"
-                );
-              } catch (e) {
-                print("notification service error: $e");
-              }
-            }, 
-            child: Text('send instant notification')
-          ),
-          ElevatedButton(
-            onPressed: () {
-              DateTime scheduleDate = DateTime.now().add(const Duration(seconds: 5));
-              NotificationService.scheduledNotification(
-                title: "Scheduled notification", 
-                body: "body", 
-                scheduledTime: scheduleDate
-              );
-            }, 
-            child: Text('send scheduled notification')
-          ),
+          // ElevatedButton(
+          //   onPressed: () {
+          //     try {
+          //       NotificationService.showInstantNotification(
+          //         title: "Title",
+          //         body: "Body"
+          //       );
+          //     } catch (e) {
+          //       print("notification service error: $e");
+          //     }
+          //   }, 
+          //   child: Text('send instant notification')
+          // ),
+          // ElevatedButton(
+          //   onPressed: () {
+          //     DateTime scheduleDate = DateTime.now().add(const Duration(seconds: 5));
+          //     NotificationService.scheduledNotification(
+          //       title: "Scheduled notification", 
+          //       body: "body", 
+          //       scheduledTime: scheduleDate
+          //     );
+          //   }, 
+          //   child: Text('send scheduled notification')
+          // ),
           SizedBox(height: 30),
           Center(
             child: Text(
@@ -91,6 +138,40 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
               child: Icon(Icons.add),
             ),
           ),
+
+          //upload photos
+          ElevatedButton(
+            child: Text('Take Photo'),
+            onPressed: () async {
+              handleImageUpload(ImageSource.camera);
+            },
+          ),
+          ElevatedButton(
+            child: Text('Choose From Library'),
+            onPressed: () async {
+              handleImageUpload(ImageSource.gallery);
+            }
+          ),
+
+          // display images
+          ListView.builder(
+            itemCount: imageUrls.length,
+            scrollDirection: Axis.vertical,
+            shrinkWrap: true,
+            itemBuilder: (context, index) {
+              try {
+                return Image.network(
+                  imageUrls[index],
+                  height: 100,
+                  width: 100,
+                );
+              } catch (e) {
+                print('error displaying image: $e');
+                return Container();
+              }
+            }
+          ),
+          
           
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -133,7 +214,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                     try {
                       print("in the try blockk");
                   
-                      //look through all the entries
+                      //send all text entries to database
                       for (final item in dynamicForms) {
                         String log = item.logController.text;
                         if (log.isNotEmpty) { //don't add empty entries
@@ -141,6 +222,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                           Map<String, String> gratitudeLogs = {
                             'gratitude_item': log,
                             'date': DateTime.now().toIso8601String(),
+                            'type': 'text'
                           };
                           //push creates a unique key
                           dbRef.push().set(gratitudeLogs);
@@ -148,6 +230,22 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                           //clear text fields
                           item.logController.text = '';
                         }
+                      }
+
+                      //send all image urls to database
+                      for (final url in imageUrls) {
+                        //map to a dictionary
+                          Map<String, String> gratitudeImages = {
+                            'gratitude_item': url,
+                            'date': DateTime.now().toIso8601String(),
+                            'type': 'image'
+                          };
+                          //send to database
+                          dbRef.push().set(gratitudeImages);
+                          //remove images from screen
+                          setState(() {
+                            imageUrls = [];
+                          });
                       }
                     } catch (e) {
                       print('error writing data: $e');
