@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:io';
 
 //database imports
@@ -120,38 +121,6 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
               return dynamicForms[index];
             },
           ),
-          //button to add another form entry
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  dynamicForms.add(DynamicFormWidget(logController: TextEditingController()));
-                });
-              }, 
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5.0)
-                ),
-                minimumSize: Size(double.infinity, 35.0)
-              ),
-              child: Icon(Icons.add),
-            ),
-          ),
-
-          //upload photos
-          ElevatedButton(
-            child: Text('Take Photo'),
-            onPressed: () async {
-              handleImageUpload(ImageSource.camera);
-            },
-          ),
-          ElevatedButton(
-            child: Text('Choose From Library'),
-            onPressed: () async {
-              handleImageUpload(ImageSource.gallery);
-            }
-          ),
 
           // display images
           ListView.builder(
@@ -171,8 +140,68 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
               }
             }
           ),
-          
-          
+
+          //buttons to add form entries/multimedia
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+
+                //add form entries
+                Expanded(
+                  flex: 5,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        dynamicForms.add(DynamicFormWidget(logController: TextEditingController()));
+                      });
+                    }, 
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5.0)
+                      ),
+                      minimumSize: Size(double.infinity, 35.0)
+                    ),
+                    child: Icon(Icons.add),
+                  ),
+                ),
+
+                //add multimedia
+                Expanded(
+                  child: MenuAnchor(
+                    builder: (BuildContext context, MenuController controller, Widget? child) {
+                      return IconButton(
+                        onPressed: () {
+                          if (controller.isOpen) {
+                            controller.close();
+                          } else {
+                            controller.open();
+                          }
+                        }, 
+                        icon: Icon(Icons.camera_alt),
+                      );
+                    },
+                    menuChildren: <MenuItemButton>[
+                      //take photo
+                      MenuItemButton(
+                        child: Text('Take Photo'),
+                        onPressed: () async {
+                          handleImageUpload(ImageSource.camera);
+                        },
+                      ),
+                      MenuItemButton(
+                        child: Text('Choose From Library'),
+                        onPressed: () async {
+                          handleImageUpload(ImageSource.gallery);
+                        }
+                      )
+                    ],
+                  )
+                )
+              ],
+            ),
+          ),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

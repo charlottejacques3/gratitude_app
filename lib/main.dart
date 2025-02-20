@@ -4,32 +4,23 @@ import 'dart:math';
 
 //firebase imports
 import 'package:firebase_core/firebase_core.dart';
-// import 'package:gratitude_app/api/firebase_api.dart';
-import 'package:gratitude_app/notification_service.dart';
-import 'package:gratitude_app/settings_page.dart';
-// import 'package:gratitude_app/firebase_service.dart';
 import 'firebase_options.dart';
-
-//import files
-import 'gratitude_log_page.dart';
-import 'past_logs_page.dart';
-import 'reflection_page.dart';
-import 'helper_functions.dart';
-
-// import 'package:provider/provider.dart';
-
-//messaging service
-// import 'package:firebase_analytics/firebase_analytics.dart';
-// import 'messaging_service.dart';
-// import 'firebase_service.dart';
-// import 'package:firebase_messaging/firebase_messaging.dart'; 
-import 'package:timezone/data/latest.dart' as tz;
-import 'package:workmanager/workmanager.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 //database imports
 import 'package:firebase_database/firebase_database.dart';
 
+//notifications
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:workmanager/workmanager.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:gratitude_app/notification_service.dart';
+
+//import pages
+import 'gratitude_log_page.dart';
+import 'past_logs_page.dart';
+import 'reflection_page.dart';
+import 'helper_functions.dart';
+import 'settings_page.dart';
 
 
 //create workmanager function to run notifications in the background
@@ -95,6 +86,21 @@ void callbackDispatcher() async {
       DateTime tmr = DateTime.now().add(Duration(days:1));
       notificationDate = DateTime(tmr.year, tmr.month, tmr.day, hour, minute);
       print(notificationDate);
+
+
+      /*
+      NEW IDEA:
+      - every 24 hours this function gets called
+      - start = number of minutes from now to the start of the next random range
+        - if currently in the random range, start = 0
+      - end = number of minutes from now to the end of the next random range
+      - generate random number between start and min(end, *24 hours in minutes*)
+      - add that random number to datetime.now() -> that is the scheduled time
+
+      CASES:
+      - range is 9am-5pm
+        - function is called at 6pm
+       */
     }
 
     //set time to next scheduled notification time
@@ -150,35 +156,8 @@ void main() async {
   //   "repetiveNotificationTask",
   // );
 
-  // await FirebaseApi().initNotifications();
-  // FirebaseAnalytics analytics = FirebaseAnalytics.instance;
-
-    //messaging service
-  // print("before trying");
-  // try {
-  //   print("trying");
-  //   final messagingService = MessagingService();
-  //   await messagingService.initializeMessaging(); //call the initialization function
-  //   print("reached the end");
-  // } catch (e) {
-  //   print("error in main function $e");
-  // }
-
 //debugRepaintRainbowEnabled = true;
-await NotificationService.notificationsPlugin.cancelAll();
   runApp(const MyApp());
-
-  // FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-
-  // runApp(
-  //   Provider<FirebaseService>(
-  //     create: (_) => FirebaseService(),
-  //     child: MyApp(),
-  //   )
-  // );
-
-  
-  // 
 }
 
 class MyApp extends StatelessWidget {
@@ -213,17 +192,8 @@ class _MyHomePageState extends State<MyHomePage> {
   String pageHeader = '';
 
   @override
-  void initState() {
-    super.initState();
-  //   NotificationService.showRepetitiveNotification();
-
-  }
-
-  @override
   Widget build(BuildContext context) {
     //reruns every time setState is called
-
-    // final firebaseService = Provider.of<FirebaseService>(context);
     
     //select the correct page to load
     Widget page;
@@ -294,21 +264,6 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-      // body: FutureBuilder<DataSnapshot?>(
-
-      //   future: firebaseService.getData('GratitudeLogs'), 
-      //   builder: (context, snapshot) {
-      //     if (snapshot.connectionState == ConnectionState.waiting) {
-      //       return Center(child: CircularProgressIndicator());
-      //     }
-      //     else if (snapshot.hasError) {
-      //       return Center(child: Text('Error: ${snapshot.error}'));
-      //     }
-      //     else if (snapshot.hasData) {
-      //        final DataSnapshot? data = snapshot.data;
-      // if (data != null) {
-        // Data exists; process it.  Note the extra null check!
-        // return Text('Data: ${data.value}'); // Or your data display logic
         body: Column(
         children: [
           Expanded(
@@ -316,19 +271,6 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       )
-    //   } else {
-    //     // DataSnapshot is null (meaning data wasn't found or there was an error)
-    //     return Text('No data found'); // Or other appropriate UI
-    //   }
-    // } else {
-    //   return Text('Something went wrong'); // Should never happen with FutureBuilder
-    // }
-          
-    //     }
-    //   )
-      
-      
-      
     );
   }
 }

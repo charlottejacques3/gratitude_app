@@ -15,9 +15,9 @@ Map<String, int> amPmTo24(String time, String amPm) {
   int minutes = int.parse(split[1]);
 
   //add to map
-  if (hours == 12 && amPm.compareTo('AM') == 0) {
-    result['hours'] = 0; //if it's midnight
-  } else if (amPm.compareTo('AM') == 0) {
+  if (hours == 12 && amPm.compareTo('AM') == 0) { //if it's midnight
+    result['hours'] = 0;
+  } else if (amPm.compareTo('AM') == 0 || hours == 12) { //am or noon
     result['hours'] = hours;
   } else {
     result['hours'] = hours + 12;
@@ -43,6 +43,9 @@ Map<String, String> twenty4ToAmPm(Map<dynamic, dynamic> time) {
       if (hrs < 10) {
         hrsMins += '0';
       }
+      if (hrs == 12) {
+        amPm = 'PM'; //if it's noon
+      }
       hrsMins += hrs.toString();
     } else {
       if (hrs-12 < 10) {
@@ -52,7 +55,6 @@ Map<String, String> twenty4ToAmPm(Map<dynamic, dynamic> time) {
       amPm = 'PM';
     }
   } else {
-    //better error handling?
     print('error: hours was null');
   }
   hrsMins += ':';
@@ -82,4 +84,25 @@ DateTime nextTime(int hour, int minute) {
   } else {
     return todayAtGivenTime.add(const Duration(days: 1));
   }
+}
+
+
+
+//check if a time is valid from a string
+bool validTime(String time) {
+  //parse time string
+  List<String> split = time.split(':');
+  int hours = int.parse(split[0]);
+  int minutes = int.parse(split[1]);
+
+  return hours >= 1 && hours <= 12 && minutes >= 0 && minutes <= 60;
+}
+
+//check if one time is after the other
+bool timeInOrder(String t1, String ampm1, String t2, String ampm2) {
+  Map<String, int> t1_24 = amPmTo24(t1, ampm1);
+  Map<String, int> t2_24 = amPmTo24(t2, ampm2);
+
+  return t1_24['hours']! < t2_24['hours']! || 
+        (t1_24['hours'] == t2_24['hours']! && t1_24['minutes']! < t2_24['minutes']!);
 }

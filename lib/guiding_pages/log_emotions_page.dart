@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 //import files
 import 'package:gratitude_app/guiding_pages/cbt_page.dart';
@@ -15,6 +16,7 @@ class LogEmotionsPage extends StatefulWidget {
 class _LogEmotionsPageState extends State<LogEmotionsPage> {
 
   final TextEditingController logController = TextEditingController();
+  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('NegativeEmotionLogs');
 
   @override
   Widget build(BuildContext context) {
@@ -59,36 +61,64 @@ class _LogEmotionsPageState extends State<LogEmotionsPage> {
               ),
             ),
 
-            //next button
+            //buttons
             Flexible(
               fit: FlexFit.loose,
-              child: ElevatedButton(
-                onPressed: () {
-                  //create reframingLogs map to be passed through children and eventually saved to the database
-                  Map<String, dynamic> reframingLogs = {
-                    'negative_emotions': logController.text,
-                    'date': DateTime.now().toIso8601String(),
-                  };
-                  //push creates a unique key
-                  // dbRef.push().set(emotionLogs);
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  
+                  //go to next page
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        //create reframingLogs map to be passed through children and eventually saved to the database
+                        Map<String, dynamic> reframingLogs = {
+                          'negative_emotions': logController.text,
+                          'date': DateTime.now().toIso8601String(),
+                        };
+                    
+                        //navigate to next page
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => CBTPage(initialReframingLogs: reframingLogs))
+                        );
+                      }, 
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: Size(80, 40)
+                      ),
+                      child: Text("Next",
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
 
-                  //navigate to next page
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => CBTPage(initialReframingLogs: reframingLogs))
-                  );
-                }, 
-                style: ElevatedButton.styleFrom(
-                  minimumSize: Size(80, 40)
-                ),
-                child: Text("Next",
-                  textAlign: TextAlign.center,
-                ),
+                  //go back to logs + save negative emotion logs to database
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        //save to database
+                        Map<String, dynamic> reframingLogs = {
+                          'negative_emotions': logController.text,
+                          'date': DateTime.now().toIso8601String(),
+                        };
+                        dbRef.push().set(reframingLogs);
+
+                        //go back to log page
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+                      }, 
+                      child: Text("I've thought of something to log!")
+                    ),
+                  ),
+                ],
               ),
             ),
           ]
         ),
-      )
+      ),
     );
   }
 }

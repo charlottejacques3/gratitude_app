@@ -21,18 +21,14 @@ class _SettingsPageState extends State<SettingsPage> {
   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('Settings');
 
   bool randomNotifications = true;
-  // String randomStartTime = '09:00';
-  // String randomStartAMPM = 'AM';
-  // String randomEndTime = '09:00';
-  // String randomEndAMPM = 'PM';
-  // String scheduledTime = '12:00';
-  // String scheduleAMPM = 'PM';
 
-  //controllers (dynamically set these later in initstate after reading from the database)
-  TextEditingController randomStartTimeController= TextEditingController();//text: '09:00');
-  TextEditingController randomStartAMPMController = TextEditingController();//text: 'AM');
-  TextEditingController randomEndTimeController = TextEditingController();//text: '09:00');
-  TextEditingController randomEndAMPMController = TextEditingController();//text: 'PM');
+  //controllers
+  TextEditingController randomStartTimeController= TextEditingController();
+  TextEditingController randomStartAMPMController = TextEditingController();
+  TextEditingController randomEndTimeController = TextEditingController();
+  TextEditingController randomEndAMPMController = TextEditingController();
+  TextEditingController scheduledTimeController = TextEditingController();
+  TextEditingController scheduledAMPMController = TextEditingController();
 
   @override
   void initState() {
@@ -45,13 +41,16 @@ class _SettingsPageState extends State<SettingsPage> {
       //set the defaults for the controllers
       Map<String, String> startTime = twenty4ToAmPm(values['random_start_time']);
       Map<String, String> endTime = twenty4ToAmPm(values['random_end_time']);
+      Map<String, String> scheduledTime = twenty4ToAmPm(values['scheduled_time']);
       if (mounted) {
         setState(() {
-          print("in set state");
           randomStartTimeController = TextEditingController(text: startTime['hrs_mins']);
           randomStartAMPMController = TextEditingController(text: startTime['am_pm']);
           randomEndTimeController = TextEditingController(text: endTime['hrs_mins']);
           randomEndAMPMController = TextEditingController(text: endTime['am_pm']);
+          scheduledTimeController = TextEditingController(text: scheduledTime['hrs_mins']);
+          scheduledAMPMController = TextEditingController(text: scheduledTime['am_pm']);
+          randomNotifications = values['random_notifications'];
         });
       }
     });
@@ -117,20 +116,17 @@ class _SettingsPageState extends State<SettingsPage> {
 
                 //random notification settings
                 randomNotifications ? [
-                  Text("Time Frame"),
                   Text("These are the time intervals when you want to receive a random notification"),
                   Row(
                     children: [
                       Expanded(child: TimePickerWidget(
                         timeController: randomStartTimeController,
                         amPmController: randomStartAMPMController,
-                        // initialAmPm: randomStartAMPM,
                       )),
                       Text("     -     "),
                       Expanded(child: TimePickerWidget(
                         timeController: randomEndTimeController,
                         amPmController: randomEndAMPMController,
-                        // initialAmPm: randomEndAMPM,
                       ))
                     ],
                   ),
@@ -138,20 +134,32 @@ class _SettingsPageState extends State<SettingsPage> {
 
                 //scheduled notification settings
                 : [
-                  Text("Time")
+                  Text("Select the time you wish to receive a notification"),
+                  TimePickerWidget(
+                    timeController: scheduledTimeController, 
+                    amPmController: scheduledAMPMController
+                  )
                 ],
             ),
             SizedBox(height: 20),
 
             //send settings to the database
             ElevatedButton(
-              child: Text("Done"),
+              child: Text("Update"),
               onPressed: () {
+
+                Map<String, int> time = {};
 
                 //random notifications
                 if (randomNotifications) {
+                  //check valid time 
+                  if (!validTime(randomStartTimeController.text) || !validTime(randomEndTimeController.text)) {
+                    
+                  }
+
+
                   //start time
-                  Map<String, int> time = amPmTo24(randomStartTimeController.text, randomStartAMPMController.text);
+                  time = amPmTo24(randomStartTimeController.text, randomStartAMPMController.text);
                   dbRef.child('random_start_time').update(time);
                   //end time
                   time = amPmTo24(randomEndTimeController.text, randomEndAMPMController.text);
@@ -159,8 +167,12 @@ class _SettingsPageState extends State<SettingsPage> {
 
                   //scheduled notifications
                 } else {
-
+                  time = amPmTo24(scheduledTimeController.text, scheduledAMPMController.text);
+                  dbRef.child('scheduled_time').update(time);
                 }
+                
+                //set notification style
+                dbRef.update({'random_notifications': randomNotifications});
               },
             )
           ],
@@ -197,19 +209,12 @@ class TimePickerWidget extends StatelessWidget {
             inputFormatters: [
               MaskedInputFormatter('##:##')
             ],
-            // validator: (value) {
-            //   if (value == null || value.isEmpty) {
-            //     return 'Please enter some text';
-            //   }
-            //   return null;
-            // },
           ),
         ),
         SizedBox(width: 8),
         DropdownMenu(
           controller: amPmController,
           requestFocusOnTap: true,
-          // initialSelection: initialAmPm,
           dropdownMenuEntries: amPm,
           enableFilter: true,
           width: 100,

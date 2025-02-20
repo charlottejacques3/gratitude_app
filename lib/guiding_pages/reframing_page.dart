@@ -3,6 +3,7 @@ import 'dart:math';
 
 //database imports
 import 'package:firebase_database/firebase_database.dart';
+import 'package:gratitude_app/guiding_pages/final_page.dart';
 
 
 class ReframingPage extends StatefulWidget {
@@ -182,6 +183,12 @@ class _ReframingPageState extends State<ReframingPage> {
                             } catch(e) {
                               print('error writing data: $e');
                             }
+
+                            //go to next page
+                            Navigator.push(
+                              context, 
+                              MaterialPageRoute(builder: (context) => FinalPage())
+                            );
                           }, 
                         ),
                       ),
