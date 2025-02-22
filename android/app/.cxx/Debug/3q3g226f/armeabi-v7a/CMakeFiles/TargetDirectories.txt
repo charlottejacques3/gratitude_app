@@ -1,0 +1,2 @@
+C:/Users/charl/Documents/flutter/gratitude_app/android/app/.cxx/Debug/3q3g226f/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/charl/Documents/flutter/gratitude_app/android/app/.cxx/Debug/3q3g226f/armeabi-v7a/CMakeFiles/rebuild_cache.dir
