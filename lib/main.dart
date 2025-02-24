@@ -1,26 +1,41 @@
 // import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'dart:math';
+import 'dart:io';
+// import 'dart:math';
 
 //firebase imports
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
 //database imports
-import 'package:firebase_database/firebase_database.dart';
+// import 'package:firebase_database/firebase_database.dart';
 
 //notifications
 import 'package:timezone/data/latest.dart' as tz;
 // import 'package:workmanager/workmanager.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:gratitude_app/notification_service.dart';
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 //import pages
 import 'gratitude_log_page.dart';
 import 'past_logs_page.dart';
 import 'reflection_page.dart';
-import 'helper_functions.dart';
+// import 'helper_functions.dart';
 import 'settings_page.dart';
+
+
+//alarm manager sample code
+@pragma('vm:entry-point')
+Future<void> printHello() async {
+  if (await Permission.scheduleExactAlarm.isGranted) {
+    final DateTime now = DateTime.now();
+    print("[$now] Hello, world! function='$printHello'");
+  } else {
+    print('Permission required to schedule alarm');
+  }
+}
 
 
 //create workmanager function to run notifications in the background
@@ -156,8 +171,15 @@ void main() async {
   //   "repetiveNotificationTask",
   // );
 
+
+  //initialize alarm manager
+  await AndroidAlarmManager.initialize();
+
 //debugRepaintRainbowEnabled = true;
   runApp(const MyApp());
+  
+  final int helloAlarmID = 0;
+  await AndroidAlarmManager.periodic(const Duration(minutes: 1), helloAlarmID, printHello);
 }
 
 class MyApp extends StatelessWidget {
@@ -190,6 +212,15 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   var currentPageIndex = 0;
   String pageHeader = '';
+
+  Future<void> requestAlarmPermission() async {
+    if (Platform.isAndroid) {
+      if (await Permission.scheduleExactAlarm.isDenied) {
+        // Only request permission if it's denied (for Android 14+)
+        await Permission.scheduleExactAlarm.request();
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
