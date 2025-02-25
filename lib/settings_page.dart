@@ -157,7 +157,6 @@ class _SettingsPageState extends State<SettingsPage> {
                     
                   }
 
-
                   //start time
                   time = amPmTo24(randomStartTimeController.text, randomStartAMPMController.text);
                   dbRef.child('random_start_time').update(time);
@@ -192,12 +191,11 @@ class TimePickerWidget extends StatelessWidget {
   // final String initialAmPm;
   final TextEditingController timeController;
   final TextEditingController amPmController;
-  
 
   @override
   Widget build(BuildContext context) {
     
-  List<DropdownMenuEntry<dynamic>> amPm = [DropdownMenuEntry(value: "AM", label: "AM"), DropdownMenuEntry(value: "PM", label: "PM")];
+    List<DropdownMenuEntry<dynamic>> amPm = [DropdownMenuEntry(value: "AM", label: "AM"), DropdownMenuEntry(value: "PM", label: "PM")];
 
     return Row(
       children: [
@@ -214,6 +212,7 @@ class TimePickerWidget extends StatelessWidget {
         SizedBox(width: 8),
         DropdownMenu(
           controller: amPmController,
+          initialSelection: amPmController.text,
           requestFocusOnTap: true,
           dropdownMenuEntries: amPm,
           enableFilter: true,

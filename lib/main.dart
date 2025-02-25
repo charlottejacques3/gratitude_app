@@ -1,148 +1,119 @@
-// import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'dart:io';
-// import 'dart:math';
+import 'dart:math';
 
 //firebase imports
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
 //database imports
-// import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 //notifications
 import 'package:timezone/data/latest.dart' as tz;
-// import 'package:workmanager/workmanager.dart';
-// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:gratitude_app/notification_service.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 //import pages
 import 'gratitude_log_page.dart';
 import 'past_logs_page.dart';
 import 'reflection_page.dart';
-// import 'helper_functions.dart';
 import 'settings_page.dart';
+import 'helper_functions.dart';
 
-
-//alarm manager sample code
-@pragma('vm:entry-point')
-Future<void> printHello() async {
-  if (await Permission.scheduleExactAlarm.isGranted) {
-    final DateTime now = DateTime.now();
-    print("[$now] Hello, world! function='$printHello'");
-  } else {
-    print('Permission required to schedule alarm');
+//read settings from database
+Future<Map<dynamic, dynamic>> readSettings() async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  Map<dynamic, dynamic> values = {};
+  try {
+    DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('Settings');
+    var dataSnapshot = await dbRef.once();
+    values = dataSnapshot.snapshot.value as Map<dynamic, dynamic>;
+    print(values);
+  } catch (e) {
+    print("error reading from firebase: $e");
   }
+  return values;
+}
+
+//find time to start alarm manager
+// Future<DateTime> startAlarmManager() async {
+//   Map<dynamic, dynamic> settings = await readSettings();
+//   var time;
+//   if (settings['random_notifications']) {
+//     time = settings['random_start_time'];
+//   } else {
+//     time = settings['scheduled_time'];
+//   }
+//   DateTime.now();
+//   DateTime settings_dt = DateTime(rn.year, rn.month, rn.day, time['hours'], time['minutes']);
+//   return settings_time;
+// }
+
+
+//alarm manager, schedules the notifications
+//this will run 1 hour before the beginning of the time range for random notifications, or the scheduled time for scheduled notifications
+@pragma('vm:entry-point')
+Future<void> notificationScheduler() async {
+  final DateTime now = DateTime.now();
+  print("[$now] Hello, world! function='$notificationScheduler'");
+
+  Map<dynamic, dynamic> settings = await readSettings();
+  DateTime notificationDate;
+  DateTime rn = DateTime.now();
+
+  //random notifications
+  if (settings['random_notifications']) {
+    print('random');
+
+      //pick a random hour
+      var start = settings['random_start_time'];
+      var end = settings['random_end_time'];
+      int starttime = start['hours'];
+      int hour = Random().nextInt(end['hours']-start['hours']+1) + starttime;
+
+      //pick a random minute
+      bool withinRange = false;
+      int minute = 0;
+      while (!withinRange) {
+        minute = Random().nextInt(60); //generate a random minute
+        //check if it is within the range, and has not already happened
+        if (!((hour == end['hours'] && minute > end['minutes']) ||
+              (hour == start['hours'] && minute < start['minutes']))
+            && !(hour == rn.hour && minute <= rn.minute)) {
+          withinRange = true;
+        }
+      }
+
+      notificationDate = DateTime(rn.year, rn.month, rn.day, hour, minute);
+  }
+
+  //scheduled notifications
+  else {
+    print('scheduled');
+    var time = settings['scheduled_time'];
+    notificationDate = DateTime(rn.year, rn.month, rn.day, time['hours'], time['minutes']);
+  }
+
+  //schedule the notification  
+  print(notificationDate);
+  try {
+    tz.initializeTimeZones();
+    NotificationService.scheduledNotification(
+      title: "Gratitude App", 
+      body: "Time to log your gratitude!", 
+      scheduledTime: notificationDate
+    );
+  } catch (e) {
+    print("Exception caught while scheduling notification: $e");
+  }
+  print("notification has been scheduled");
 }
 
 
-//create workmanager function to run notifications in the background
-// void callbackDispatcher() async {
-//   //init notifications
-//   try {
-//   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
-//   // Initialize for the background isolate
-//   const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
-//   final InitializationSettings initializationSettings =
-//       InitializationSettings(android: initializationSettingsAndroid);
-
-//   flutterLocalNotificationsPlugin.initialize(initializationSettings);
-//   tz.initializeTimeZones();
-//   } catch (e) {
-//     print("exception caught initializing notifications in callback: $e");
-//   }
-
-//   Workmanager().executeTask((task, inputData) async {
-//     print('we are doing the task!');
-
-//     //read from the database
-//     await Firebase.initializeApp(
-//       options: DefaultFirebaseOptions.currentPlatform,
-//     );
-//     Map<dynamic, dynamic> values = {};
-//     try {
-//       DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('Settings');
-//       var dataSnapshot = await dbRef.once();
-//       values = dataSnapshot.snapshot.value as Map<dynamic, dynamic>;
-//       print(values);
-//     } catch (e) {
-//       print("error reading from firebase: $e");
-//     }
-//     print('after');
-
-//     DateTime notificationDate;
-
-//     //generate time for random notifications - THIS DOESN'T WORK!!
-//     if (values['random_notifications']) {
-//       print('random');
-
-//       //pick a random hour
-//       var start = values['random_start_time'];
-//       var end = values['random_end_time'];
-//       int starttime = start['hours'];
-//       int hour = Random().nextInt(end['hours']-start['hours']+1) + starttime;
-
-//       //pick a random minute
-//       bool withinRange = false;
-//       int minute = 0;
-//       while (!withinRange) {
-//         minute = Random().nextInt(60); //generate a random minute
-//         //check if it is within the range
-//         if (!((hour == end['hours'] && minute > end['minutes']) ||
-//               (hour == start['hours'] && minute < start['minutes']))) {
-//           withinRange = true;
-//         }
-//       }
-
-//       //schedule tomorrow's random notification
-//       DateTime tmr = DateTime.now().add(Duration(days:1));
-//       notificationDate = DateTime(tmr.year, tmr.month, tmr.day, hour, minute);
-//       print(notificationDate);
-
-
-//       /*
-//       NEW IDEA:
-//       - every 24 hours this function gets called
-//       - start = number of minutes from now to the start of the next random range
-//         - if currently in the random range, start = 0
-//       - end = number of minutes from now to the end of the next random range
-//       - generate random number between start and min(end, *24 hours in minutes*)
-//       - add that random number to datetime.now() -> that is the scheduled time
-
-//       CASES:
-//       - range is 9am-5pm
-//         - function is called at 6pm
-//        */
-//     }
-
-//     //set time to next scheduled notification time
-//     else {
-//       print('scheduling');
-//       notificationDate = nextTime(values['scheduled_time']['hours'], values['scheduled_time']['minutes']);
-//       print(notificationDate);
-//     }
-    
-//     // DateTime scheduleDate = DateTime(2025, 2, 13, 12, 21)?;
-//     try {
-//       print("in the notification scheduling try block");
-//       NotificationService.scheduledNotification(
-//         title: "Scheduled notification", 
-//         body: "body", 
-//         scheduledTime: DateTime.now().add(Duration(seconds: 30))//notificationDate
-//       );
-//     } catch (e) {
-//       print("Exception caught while scheduling notification: $e");
-//     }
-//     print("notificaiton has been scheduled");
-//     return Future.value(true); //indicates the task has been completed successfully
-//   });
-// }
-
 void main() async {
-  //database stuff
+  //initalize firebase
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -152,34 +123,23 @@ void main() async {
   await NotificationService.initNotifications();
   tz.initializeTimeZones();
 
-  //initialize workmanager
-  // Workmanager().initialize(
-  //   callbackDispatcher,
-  //   isInDebugMode: true //change to false for production!
-  // );
-
-  // //register periodic task (aka when to choose the time for the daily random notification)
-  // Workmanager().registerPeriodicTask(
-  //   Random().nextInt(1000).toString(), //unique task id
-  //   "repetiveNotificationTask",
-  //   frequency: Duration(minutes: 15) //chooses a new time every 24 hours
-  // );
-
-  //for testing: one-off task
-  // Workmanager().registerOneOffTask(
-  //   "1", //unique task id
-  //   "repetiveNotificationTask",
-  // );
-
-
   //initialize alarm manager
   await AndroidAlarmManager.initialize();
 
-//debugRepaintRainbowEnabled = true;
+  //debugRepaintRainbowEnabled = true;
   runApp(const MyApp());
   
-  final int helloAlarmID = 0;
-  await AndroidAlarmManager.periodic(const Duration(minutes: 1), helloAlarmID, printHello);
+  //set up alarm manager
+  await AndroidAlarmManager.periodic(
+    const Duration(days: 1), 
+    0, 
+    notificationScheduler,
+    startAt: DateTime(2025, 2, 24, 11, 18),
+    rescheduleOnReboot: true,
+    allowWhileIdle: true,
+    exact: true,
+    wakeup: true
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -212,15 +172,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   var currentPageIndex = 0;
   String pageHeader = '';
-
-  Future<void> requestAlarmPermission() async {
-    if (Platform.isAndroid) {
-      if (await Permission.scheduleExactAlarm.isDenied) {
-        // Only request permission if it's denied (for Android 14+)
-        await Permission.scheduleExactAlarm.request();
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

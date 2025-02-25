@@ -86,7 +86,6 @@ class _PastLogsPageState extends State<PastLogsPage> {
           });
         }
       }
-      print('logs: $categorizedLogs');
     });
   }
 
@@ -119,7 +118,6 @@ class _PastLogsPageState extends State<PastLogsPage> {
                           padding: const EdgeInsets.only(left: 8.0),
                           child: Builder(
                             builder: (context) {
-                              print('before displaying list');
                               //displaying text
                               if ('text'.compareTo(lst[childIndex]['type']!) == 0) { 
                                 return Text(lst[childIndex]['log']!,
