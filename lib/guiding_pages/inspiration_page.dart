@@ -9,7 +9,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:intl/intl.dart';
 
 //helper functions
-import '../helper_functions.dart';
+import '../utilities/helper_functions.dart';
 
 
 //type of inspiration constants

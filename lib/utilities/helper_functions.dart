@@ -1,7 +1,31 @@
+import 'package:intl/intl.dart';
+
 //calculates days between to see whether the logs are from today, yesterday, etc.
 int calculateDifference(DateTime date) {
   DateTime now = DateTime.now();
   return DateTime(now.year, now.month, now.day).difference(DateTime(date.year, date.month, date.day)).inDays;
+}
+
+
+//format date (today, yesterday, etc)
+String formatDate(String isoDate) {
+  DateTime date = DateTime.parse(isoDate);
+  String formatted;
+  int daysAgo = calculateDifference(date);
+
+  if (daysAgo == 0) {
+    formatted = 'Today';
+  } else if (daysAgo == 1) {
+    formatted = 'Yesterday';
+  } else if (daysAgo <= 6){
+    formatted = DateFormat('EEEE', 'en_US').format(date);
+  } else if (daysAgo <= 364) {
+    formatted = DateFormat('MMMMEEEEd', 'en_US').format(date);
+  } else {
+    formatted = DateFormat.yMMMMEEEEd().format(date);
+  }
+
+  return formatted;
 }
 
 

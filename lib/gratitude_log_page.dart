@@ -81,30 +81,6 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
     return Scaffold(
       body: ListView(
         children: <Widget>[
-          // ElevatedButton(
-          //   onPressed: () {
-          //     try {
-          //       NotificationService.showInstantNotification(
-          //         title: "Title",
-          //         body: "Body"
-          //       );
-          //     } catch (e) {
-          //       print("notification service error: $e");
-          //     }
-          //   }, 
-          //   child: Text('send instant notification')
-          // ),
-          // ElevatedButton(
-          //   onPressed: () {
-          //     DateTime scheduleDate = DateTime.now().add(const Duration(seconds: 5));
-          //     NotificationService.scheduledNotification(
-          //       title: "Scheduled notification", 
-          //       body: "body", 
-          //       scheduledTime: scheduleDate
-          //     );
-          //   }, 
-          //   child: Text('send scheduled notification')
-          // ),
           SizedBox(height: 30),
           Center(
             child: Text(
@@ -113,6 +89,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
             ),
           ),
           ListView.builder(
+            physics: NeverScrollableScrollPhysics(),
             itemCount: dynamicForms.length,
             prototypeItem: dynamicForms.first,
             scrollDirection: Axis.vertical,
@@ -124,6 +101,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
 
           // display images
           ListView.builder(
+            physics: NeverScrollableScrollPhysics(),
             itemCount: imageUrls.length,
             scrollDirection: Axis.vertical,
             shrinkWrap: true,

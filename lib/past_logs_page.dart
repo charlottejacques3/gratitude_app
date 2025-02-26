@@ -3,11 +3,8 @@ import 'package:flutter/material.dart';
 //database imports
 import 'package:firebase_database/firebase_database.dart';
 
-//date formatting
-import 'package:intl/intl.dart';
-
 //helper functions
-import 'helper_functions.dart';
+import 'utilities/helper_functions.dart';
 
 class PastLogsPage extends StatefulWidget {
   const PastLogsPage({super.key});
@@ -55,21 +52,7 @@ class _PastLogsPageState extends State<PastLogsPage> {
 
       //group by date
       for (final item in gratitudeLogs) {
-        DateTime date = DateTime.parse(item['date']);
-        String formatted;
-        int daysAgo = calculateDifference(date);
-
-        if (daysAgo == 0) {
-          formatted = 'Today';
-        } else if (daysAgo == 1) {
-          formatted = 'Yesterday';
-        } else if (daysAgo <= 6){
-          formatted = DateFormat('EEEE', 'en_US').format(date);
-        } else if (daysAgo <= 364) {
-          formatted = DateFormat('MMMMEEEEd', 'en_US').format(date);
-        } else {
-          formatted = DateFormat.yMMMMEEEEd().format(date);
-        }
+        String formatted = formatDate(item['date']);
         item['date'] = formatted;
         Map<String, String> data = {
           'log': item['gratitude_item'],

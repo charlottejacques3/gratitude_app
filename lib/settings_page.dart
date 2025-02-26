@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 
 //import files
-import 'helper_functions.dart';
+import 'utilities/helper_functions.dart';
 
 //database imports
 import 'package:firebase_database/firebase_database.dart';

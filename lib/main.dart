@@ -3,22 +3,22 @@ import 'dart:math';
 
 //firebase imports
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+import 'utilities/firebase_options.dart';
 
 //database imports
 import 'package:firebase_database/firebase_database.dart';
 
 //notifications
 import 'package:timezone/data/latest.dart' as tz;
-import 'package:gratitude_app/notification_service.dart';
+import 'package:gratitude_app/utilities/notification_service.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
 //import pages
 import 'gratitude_log_page.dart';
 import 'past_logs_page.dart';
-import 'reflection_page.dart';
+import 'reflection_pages/reflection_page.dart';
 import 'settings_page.dart';
-import 'helper_functions.dart';
+import 'utilities/helper_functions.dart';
 
 //read settings from database
 Future<Map<dynamic, dynamic>> readSettings() async {
@@ -202,8 +202,12 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             Spacer(),
             Text(pageHeader, 
-              style: Theme.of(context).textTheme.displayMedium!.copyWith(
-              color: Theme.of(context).colorScheme.primary),
+              // style: Theme.of(context).textTheme.displayMedium!.copyWith(
+              // color: Theme.of(context).colorScheme.primary),
+              style: Theme.of(context).textTheme.titleLarge!.copyWith(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold
+            ),
             ),
             Expanded(
               child: Align(
