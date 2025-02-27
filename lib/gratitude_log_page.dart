@@ -15,15 +15,10 @@ enum ImageSourceType { gallery, camera }
 
 
 class GratitudeLogPage extends StatefulWidget {
-  const GratitudeLogPage({super.key, });//this.filledInLogs=''});
-
-  // String filledInLogs = '';
+  const GratitudeLogPage({super.key, });
 
   @override
   State<GratitudeLogPage> createState() => _GratitudeLogPageState();
-
-  // static _GratitudeLogPageState of(BuildContext context) =>
-  //   context.findAncestorStateOfType<_GratitudeLogPageState>();
 }
 
 
@@ -36,10 +31,6 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
   List<String> imageUrls = [];
 
   //get images
-  // void handleImageUpload(BuildContext context, var source) {
-  //   Navigator.push(context,
-  //   MaterialPageRoute(builder: (context) => ImagePickerWidget(type:source)));
-  // }
   void handleImageUpload(var source) async {
     //get image from camera/gallery
     ImagePicker imagePicker = ImagePicker();
@@ -61,11 +52,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
     try {
       await refImage.putFile(File(file.path));
       //get downnload url
-      // setState(() async {
       String url = await refImage.getDownloadURL();
-        
-      // });
-      // print(imageUrl);
       setState(() {
         imageUrls.add(url);
       });
@@ -85,7 +72,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
           Center(
             child: Text(
               'What are you grateful for today?',
-              style: Theme.of(context).textTheme.titleLarge!
+              style: Theme.of(context).textTheme.titleMedium!
             ),
           ),
           ListView.builder(
@@ -199,7 +186,11 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                         //if there is preloaded data from the inspiration page, set it
                         if (preloaded != null) {
                             setState(() {
-                              dynamicForms = [DynamicFormWidget(logController: TextEditingController(text: preloaded))];
+                              if (preloaded['type'].compareTo('text') == 0) {
+                                dynamicForms = [DynamicFormWidget(logController: TextEditingController(text: preloaded['log']))];
+                              } else if (preloaded['type'].compareTo('image') == 0) {
+                                imageUrls.add(preloaded['log']);
+                              }
                             });
                           }
                       },
