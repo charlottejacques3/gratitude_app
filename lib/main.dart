@@ -202,8 +202,6 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             Spacer(),
             Text(pageHeader, 
-              // style: Theme.of(context).textTheme.displayMedium!.copyWith(
-              // color: Theme.of(context).colorScheme.primary),
               style: Theme.of(context).textTheme.titleLarge!.copyWith(
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold

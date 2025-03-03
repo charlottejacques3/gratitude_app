@@ -62,7 +62,21 @@ class _NewReflectionPageState extends State<NewReflectionPage> {
     
     //reflect on the little things
     else if (widget.type.compareTo('little_things') == 0) {
-      
+      reflectionTitle = 'Reflect on the Little Things';
+      prompts = [
+          PromptWidget(
+            promptText: 'What is something small in your everyday life that you tend to take for granted?', 
+            logController: TextEditingController()
+          ),
+          PromptWidget(
+            promptText: 'How has this positively affected your life?', 
+            logController: TextEditingController()
+          ),
+          PromptWidget(
+            promptText: 'How can you be more grateful for this in your day-to-day life?', 
+            logController: TextEditingController()
+          ),
+        ];
     }
     
     //independent reflection

@@ -1,6 +1,10 @@
+import 'dart:ffi';
+
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/guiding_pages/inspiration_page.dart';
 import 'package:gratitude_app/guiding_pages/log_emotions_page.dart';
+import  'dart:math';
 
 
 class GuidingPage extends StatefulWidget {
@@ -13,6 +17,35 @@ class GuidingPage extends StatefulWidget {
 
 class _GuidingPageState extends State<GuidingPage> {
 
+  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('Advice');
+  String selectedAdvice = '';
+
+  @override
+  void initState() {
+    super.initState();
+
+    //choose a random piece of advice
+    dbRef.onValue.listen((event) {
+
+      //get list of keys
+      DataSnapshot dataSnapshot = event.snapshot;
+      Map<dynamic, dynamic> values = dataSnapshot.value as Map<dynamic, dynamic>;
+      List<dynamic> keys = values.keys.toList();
+
+      //pick random key
+      final randomNum = Random().nextInt(values.length);
+      dynamic pastLogKey = keys[randomNum];
+
+      //set selectedPastLog to the log at that key
+      if (mounted) {
+        setState(() {
+          selectedAdvice = values[pastLogKey]['advice'];
+          print(selectedAdvice);
+        });
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,17 +53,33 @@ class _GuidingPageState extends State<GuidingPage> {
         centerTitle: true,
         title: 
           Text('Log Gratitude',
-            style: Theme.of(context).textTheme.displayMedium!.copyWith(
+            style: Theme.of(context).textTheme.titleLarge!.copyWith(
               color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold
             ),
-          ),
+          )
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
             SizedBox(height: 30),
-            Text("That's okay! Sometimes we have days like that. How would you like to move forward?",
+            Text("That's okay! Sometimes we have days like that.",
+              style: Theme.of(context).textTheme.titleLarge!,
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 20,),
+
+            //show advice if there is any
+            selectedAdvice.isNotEmpty ?
+              Text('Remember, as past you said: $selectedAdvice',
+                style: Theme.of(context).textTheme.titleLarge!,
+                textAlign: TextAlign.center,
+              )
+            : Container(),
+            SizedBox(height: 20,),
+
+            Text("How would you like to move forward?",
               style: Theme.of(context).textTheme.titleLarge!,
               textAlign: TextAlign.center,
             ),

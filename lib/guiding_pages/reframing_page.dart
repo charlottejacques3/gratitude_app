@@ -49,8 +49,9 @@ class _ReframingPageState extends State<ReframingPage> {
         centerTitle: true,
         title: 
           Text('Log Gratitude',
-            style: Theme.of(context).textTheme.displayMedium!.copyWith(
+            style: Theme.of(context).textTheme.titleLarge!.copyWith(
               color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold
             ),
           ),
       ),

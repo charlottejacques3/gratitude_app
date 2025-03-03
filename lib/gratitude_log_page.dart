@@ -5,6 +5,7 @@ import 'dart:io';
 //database imports
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:gratitude_app/congrats_page.dart';
 
 //import files
 import 'guiding_pages/main_guiding_page.dart';
@@ -26,6 +27,8 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
   
   List<DynamicFormWidget> dynamicForms = [DynamicFormWidget(logController: TextEditingController())];
   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('GratitudeLogs');
+
+  bool guided = false; //keeps track of whether they worked through emotions in this session
 
   //images
   List<String> imageUrls = [];
@@ -63,6 +66,15 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
     }
   }
 
+  //reset "guided" variable
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      guided = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,7 +84,8 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
           Center(
             child: Text(
               'What are you grateful for today?',
-              style: Theme.of(context).textTheme.titleMedium!
+              style: Theme.of(context).textTheme.titleLarge!,
+              textAlign: TextAlign.center,
             ),
           ),
           ListView.builder(
@@ -183,13 +196,20 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                           MaterialPageRoute(builder: (context) => const GuidingPage())
                         );
 
-                        //if there is preloaded data from the inspiration page, set it
                         if (preloaded != null) {
                             setState(() {
-                              if (preloaded['type'].compareTo('text') == 0) {
-                                dynamicForms = [DynamicFormWidget(logController: TextEditingController(text: preloaded['log']))];
-                              } else if (preloaded['type'].compareTo('image') == 0) {
-                                imageUrls.add(preloaded['log']);
+                              //if there is preloaded data from the inspiration page, set it
+                              if (preloaded.containsKey('type') && preloaded.containsKey('log')) {
+                                if (preloaded['type'].compareTo('text') == 0) {
+                                  dynamicForms = [DynamicFormWidget(logController: TextEditingController(text: preloaded['log']))];
+                                } else if (preloaded['type'].compareTo('image') == 0) {
+                                  imageUrls.add(preloaded['log']);
+                                }
+                              }
+
+                              //keep track of whether they worked through their emotions in that session
+                              if (preloaded.containsKey('guided')) {
+                                guided = preloaded['guided'];
                               }
                             });
                           }
@@ -248,6 +268,12 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                     } catch (e) {
                       print('error writing data: $e');
                     }
+                    
+                    //navigate to congrats page
+                    Navigator.push(
+                      context, 
+                      MaterialPageRoute(builder: (context) => CongratsPage(reframed: guided,))
+                    );
                   }, 
                   ),
                 ),

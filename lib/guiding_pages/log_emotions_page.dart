@@ -25,8 +25,9 @@ class _LogEmotionsPageState extends State<LogEmotionsPage> {
         centerTitle: true,
         title: 
           Text('Log Gratitude',
-            style: Theme.of(context).textTheme.displayMedium!.copyWith(
+            style: Theme.of(context).textTheme.titleLarge!.copyWith(
               color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold
             ),
           ),
       ),
@@ -108,7 +109,7 @@ class _LogEmotionsPageState extends State<LogEmotionsPage> {
 
                         //go back to log page
                         Navigator.pop(context);
-                        Navigator.pop(context);
+                        Navigator.pop(context, {'guided':true});
                       }, 
                       child: Text("I've thought of something to log!")
                     ),

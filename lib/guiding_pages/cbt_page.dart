@@ -59,8 +59,9 @@ class _CBTPageState extends State<CBTPage> {
         centerTitle: true,
         title: 
           Text('Log Gratitude',
-            style: Theme.of(context).textTheme.displayMedium!.copyWith(
+            style: Theme.of(context).textTheme.titleLarge!.copyWith(
               color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold
             ),
           ),
       ),
@@ -198,9 +199,10 @@ class _CBTPageState extends State<CBTPage> {
                         dbRef.push().set(reframingLogs);
 
                         //go back to log page
-                        for(var i = 0; i < 3; i++) {
+                        for(var i = 0; i < 2; i++) {
                           Navigator.pop(context);
                         }
+                        Navigator.pop(context, {'guided':true});
                       }, 
                       child: Text("I've thought of something to log!")
                     ),

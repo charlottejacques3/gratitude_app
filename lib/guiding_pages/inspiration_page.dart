@@ -9,12 +9,6 @@ import 'package:photo_manager/photo_manager.dart';
 //CHANGE SO ONLY READING FROM DATABASE/PHOTO LIBRARY ONCE!!
 
 
-//type of inspiration constants
-const PAST_LOG = 0;
-const PROMPT = 1;
-const PICTURE = 2;
-
-
 class InspirationPage extends StatefulWidget {
 
   const InspirationPage({super.key});
@@ -28,7 +22,6 @@ class _InspirationPageState extends State<InspirationPage> {
 
   final TextEditingController logController = TextEditingController();
   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('GratitudeLogs');
-  // int inspoType = PAST_LOG;
   String inspoType = 'Random Past Log';
   List<String> selectedInspoTypes = ['Random Past Log', 'Random Photo', 'Gratitude Prompt'];
 
@@ -37,6 +30,18 @@ class _InspirationPageState extends State<InspirationPage> {
   bool loading = true;
   String selectedPastLogType = '';
   AssetEntity? selectedPhoto;
+  List<String> prompts = ['What made you smile today?', 
+                          'What is going well with your health?', 
+                          'What is a small act of kindness that you have experienced recently?',
+                          'What is something you have learned recently?',
+                          'What do you appreciate about yourself?',
+                          'What do you love about the place you live?',
+                          'Who is a person in your life you are grateful for?',
+                          'What activities do you enjoy?',
+                          'What is something delicious you ate recently?',
+                          'What everyday object are you grateful for?',
+                          'What opportunities are you grateful for?'];
+  int selectedPromptIndex = 0;
 
   @override
   void initState() {
@@ -61,6 +66,11 @@ class _InspirationPageState extends State<InspirationPage> {
         print('random photo');
         break;
       case 'Gratitude Prompt':
+        //pick random number for prompt
+        setState(() {
+          selectedPromptIndex = Random().nextInt(prompts.length);
+        });
+        break;
     }
   }
 
@@ -133,8 +143,9 @@ class _InspirationPageState extends State<InspirationPage> {
         centerTitle: true,
         title: 
           Text('Log Gratitude',
-            style: Theme.of(context).textTheme.displayMedium!.copyWith(
+            style: Theme.of(context).textTheme.titleLarge!.copyWith(
               color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold
             ),
           ),
       ),
@@ -184,15 +195,6 @@ class _InspirationPageState extends State<InspirationPage> {
                           }
                         }
                       ),
-                  
-                      //log button
-                      // ElevatedButton(
-                      //   onPressed: () {
-                      //     Navigator.pop(context);
-                      //     Navigator.pop(context, selectedPastLog);
-                      //   }, 
-                      //   child: Text('Log this!')
-                      // ),
                     ]
                   );
                 } 
@@ -234,7 +236,10 @@ class _InspirationPageState extends State<InspirationPage> {
                 
                 //gratitude prompt
                 else if (inspoType.compareTo('Gratitude Prompt') == 0) {
-                  return Text('gratitude prompt');
+                  return Text(prompts[selectedPromptIndex],
+                    style: Theme.of(context).textTheme.titleMedium!,
+                    textAlign: TextAlign.center,
+                    );
                 }
                 
                 else {

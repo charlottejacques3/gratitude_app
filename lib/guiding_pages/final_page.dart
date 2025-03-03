@@ -18,8 +18,9 @@ class _FinalPageState extends State<FinalPage> {
         centerTitle: true,
         title: 
           Text('Log Gratitude',
-            style: Theme.of(context).textTheme.displayMedium!.copyWith(
+            style: Theme.of(context).textTheme.titleLarge!.copyWith(
               color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold
             ),
           ),
       ),
@@ -44,9 +45,10 @@ class _FinalPageState extends State<FinalPage> {
             ),
             ElevatedButton(
               onPressed: () {
-                for(var i = 0; i < 5; i++) {
+                for(var i = 0; i < 4; i++) {
                   Navigator.pop(context);
                 }
+                Navigator.pop(context, {'guided':true});
               }, 
               child: Text("Let's do it!"))
           ],
