@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/guiding_pages/inspiration_page.dart';

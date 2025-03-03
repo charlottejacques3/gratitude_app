@@ -25,13 +25,29 @@ class GratitudeLogPage extends StatefulWidget {
 
 class _GratitudeLogPageState extends State<GratitudeLogPage> {
   
-  List<DynamicFormWidget> dynamicForms = [DynamicFormWidget(logController: TextEditingController())];
+  List<DynamicFormWidget> dynamicForms = [];//[DynamicFormWidget(key: Key(1.toString()), logController: TextEditingController(), manageFormList: manageFormList)];
+  int nextKey = 2;
   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('GratitudeLogs');
 
   bool guided = false; //keeps track of whether they worked through emotions in this session
 
   //images
   List<String> imageUrls = [];
+
+  //manage deletions of forms from the form widget
+  void manageFormList(Key key) {
+    print('rgoing to delete $key');
+
+    //find right one to delete
+    for (var formWidget in dynamicForms) {
+      if (formWidget.key == key) {
+        setState(() {
+          dynamicForms.remove(formWidget);
+        });
+        print(formWidget.key);
+      }
+    }
+  }
 
   //get images
   void handleImageUpload(var source) async {
@@ -72,6 +88,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
     super.initState();
     setState(() {
       guided = false;
+      dynamicForms = [DynamicFormWidget(key: Key('1'), logController: TextEditingController(), manageFormList: manageFormList)];
     });
   }
 
@@ -107,10 +124,25 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
             shrinkWrap: true,
             itemBuilder: (context, index) {
               try {
-                return Image.network(
-                  imageUrls[index],
-                  height: 100,
-                  width: 100,
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.network(
+                      imageUrls[index],
+                      height: 200,
+                      width: 200,
+                    ),
+
+                    //remove image
+                    IconButton(
+                      onPressed: () {
+                        setState(() {
+                          imageUrls.removeAt(index);
+                        });
+                      }, 
+                      icon: Icon(Icons.delete)
+                    )
+                  ],
                 );
               } catch (e) {
                 print('error displaying image: $e');
@@ -131,7 +163,8 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                   child: ElevatedButton(
                     onPressed: () {
                       setState(() {
-                        dynamicForms.add(DynamicFormWidget(logController: TextEditingController()));
+                        dynamicForms.add(DynamicFormWidget(key: Key(nextKey.toString()), logController: TextEditingController(), manageFormList: manageFormList));
+                        nextKey++;
                       });
                     }, 
                     style: ElevatedButton.styleFrom(
@@ -201,7 +234,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                               //if there is preloaded data from the inspiration page, set it
                               if (preloaded.containsKey('type') && preloaded.containsKey('log')) {
                                 if (preloaded['type'].compareTo('text') == 0) {
-                                  dynamicForms = [DynamicFormWidget(logController: TextEditingController(text: preloaded['log']))];
+                                  dynamicForms = [DynamicFormWidget(key: Key('1'), logController: TextEditingController(text: preloaded['log']), manageFormList: manageFormList)];
                                 } else if (preloaded['type'].compareTo('image') == 0) {
                                   imageUrls.add(preloaded['log']);
                                 }
@@ -291,29 +324,35 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
 class DynamicFormWidget extends StatelessWidget {
 
   // final String initialVal;
-  const DynamicFormWidget({super.key, required this.logController});//required this.initialVal});
+  const DynamicFormWidget({super.key, required this.logController, required this.manageFormList});//required this.initialVal});
 
   final TextEditingController logController; // = TextEditingController(text: initialVal);
+  final manageFormList;
 
   //how to dispose of controller after?
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: TextFormField(
-          controller: logController,
-          // initialValue: initialVal,
-          keyboardType: TextInputType.multiline,
-          minLines: 1,
-          maxLines: 3,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter some text';
-            }
-            return null;
-          },
-        ),
+    return ListTile(
+      title: TextFormField(
+        controller: logController,
+        // initialValue: initialVal,
+        keyboardType: TextInputType.multiline,
+        minLines: 1,
+        maxLines: 3,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter some text';
+          }
+          return null;
+        },
+      ),
+
+      //delete log button
+      trailing: IconButton(
+        icon: Icon(Icons.delete),
+        onPressed: () => manageFormList(key)
+      ),
     );
   }
 }
