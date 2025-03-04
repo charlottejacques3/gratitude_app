@@ -25,24 +25,20 @@ class _FinalPageState extends State<FinalPage> {
           ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             SizedBox(height: 30),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: Text("Good job! Now that you've managed to reframe some thoughts, can you think of anything to be grateful for?",
-                style: Theme.of(context).textTheme.bodyLarge!,
-                textAlign: TextAlign.center,
-              ),
+            Text("Good job! Now that you've managed to reframe some thoughts, can you think of anything to be grateful for?",
+              style: Theme.of(context).textTheme.titleMedium!,
+              textAlign: TextAlign.center,
             ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: Text("It doesn't have to be big or exciting, just try to think of one thing.",
-                style: Theme.of(context).textTheme.bodyLarge!,
-                textAlign: TextAlign.center,
-              ),
+            SizedBox(height: 30,),
+            Text("It doesn't have to be big or exciting, just try to think of one thing.",
+              style: Theme.of(context).textTheme.titleMedium!,
+              textAlign: TextAlign.center,
             ),
+            SizedBox(height: 30,),
             ElevatedButton(
               onPressed: () {
                 for(var i = 0; i < 4; i++) {

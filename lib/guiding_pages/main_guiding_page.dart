@@ -63,22 +63,26 @@ class _GuidingPageState extends State<GuidingPage> {
           children: [
             SizedBox(height: 30),
             Text("That's okay! Sometimes we have days like that.",
-              style: Theme.of(context).textTheme.titleLarge!,
+              style: Theme.of(context).textTheme.titleMedium!,
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 20,),
 
             //show advice if there is any
+            Text('Remember, as past you said:',
+              style: Theme.of(context).textTheme.titleMedium!,
+              textAlign: TextAlign.center,
+            ),
             selectedAdvice.isNotEmpty ?
-              Text('Remember, as past you said: $selectedAdvice',
-                style: Theme.of(context).textTheme.titleLarge!,
+              Text(selectedAdvice,
+                style: Theme.of(context).textTheme.titleMedium!,
                 textAlign: TextAlign.center,
               )
             : Container(),
             SizedBox(height: 20,),
 
             Text("How would you like to move forward?",
-              style: Theme.of(context).textTheme.titleLarge!,
+              style: Theme.of(context).textTheme.titleMedium!,
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 30),        

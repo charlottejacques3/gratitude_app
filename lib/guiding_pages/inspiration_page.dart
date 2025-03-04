@@ -165,15 +165,20 @@ class _InspirationPageState extends State<InspirationPage> {
                         ? CircularProgressIndicator()
                       :
                       //past log
-                      Text(selectedLogRelativeDate + ', you were grateful for',
+                      Text(selectedLogRelativeDate + ', you were grateful for:',
                         style: Theme.of(context).textTheme.titleMedium!,
+                        textAlign: TextAlign.center,
                       ),
+                      SizedBox(height: 20),
                       Builder(
                         builder: (context) {
                           //displaying text
                           if ('text'.compareTo(selectedPastLogType) == 0) { 
                             return Text(selectedPastLog,
-                              style: Theme.of(context).textTheme.titleLarge!,
+                              style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold
+                              ),
                             );
                           } 
                   
@@ -219,6 +224,7 @@ class _InspirationPageState extends State<InspirationPage> {
                                 style: Theme.of(context).textTheme.titleMedium!,
                                 textAlign: TextAlign.center,
                               ),
+                              SizedBox(height: 20,),
                               Image.memory(
                                 snapshot.data!,
                                 height: 200,
@@ -237,7 +243,10 @@ class _InspirationPageState extends State<InspirationPage> {
                 //gratitude prompt
                 else if (inspoType.compareTo('Gratitude Prompt') == 0) {
                   return Text(prompts[selectedPromptIndex],
-                    style: Theme.of(context).textTheme.titleMedium!,
+                    style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold
+                    ),
                     textAlign: TextAlign.center,
                     );
                 }
@@ -264,26 +273,35 @@ class _InspirationPageState extends State<InspirationPage> {
                       //send past log data back to main page
                       Map<String, String> logData = {'type': selectedPastLogType, 'log': selectedPastLog};
                       Navigator.pop(context, logData);
+                    } else if (inspoType.compareTo('Past Photo') == 0) {
+                      //send random photo back to main log page
+                      // Map<String, String> logData = {'type': 'image', 'log': selectedPhoto};
+                      // Navigator.pop(context, logData);
                     } else {
                       Navigator.pop(context);
                     }
                   }
                 ),
                 SizedBox(width: 20),
-                
+
                 //refresh button
                 ElevatedButton(
+                  style: Theme.of(context).elevatedButtonTheme.style!.copyWith(
+                    padding: WidgetStateProperty.all<EdgeInsets>(
+                      EdgeInsets.only(right: 0, left: 16)
+                    ),
+                  ),
                   onPressed: pickType,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Flexible(
-                        flex: 1,
+                        flex: 3,
                         fit: FlexFit.loose,
                         child: Text('Refresh')
                       ),
                       Flexible(
-                        fit: FlexFit.tight,
+                        fit: FlexFit.loose,
                         child: MenuAnchor(
                           builder: (BuildContext context, MenuController controller, Widget? child) {
                             return IconButton(

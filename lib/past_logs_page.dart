@@ -79,66 +79,77 @@ class _PastLogsPageState extends State<PastLogsPage> {
       body: 
         loading //display progress indicator while loading
           ? Center(child: CircularProgressIndicator())
-      : CustomScrollView( //otherwise display the logs
-        slivers: [
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, parentIndex) {
-                List<Map<String, String>> lst = categorizedLogs.values.elementAt(categorizedLogs.length - 1 - parentIndex);
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 10),
-                    Text(categorizedLogs.keys.elementAt(categorizedLogs.length - 1 - parentIndex),
-                      style: Theme.of(context).textTheme.titleLarge!
-                    ),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemCount: lst.length,
-                      itemBuilder: (context, childIndex) {
-                        return Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: Builder(
-                            builder: (context) {
-                              //displaying text
-                              if ('text'.compareTo(lst[childIndex]['type']!) == 0) { 
-                                return Text(lst[childIndex]['log']!,
-                                  style: Theme.of(context).textTheme.bodyMedium!
-                                );
-                              } 
-
-                              //displaying images
-                              else if ('image'.compareTo(lst[childIndex]['type']!) == 0) {
-                                try {
-                                  return Image.network(
-                                    lst[childIndex]['log']!,
-                                    height: 100,
-                                    width: 100,
+      : Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: CustomScrollView( //otherwise display the logs
+          slivers: [
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, parentIndex) {
+                  List<Map<String, String>> lst = categorizedLogs.values.elementAt(categorizedLogs.length - 1 - parentIndex);
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 10),
+                      Text(categorizedLogs.keys.elementAt(categorizedLogs.length - 1 - parentIndex),
+                        style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold
+                        )
+                      ),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: lst.length,
+                        itemBuilder: (context, childIndex) {
+                          return Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Builder(
+                              builder: (context) {
+                                //displaying text
+                                if ('text'.compareTo(lst[childIndex]['type']!) == 0) { 
+                                  return Text(lst[childIndex]['log']!,
+                                    style: Theme.of(context).textTheme.bodyLarge!
                                   );
-                                } catch (e) {
-                                  print('error displaying image: $e');
+                                } 
+        
+                                //displaying images
+                                else if ('image'.compareTo(lst[childIndex]['type']!) == 0) {
+                                  try {
+                                    return Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                        child: Image.network(
+                                          lst[childIndex]['log']!,
+                                          height: 130,
+                                        ),
+                                      ),
+                                    );
+                                  } catch (e) {
+                                    print('error displaying image: $e');
+                                    return Container();
+                                  }   
+                                } else {
+                                  print('else case: ${lst[childIndex]['type']}');
                                   return Container();
-                                }   
-                              } else {
-                                print('else case: ${lst[childIndex]['type']}');
-                                return Container();
+                                }
                               }
-                            }
-                          )
-                            
-                            //if it's an image (modify this logic if more cases are added!)
-                            
-                        );
-                      },
-                    ),
-                  ],
-                );
-              },
-              childCount: categorizedLogs.length, // Number of parent items
+                            )
+                              
+                              //if it's an image (modify this logic if more cases are added!)
+                              
+                          );
+                        },
+                      ),
+                    ],
+                  );
+                },
+                childCount: categorizedLogs.length, // Number of parent items
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

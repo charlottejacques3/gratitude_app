@@ -54,7 +54,7 @@ class _NewReflectionPageState extends State<NewReflectionPage> {
             logController: TextEditingController()
           ),
           PromptWidget(
-            promptText: 'Write a gratitude letter to this person, thanking them for being in your life', 
+            promptText: 'Write a gratitude letter to this person, thanking them for being in your life.', 
             logController: TextEditingController()
           ),
         ];
@@ -81,6 +81,7 @@ class _NewReflectionPageState extends State<NewReflectionPage> {
     
     //independent reflection
     else if (widget.type.compareTo('independent') == 0) {
+      reflectionTitle = 'Independent Reflection';
       prompts = [PromptWidget(
         promptText: 'Reflect on anything in your life that brings you gratitude.', 
         logController: TextEditingController()
@@ -127,11 +128,12 @@ class _NewReflectionPageState extends State<NewReflectionPage> {
                   'date': DateTime.now().toIso8601String(),
                   'type': reflectionTitle
                 };
-                Map<String, String> responses = {};
+                List<Map<String, String>> responses = [];
                 //loop through all prompts
                 for (final prompt in prompts) {
                   //add to dictionary
-                  responses[prompt.promptText] = prompt.logController.text;
+                  Map<String, String> response = {'prompt': prompt.promptText, 'answer': prompt.logController.text};
+                  responses.add(response);
                 }
                 reflectionLog['responses'] = responses;
                 //send to database

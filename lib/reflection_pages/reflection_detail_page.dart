@@ -25,38 +25,45 @@ class _ReflectionDetailPageState extends State<ReflectionDetailPage> {
         ),
       ),
 
-      body: ListView(
-        children: [
-          Text(widget.details['format_date'],
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 30,),
-
-          //responses
-          ListView.builder(
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            itemCount: widget.details['responses'].length,
-            itemBuilder: (context, index) {
-              var responses = widget.details['responses'];
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(responses.keys.elementAt(index),
-                    style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                      fontWeight: FontWeight.w500
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ListView(
+          children: [
+            Text(widget.details['format_date'],
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 30,),
+        
+            //responses
+            ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: widget.details['responses'].length,
+              itemBuilder: (context, index) {
+                var responses = widget.details['responses'];
+                return Column(
+                  children: [
+                    Text(responses[index]['prompt'], 
+                      style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                        fontWeight: FontWeight.bold
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  Text(responses.values.elementAt(index),
-                    style: Theme.of(context).textTheme.bodyMedium!,
-                  ),
-                  SizedBox(height: 20,),
-                ],
-              );
-            },
-          ),
-        ]
+                    SizedBox(height: 8),
+                    Container(
+                      width: MediaQuery.of(context).size.width,
+                      child: Text(responses[index]['answer'],
+                        style: Theme.of(context).textTheme.bodyLarge!,
+                        textAlign: TextAlign.left,
+                      ),
+                    ),
+                    SizedBox(height: 30,),
+                  ],
+                );
+              },
+            ),
+          ]
+        ),
       )
     );
   }

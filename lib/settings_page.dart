@@ -63,8 +63,9 @@ class _SettingsPageState extends State<SettingsPage> {
         centerTitle: true,
         title: 
           Text('Settings',
-            style: Theme.of(context).textTheme.displayMedium!.copyWith(
+            style: Theme.of(context).textTheme.titleLarge!.copyWith(
               color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold
             ),
           ),
       ),
@@ -82,7 +83,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     selected: randomNotifications,
                     selectedTileColor: Colors.purple[100],
                     shape: RoundedRectangleBorder(
-                      side: BorderSide(color: Colors.grey, width: 1),
+                      side: BorderSide(color: Color.fromARGB(153, 236, 183, 234), width: 0.5),
                       borderRadius: BorderRadius.circular(5),
                     ), 
                     onTap: () {
@@ -111,12 +112,16 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               ],
             ),
+            SizedBox(height: 30,),
             Column(
               children: 
 
                 //random notification settings
                 randomNotifications ? [
-                  Text("These are the time intervals when you want to receive a random notification"),
+                  Text("Set the time intervals when you want to receive a random notification",
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height:20),
                   Row(
                     children: [
                       Expanded(child: TimePickerWidget(
@@ -134,7 +139,10 @@ class _SettingsPageState extends State<SettingsPage> {
 
                 //scheduled notification settings
                 : [
-                  Text("Select the time you wish to receive a notification"),
+                  Text("Select the time you wish to receive a notification",
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height:20),
                   TimePickerWidget(
                     timeController: scheduledTimeController, 
                     amPmController: scheduledAMPMController

@@ -101,7 +101,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
           Center(
             child: Text(
               'What are you grateful for today?',
-              style: Theme.of(context).textTheme.titleLarge!,
+              style: Theme.of(context).textTheme.titleMedium!,
               textAlign: TextAlign.center,
             ),
           ),
@@ -124,25 +124,33 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
             shrinkWrap: true,
             itemBuilder: (context, index) {
               try {
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.network(
-                      imageUrls[index],
-                      height: 200,
-                      width: 200,
-                    ),
-
-                    //remove image
-                    IconButton(
-                      onPressed: () {
-                        setState(() {
-                          imageUrls.removeAt(index);
-                        });
-                      }, 
-                      icon: Icon(Icons.delete)
-                    )
-                  ],
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        flex: 7,
+                        child: Image.network(
+                          imageUrls[index],
+                          height: 200,
+                          width: 200,
+                        ),
+                      ),
+                  
+                      //remove image
+                      Expanded(
+                        child: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              imageUrls.removeAt(index);
+                            });
+                          }, 
+                          icon: Icon(Icons.delete)
+                        ),
+                      )
+                    ],
+                  ),
                 );
               } catch (e) {
                 print('error displaying image: $e');
@@ -159,7 +167,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
 
                 //add form entries
                 Expanded(
-                  flex: 5,
+                  flex: 7,
                   child: ElevatedButton(
                     onPressed: () {
                       setState(() {
@@ -180,6 +188,13 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                 //add multimedia
                 Expanded(
                   child: MenuAnchor(
+                    style: MenuStyle(
+                      backgroundColor: WidgetStateColor.resolveWith(
+                        (Set<WidgetState> states) {
+                          return Color.fromARGB(255, 249, 241, 237);
+                        }
+                      )
+                    ),
                     builder: (BuildContext context, MenuController controller, Widget? child) {
                       return IconButton(
                         onPressed: () {
@@ -333,25 +348,59 @@ class DynamicFormWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: TextFormField(
-        controller: logController,
-        // initialValue: initialVal,
-        keyboardType: TextInputType.multiline,
-        minLines: 1,
-        maxLines: 3,
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter some text';
-          }
-          return null;
-        },
-      ),
+    // return ListTile(
+    //   title: TextFormField(
+    //     controller: logController,
+    //     // initialValue: initialVal,
+    //     keyboardType: TextInputType.multiline,
+    //     minLines: 1,
+    //     maxLines: 3,
+    //     validator: (value) {
+    //       if (value == null || value.isEmpty) {
+    //         return 'Please enter some text';
+    //       }
+    //       return null;
+    //     },
+    //   ),
 
-      //delete log button
-      trailing: IconButton(
-        icon: Icon(Icons.delete),
-        onPressed: () => manageFormList(key)
+    //   //delete log button
+    //   trailing: IconButton(
+    //     icon: Icon(Icons.delete),
+    //     onPressed: () => manageFormList(key)
+    //   ),
+    // );
+
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        children: [
+      
+          //form entries
+          Expanded(
+            flex: 7,
+            child: TextFormField(
+              controller: logController,
+              // initialValue: initialVal,
+              keyboardType: TextInputType.multiline,
+              minLines: 1,
+              maxLines: 3,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter some text';
+                }
+                return null;
+              }, 
+            ),
+          ),
+      
+          //delete log button
+          Expanded(
+              child: IconButton(
+                icon: Icon(Icons.delete),
+                onPressed: () => manageFormList(key)
+              ),
+          )
+        ],
       ),
     );
   }

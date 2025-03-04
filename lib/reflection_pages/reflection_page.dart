@@ -74,6 +74,13 @@ class _ReflectionPageState extends State<ReflectionPage> {
 
           //add new reflection button 
           MenuAnchor(
+            style: MenuStyle(
+              backgroundColor: WidgetStateColor.resolveWith(
+                (Set<WidgetState> states) {
+                  return Color.fromARGB(255, 249, 241, 237);
+                }
+              )
+            ),
             builder: (BuildContext context, MenuController controller, Widget? child) {
               return ElevatedButton(
                 child: Text('New Reflection'),

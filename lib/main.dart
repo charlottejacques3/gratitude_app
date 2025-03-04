@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:google_fonts/google_fonts.dart';
 
 //firebase imports
 import 'package:firebase_core/firebase_core.dart';
@@ -148,10 +149,61 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    Color bg = Color.fromARGB(255, 250, 240, 230);
     return MaterialApp(
       title: 'Gratitude App',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 188, 143, 186)),
+        /**
+         * font possibilities
+         * hind
+         * instrument sans
+         */
+        fontFamily: GoogleFonts.instrumentSans().fontFamily,
+        textTheme: GoogleFonts.instrumentSansTextTheme().copyWith(
+          titleMedium: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.normal,
+            // fontFamily: GoogleFonts.instrumentSans().fontFamily
+          )
+          // titleLarge: TextStyle(
+          //   fontWeight: FontWeight.bold
+          // ) ,
+          // bodyMedium: TextStyle(
+          //   fontWeight: FontWeight.w00
+          // )
+          // titleLarge: TextStyle(
+          //   fontFamily: 
+          // )
+        ),
+        scaffoldBackgroundColor: bg,
+        appBarTheme: AppBarTheme(
+          backgroundColor: bg,
+          // titleTextStyle: Theme.of(context).textTheme.titleLarge!.copyWith(
+          //     color: Theme.of(context).colorScheme.primary,
+          //     fontWeight: FontWeight.bold,
+          //     fontFamily: GoogleFonts.instrumentSans().fontFamily,
+          //   ),
+        ),
+        navigationBarTheme: NavigationBarThemeData(
+          backgroundColor: bg,
+          // labelTextStyle: WidgetStateColor
+          
+          // GoogleFonts.instrumentSansTextTheme().bodyMedium!.copyWith(
+          //     color: Theme.of(context).colorScheme.primary,
+          //     fontWeight: FontWeight.bold
+          //   ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Color.fromARGB(255, 249, 241, 237),//Color.fromARGB(255, 249, 245, 241),
+            textStyle: GoogleFonts.instrumentSansTextTheme().bodyMedium!.copyWith(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold
+            ),
+          )
+        ),
+        dialogBackgroundColor: bg,
         useMaterial3: true,
       ),
       home: MyHomePage(), 
@@ -226,6 +278,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       //navigation
       bottomNavigationBar: NavigationBar(
+        // type: BottomNavigationBarType.fixed,
         onDestinationSelected: (int index) {
           //change currentIndex based on what's been selected
           setState(() {
@@ -251,7 +304,10 @@ class _MyHomePageState extends State<MyHomePage> {
         body: Column(
         children: [
           Expanded(
-            child: page,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: page,
+            ),
           ),
         ],
       )

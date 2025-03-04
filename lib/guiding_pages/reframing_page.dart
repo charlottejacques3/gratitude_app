@@ -55,150 +55,154 @@ class _ReframingPageState extends State<ReframingPage> {
             ),
           ),
       ),
-      body: CustomScrollView(
-        slivers: [
-
-          //prompting text
-          SliverPadding(
-            padding: EdgeInsets.symmetric(vertical: 30, horizontal: 8),
-            sliver: SliverToBoxAdapter(
-              child: Text("Good job! Now that you've caught some of your thought traps, let's try to reframe the situation.",
-                style: Theme.of(context).textTheme.bodyLarge!,
-                textAlign: TextAlign.center,
-              ),
-            )
-          ),
-
-          !needHelp ?
-          //logging space
-          SliverPadding(
-            padding: const EdgeInsets.all(8.0),
-            sliver: SliverToBoxAdapter(
-              child: TextFormField(
-                controller: logController,
-                keyboardType: TextInputType.multiline,
-                minLines: 5,
-                maxLines: 15,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: CustomScrollView(
+          slivers: [
+        
+            //prompting text
+            SliverPadding(
+              padding: EdgeInsets.symmetric(vertical: 30, horizontal: 8),
+              sliver: SliverToBoxAdapter(
+                child: Text("Good job! Now that you've caught some of your thought traps, let's try to reframe the situation.",
+                  style: Theme.of(context).textTheme.titleMedium!,
+                  textAlign: TextAlign.center,
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter some text';
-                  }
-                  return null;
-                },
-              ),
+              )
             ),
-          )
-
-          : SliverList(
-            delegate: SliverChildBuilderDelegate( 
-              (context, index) {
-                return Column (
-                  children: [
-                    prompt_widgets[index]
-                ]);
-              },
-              childCount: prompt_widgets.length,
+        
+            !needHelp ?
+            //logging space
+            SliverPadding(
+              padding: const EdgeInsets.all(8.0),
+              sliver: SliverToBoxAdapter(
+                child: TextFormField(
+                  controller: logController,
+                  keyboardType: TextInputType.multiline,
+                  minLines: 5,
+                  maxLines: 15,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter some text';
+                    }
+                    return null;
+                  },
+                ),
+              ),
             )
-          ),
-
-          //buttons
-          SliverToBoxAdapter(
-            child: Container(
-                height: 100,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                          
-                    //help button
-                    Flexible(
-                      fit: FlexFit.loose,
-                      child: Padding(
-                        padding: EdgeInsets.only(left: 8.0, right: 4.0),
-                        child: Align(
-                          alignment: Alignment.center,
-                          child: ElevatedButton(
-                            onPressed: () {
-
-                              //pick a random prompt + make controllers
-                              final randomNum = Random().nextInt(prompts.length);
-                              List<String> selectedPrompt = prompts[randomNum];
-                              List<TextEditingController> newControllers = [];
-                              for (int i = 0; i < prompts.length; i++) {
-                                newControllers.add(TextEditingController());
-                              }
-
-                              //create a new prompt widget
-                              setState(() {
-                                prompt_widgets.add(PromptWidget(controllers: newControllers, prompt: selectedPrompt));
-                                needHelp = true;
-                              });
-                            },
-                            child: Text("Give me some help with this",
-                              textAlign: TextAlign.center,
+        
+            : SliverList(
+              delegate: SliverChildBuilderDelegate( 
+                (context, index) {
+                  return Column (
+                    children: [
+                      prompt_widgets[index],
+                      SizedBox(height: 10,)
+                  ]);
+                },
+                childCount: prompt_widgets.length,
+              )
+            ),
+        
+            //buttons
+            SliverToBoxAdapter(
+              child: Container(
+                  height: 100,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                            
+                      //help button
+                      Flexible(
+                        fit: FlexFit.loose,
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 8.0, right: 4.0),
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: ElevatedButton(
+                              onPressed: () {
+        
+                                //pick a random prompt + make controllers
+                                final randomNum = Random().nextInt(prompts.length);
+                                List<String> selectedPrompt = prompts[randomNum];
+                                List<TextEditingController> newControllers = [];
+                                for (int i = 0; i < prompts.length; i++) {
+                                  newControllers.add(TextEditingController());
+                                }
+        
+                                //create a new prompt widget
+                                setState(() {
+                                  prompt_widgets.add(PromptWidget(controllers: newControllers, prompt: selectedPrompt));
+                                  needHelp = true;
+                                });
+                              },
+                              child: Text("Give me some help with this",
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                          
-                    //next button
-                    Flexible(
-                      fit: FlexFit.loose,
-                      // padding: EdgeInsets.only(left: 4.0, right: 8.0),
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 8.0, right: 4.0),
-                        child: ElevatedButton(
-                          child: Text("Next",
-                            textAlign: TextAlign.center,
-                          ),
-                          onPressed: () {
-                            List<String> logs = [];
-                            for (final log in prompt_widgets) { //go through all logs
-                              
-                              //get full text including prompt text
-                              String wholeLog = '';
-                              bool emptyLogs = true; 
-                              for (var i = 0; i < log.prompt.length; i++) {
-                                wholeLog += log.prompt[i];
-                                if (i < log.controllers.length) {
-                                  if (log.controllers[i].text != '') {
-                                  wholeLog += log.controllers[i].text;
-                                  emptyLogs = false; 
-                                  }
-                                }
-                                print(wholeLog);
-                              }
-                              //add to list if not empty
-                              if (!emptyLogs) {
-                                logs.add(wholeLog);
-                              }
-                            }
                             
-                            //send info to the database
-                            reframingLogs['reframed_thoughts'] = logs;
-                            try {
-                              dbRef.push().set(reframingLogs); 
-                            } catch(e) {
-                              print('error writing data: $e');
-                            }
-
-                            //go to next page
-                            Navigator.push(
-                              context, 
-                              MaterialPageRoute(builder: (context) => FinalPage())
-                            );
-                          }, 
+                      //next button
+                      Flexible(
+                        fit: FlexFit.loose,
+                        // padding: EdgeInsets.only(left: 4.0, right: 8.0),
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 8.0, right: 4.0),
+                          child: ElevatedButton(
+                            child: Text("Next",
+                              textAlign: TextAlign.center,
+                            ),
+                            onPressed: () {
+                              List<String> logs = [];
+                              for (final log in prompt_widgets) { //go through all logs
+                                
+                                //get full text including prompt text
+                                String wholeLog = '';
+                                bool emptyLogs = true; 
+                                for (var i = 0; i < log.prompt.length; i++) {
+                                  wholeLog += log.prompt[i];
+                                  if (i < log.controllers.length) {
+                                    if (log.controllers[i].text != '') {
+                                    wholeLog += log.controllers[i].text;
+                                    emptyLogs = false; 
+                                    }
+                                  }
+                                  print(wholeLog);
+                                }
+                                //add to list if not empty
+                                if (!emptyLogs) {
+                                  logs.add(wholeLog);
+                                }
+                              }
+                              
+                              //send info to the database
+                              reframingLogs['reframed_thoughts'] = logs;
+                              try {
+                                dbRef.push().set(reframingLogs); 
+                              } catch(e) {
+                                print('error writing data: $e');
+                              }
+        
+                              //go to next page
+                              Navigator.push(
+                                context, 
+                                MaterialPageRoute(builder: (context) => FinalPage())
+                              );
+                            }, 
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-          )
-        ]
+            )
+          ]
+        ),
       )
     );
   }
@@ -216,18 +220,32 @@ class PromptWidget extends StatelessWidget {
 
   @override
   Widget build (BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.all(Radius.circular(5)),
+        border: Border.all(
+          width: 0.5,
+          color: Colors.grey
+        )
+      ),
       child: ListView.builder(
         shrinkWrap: true,
         physics: NeverScrollableScrollPhysics(),
         itemCount: prompt.length,
         itemBuilder: (context, index) {
-          return Column(
-            children: [
-              Text(prompt[index]),
-              TextFormField(controller: controllers[index])
-            ],
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                Text(prompt[index], 
+                  style: Theme.of(context).textTheme.bodyLarge!,
+                  textAlign: TextAlign.center,
+                ),
+                TextFormField(
+                  controller: controllers[index],
+                ),
+              ],
+            ),
           );
         },
       ),

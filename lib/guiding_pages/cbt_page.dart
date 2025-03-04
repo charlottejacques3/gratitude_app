@@ -66,7 +66,7 @@ class _CBTPageState extends State<CBTPage> {
           ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.only(bottom: 8.0, left: 8, right: 8),
         child: SingleChildScrollView(
           physics: ScrollPhysics(),
           child: Column(
@@ -109,54 +109,62 @@ class _CBTPageState extends State<CBTPage> {
                 shrinkWrap: true,
                 itemCount: thoughtTraps.length,
                 itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(thoughtTraps[index]),
-
-                    //info button
-                    trailing: GestureDetector(
-                      onTap: () => showDialog(
-                        context: context, 
-                        builder: (BuildContext context) => Dialog(
-                          child: Padding(
-                            padding: EdgeInsets.all(15.0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(thoughtTraps[index],
-                                  style: Theme.of(context).textTheme.headlineSmall!
-                                ),
-                                SizedBox(height: 15),
-                                Text(thoughtTrapsDetails[thoughtTraps[index]]!, 
-                                  textAlign: TextAlign.center
-                                ),
-                                SizedBox(height: 30,),
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  }, 
-                                  child: Text('Close')
-                                )
-                              ],
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                    child: ListTile(
+                      title: Text(thoughtTraps[index]),
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(color: Colors.grey, width: 0.5),
+                        borderRadius: BorderRadius.circular(5),
+                      ), 
+                    
+                      //info button
+                      trailing: GestureDetector(
+                        onTap: () => showDialog(
+                          context: context, 
+                          builder: (BuildContext context) => Dialog(
+                            backgroundColor: Color.fromARGB(255, 250, 240, 230),
+                            child: Padding(
+                              padding: EdgeInsets.all(15.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(thoughtTraps[index],
+                                    style: Theme.of(context).textTheme.headlineSmall!
+                                  ),
+                                  SizedBox(height: 15),
+                                  Text(thoughtTrapsDetails[thoughtTraps[index]]!, 
+                                    textAlign: TextAlign.center
+                                  ),
+                                  SizedBox(height: 20,),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    }, 
+                                    child: Text('Close')
+                                  )
+                                ],
+                              ),
                             ),
-                          ),
-                        )
+                          )
+                        ),
+                        child: Icon(Icons.info)
                       ),
-                      child: Icon(Icons.info)
+                    
+                      //select it
+                      onTap: () {
+                        setState(() {
+                          if (selectedIndexes.contains(index)) {
+                            selectedIndexes.remove(index);
+                          } else {
+                            selectedIndexes.add(index);
+                          }
+                        });
+                      },
+                      selected: selectedIndexes.contains(index),
+                      selectedTileColor: Color.fromARGB(153, 236, 183, 234),
                     ),
-
-                    //select it
-                    onTap: () {
-                      setState(() {
-                        if (selectedIndexes.contains(index)) {
-                          selectedIndexes.remove(index);
-                        } else {
-                          selectedIndexes.add(index);
-                        }
-                      });
-                    },
-                    selected: selectedIndexes.contains(index),
-                    selectedTileColor: Colors.purple[100],
                   );
                 },
               ),
