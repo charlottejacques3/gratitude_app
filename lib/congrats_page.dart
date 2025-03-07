@@ -36,7 +36,7 @@ class _CongratsPageState extends State<CongratsPage> {
         automaticallyImplyLeading: false,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(16.0),
         child: Center(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -60,10 +60,12 @@ class _CongratsPageState extends State<CongratsPage> {
                   children: [
                     Text('Good job logging your gratitude, and working through your negative emotions!',
                       textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyLarge!,
                     ),
-                    SizedBox(height: 10,),
+                    SizedBox(height: 20,),
                     Text('Having gone through this experience, is there any advice you would leave for your future self the next time you experience negative feelings like this?',
                       textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyLarge!,
                     ),
                     SizedBox(height: 10,),
                     TextFormField(
@@ -99,7 +101,7 @@ class _CongratsPageState extends State<CongratsPage> {
                 //
               : Text('Good job logging your gratitude!'),
               Spacer(
-                flex: 2
+                flex: 3
               )
             ],
           ),

@@ -107,10 +107,13 @@ class _InspirationPageState extends State<InspirationPage> {
 
   //request permission for + get a random photo
   Future<void> getRandomPhoto() async {
+
+    print('initial permissions: ${PhotoManager.getPermissionState(requestOption: PermissionRequestOption())}');
     final PermissionState ps = await PhotoManager.requestPermissionExtend();
 
+    print('permissions after request: $ps');
     // permission granted, get the photos
-    if (ps.isAuth || ps == PermissionState.limited) {
+    // if (ps.isAuth || ps == PermissionState.limited) {
       List<AssetEntity> photos = [];
       
       final List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
@@ -127,13 +130,13 @@ class _InspirationPageState extends State<InspirationPage> {
       setState(() {
         selectedPhoto = photos[rand];
       });
-    } 
+    // } 
     
     //permission denied
-    else {
-      PhotoManager.openSetting();
-      print('permission denied');
-    }
+    // else {
+    //   PhotoManager.openSetting();
+    //   print('permission denied');
+    // }
   }
 
   @override
@@ -303,6 +306,13 @@ class _InspirationPageState extends State<InspirationPage> {
                       Flexible(
                         fit: FlexFit.loose,
                         child: MenuAnchor(
+                          style: MenuStyle(
+                            backgroundColor: WidgetStateColor.resolveWith(
+                              (Set<WidgetState> states) {
+                                return Color.fromARGB(255, 249, 241, 237);
+                              }
+                            )
+                          ),
                           builder: (BuildContext context, MenuController controller, Widget? child) {
                             return IconButton(
                               icon: Icon(Icons.arrow_downward),
@@ -333,7 +343,11 @@ class _InspirationPageState extends State<InspirationPage> {
                                       }
                                     }
                                   ),
-                                  Text(e),
+                                  Text(e,
+                                    style: TextStyle(
+                                      color: Colors.black
+                                    )
+                                  ),
                                 ],
                               )
                             );

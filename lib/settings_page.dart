@@ -1,8 +1,10 @@
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 
 //import files
 import 'utilities/helper_functions.dart';
+import 'utilities/alarm_manager.dart';
 
 //database imports
 import 'package:firebase_database/firebase_database.dart';
@@ -154,32 +156,70 @@ class _SettingsPageState extends State<SettingsPage> {
             //send settings to the database
             ElevatedButton(
               child: Text("Update"),
-              onPressed: () {
-
+              onPressed: () async {
+          
+                //update database
                 Map<String, int> time = {};
-
                 //random notifications
                 if (randomNotifications) {
                   //check valid time 
                   if (!validTime(randomStartTimeController.text) || !validTime(randomEndTimeController.text)) {
                     
                   }
-
                   //start time
                   time = amPmTo24(randomStartTimeController.text, randomStartAMPMController.text);
                   dbRef.child('random_start_time').update(time);
                   //end time
                   time = amPmTo24(randomEndTimeController.text, randomEndAMPMController.text);
                   dbRef.child('random_end_time').update(time);
-
-                  //scheduled notifications
-                } else {
+                } 
+                //scheduled notifications
+                else {
                   time = amPmTo24(scheduledTimeController.text, scheduledAMPMController.text);
                   dbRef.child('scheduled_time').update(time);
                 }
-                
                 //set notification style
                 dbRef.update({'random_notifications': randomNotifications});
+
+
+                //update alarm manager
+
+                //see if the period is over
+                DateTime rn = DateTime.now();
+                if (randomNotifications) {
+                  //end of allowed period
+                  time = amPmTo24(randomEndTimeController.text, randomEndAMPMController.text);
+                } else {
+                  //just normal scheduled time
+                  time = amPmTo24(scheduledTimeController.text, scheduledAMPMController.text);
+                }
+                DateTime endTime = DateTime(rn.year, rn.month, rn.day, time['hours']!, time['minutes']!);
+
+                //if the period is not over, schedule today's notification with a one shot
+                if (endTime.isAfter(rn)) {
+                  await AndroidAlarmManager.oneShot(
+                    const Duration(minutes: 1), 
+                    1, 
+                    notificationScheduler,
+                    rescheduleOnReboot: true,
+                    allowWhileIdle: true,
+                    exact: true,
+                    wakeup: true
+                  );
+                }
+
+                //schedule the next alarm
+                DateTime startTime = await startAlarmManager();
+                await AndroidAlarmManager.periodic(
+                  const Duration(days: 1), 
+                  0, 
+                  notificationScheduler,
+                  startAt: startTime, //DateTime(2025, 2, 24, 11, 18),
+                  rescheduleOnReboot: true,
+                  allowWhileIdle: true,
+                  exact: true,
+                  wakeup: true
+                );
               },
             )
           ],
