@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'dart:typed_data';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import '../utilities/helper_functions.dart';
@@ -21,7 +22,9 @@ class InspirationPage extends StatefulWidget {
 class _InspirationPageState extends State<InspirationPage> {
 
   final TextEditingController logController = TextEditingController();
-  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('GratitudeLogs');
+   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
+                                                          .child(FirebaseAuth.instance.currentUser!.uid)
+                                                          .child('GratitudeLogs');
   String inspoType = 'Random Past Log';
   List<String> selectedInspoTypes = ['Random Past Log', 'Random Photo', 'Gratitude Prompt'];
 
@@ -80,27 +83,29 @@ class _InspirationPageState extends State<InspirationPage> {
 
       //get list of keys
       DataSnapshot dataSnapshot = event.snapshot;
-      Map<dynamic, dynamic> values = dataSnapshot.value as Map<dynamic, dynamic>;
-      List<dynamic> keys = values.keys.toList();
+      if (dataSnapshot.value != null) {
+        Map<dynamic, dynamic> values = dataSnapshot.value as Map<dynamic, dynamic>;
+        List<dynamic> keys = values.keys.toList();
 
-      //pick random key
-      final randomNum = Random().nextInt(values.length);
-      dynamic pastLogKey = keys[randomNum];
+        //pick random key
+        final randomNum = Random().nextInt(values.length);
+        dynamic pastLogKey = keys[randomNum];
 
-      //format the date
-      String formatted = formatDate(values[pastLogKey]['date']);
-      if (formatted.compareTo('Today') != 0 && formatted.compareTo('Yesterday') != 0) {
-        formatted = 'On $formatted';
-      }
+        //format the date
+        String formatted = formatDate(values[pastLogKey]['date']);
+        if (formatted.compareTo('Today') != 0 && formatted.compareTo('Yesterday') != 0) {
+          formatted = 'On $formatted';
+        }
 
-      //set selectedPastLog to the log at that key
-      if (mounted) {
-        setState(() {
-          selectedPastLog = values[pastLogKey]['gratitude_item'];
-          selectedLogRelativeDate = formatted;
-          selectedPastLogType = values[pastLogKey]['type'];
-          loading = false;
-        });
+        //set selectedPastLog to the log at that key
+        if (mounted) {
+          setState(() {
+            selectedPastLog = values[pastLogKey]['gratitude_item'];
+            selectedLogRelativeDate = formatted;
+            selectedPastLogType = values[pastLogKey]['type'];
+            loading = false;
+          });
+        }
       }
     });
   }
@@ -162,7 +167,16 @@ class _InspirationPageState extends State<InspirationPage> {
                   return Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                  
+                      selectedPastLog.isEmpty ? //no logs
+                      Center(
+                        child: Text(
+                          'No logs yet, try choosing a different option',
+                          style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold
+                          ),
+                        ),
+                      ) :
                       //display progress indicator if not loaded
                       loading 
                         ? CircularProgressIndicator()

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 //database imports
@@ -16,7 +17,9 @@ class PastLogsPage extends StatefulWidget {
 
 class _PastLogsPageState extends State<PastLogsPage> {
 
-  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('GratitudeLogs');
+  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
+                                                          .child(FirebaseAuth.instance.currentUser!.uid)
+                                                          .child('GratitudeLogs');
   List<Map<dynamic, dynamic>> gratitudeLogs = [];
   Map<String, List<Map<String, String>>> categorizedLogs = {};
   bool loading = true;
@@ -31,44 +34,47 @@ class _PastLogsPageState extends State<PastLogsPage> {
       gratitudeLogs = [];
 
       DataSnapshot dataSnapshot = event.snapshot;
-      Map<dynamic, dynamic> values = dataSnapshot.value as Map<dynamic, dynamic>;
-      values.forEach((key, value) {
-        
-        // add to gratitude logs + sort
-        if (mounted) {
-          try {
+      if (dataSnapshot.value != null) {
+        Map<dynamic, dynamic> values = dataSnapshot.value as Map<dynamic, dynamic>;
+        values.forEach((key, value) {
+          
+          // add to gratitude logs + sort
+          if (mounted) {
+            try {
+              setState(() {
+                gratitudeLogs.add(value);
+                loading = false;
+            });
+            } catch (e) {
+              print('error with setState $e');
+            }
+          }
+        });
+
+        //sort by date 
+        gratitudeLogs.sort((a, b) => a['date'].compareTo(b['date']));
+
+        //group by date
+        for (final item in gratitudeLogs) {
+          String formatted = formatDate(item['date']);
+          item['date'] = formatted;
+          Map<String, String> data = {
+            'log': item['gratitude_item'],
+            'type': item['type']
+          };
+
+          if (mounted) {
             setState(() {
-              gratitudeLogs.add(value);
-              loading = false;
-          });
-          } catch (e) {
-            print('error with setState $e');
+              if (categorizedLogs.containsKey(formatted)) {
+                categorizedLogs[formatted]!.add(data);//item['gratitude_item']);
+              } else {
+                categorizedLogs[formatted] = [data];//item['gratitude_item']];
+              }
+            });
           }
         }
-      });
-
-      //sort by date 
-      gratitudeLogs.sort((a, b) => a['date'].compareTo(b['date']));
-
-      //group by date
-      for (final item in gratitudeLogs) {
-        String formatted = formatDate(item['date']);
-        item['date'] = formatted;
-        Map<String, String> data = {
-          'log': item['gratitude_item'],
-          'type': item['type']
-        };
-
-        if (mounted) {
-          setState(() {
-            if (categorizedLogs.containsKey(formatted)) {
-              categorizedLogs[formatted]!.add(data);//item['gratitude_item']);
-            } else {
-              categorizedLogs[formatted] = [data];//item['gratitude_item']];
-            }
-          });
-        }
       }
+      
     });
   }
 
@@ -77,6 +83,16 @@ class _PastLogsPageState extends State<PastLogsPage> {
 
     return Scaffold(
       body: 
+        gratitudeLogs.isEmpty ? 
+        Center(
+          child: Text(
+            'No logs yet!',
+            style: Theme.of(context).textTheme.titleMedium!.copyWith(
+              fontSize: 20,
+              fontWeight: FontWeight.bold
+            ),
+          ),
+        ) :
         loading //display progress indicator while loading
           ? Center(child: CircularProgressIndicator())
       : Padding(

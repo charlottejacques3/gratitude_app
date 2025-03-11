@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
@@ -13,7 +14,9 @@ class NewReflectionPage extends StatefulWidget {
 
 class _NewReflectionPageState extends State<NewReflectionPage> {
   
-  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('Reflections');
+  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
+                                                          .child(FirebaseAuth.instance.currentUser!.uid)
+                                                          .child('Reflections');
   List<PromptWidget> prompts = [];
   String reflectionTitle = '';
 

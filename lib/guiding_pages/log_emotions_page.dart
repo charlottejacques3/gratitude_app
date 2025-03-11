@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 
@@ -16,7 +17,9 @@ class LogEmotionsPage extends StatefulWidget {
 class _LogEmotionsPageState extends State<LogEmotionsPage> {
 
   final TextEditingController logController = TextEditingController();
-  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('NegativeEmotionLogs');
+   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
+                                                          .child(FirebaseAuth.instance.currentUser!.uid)
+                                                          .child('NegativeEmotionLogs');
 
   @override
   Widget build(BuildContext context) {

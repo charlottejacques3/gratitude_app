@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 //firebase imports
 import 'package:firebase_core/firebase_core.dart';
+import 'package:gratitude_app/authentication/auth_gate.dart';
 import 'utilities/firebase_options.dart';
 
 //notifications
@@ -60,45 +61,19 @@ class MyApp extends StatelessWidget {
       title: 'Gratitude App',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 188, 143, 186)),
-        /**
-         * font possibilities
-         * hind
-         * instrument sans
-         */
         fontFamily: GoogleFonts.instrumentSans().fontFamily,
         textTheme: GoogleFonts.instrumentSansTextTheme().copyWith(
           titleMedium: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.normal,
-            // fontFamily: GoogleFonts.instrumentSans().fontFamily
           )
-          // titleLarge: TextStyle(
-          //   fontWeight: FontWeight.bold
-          // ) ,
-          // bodyMedium: TextStyle(
-          //   fontWeight: FontWeight.w00
-          // )
-          // titleLarge: TextStyle(
-          //   fontFamily: 
-          // )
         ),
         scaffoldBackgroundColor: bg,
         appBarTheme: AppBarTheme(
           backgroundColor: bg,
-          // titleTextStyle: Theme.of(context).textTheme.titleLarge!.copyWith(
-          //     color: Theme.of(context).colorScheme.primary,
-          //     fontWeight: FontWeight.bold,
-          //     fontFamily: GoogleFonts.instrumentSans().fontFamily,
-          //   ),
         ),
         navigationBarTheme: NavigationBarThemeData(
           backgroundColor: bg,
-          // labelTextStyle: WidgetStateColor
-          
-          // GoogleFonts.instrumentSansTextTheme().bodyMedium!.copyWith(
-          //     color: Theme.of(context).colorScheme.primary,
-          //     fontWeight: FontWeight.bold
-          //   ),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
@@ -112,7 +87,7 @@ class MyApp extends StatelessWidget {
         dialogBackgroundColor: bg,
         useMaterial3: true,
       ),
-      home: MyHomePage(), 
+      home: AuthGate(), 
       debugShowCheckedModeBanner: false,
     );
   }
@@ -155,6 +130,7 @@ class _MyHomePageState extends State<MyHomePage> {
       //appbar with settings icon
       appBar: AppBar(
         centerTitle: true,
+        automaticallyImplyLeading: false,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

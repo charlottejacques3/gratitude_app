@@ -4,6 +4,7 @@
     //prevents from pausing on exceptions
     "dart.debugSdkLibraries": false,
     "dart.debugExternalLibraries": false,
-    "dart.showDartDeveloperLogs": true
+    "dart.showDartDeveloperLogs": true,
       
+    "editor.inlineSuggest.enabled": false,
 }

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
@@ -15,7 +16,9 @@ class CongratsPage extends StatefulWidget {
 class _CongratsPageState extends State<CongratsPage> {
 
   TextEditingController adviceController = TextEditingController();
-  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('Advice');
+  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
+                                                          .child(FirebaseAuth.instance.currentUser!.uid)
+                                                          .child('Advice');
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +48,7 @@ class _CongratsPageState extends State<CongratsPage> {
               Spacer(
                 flex: 1
               ),
-              Text('Congratulations!',
+              Text('Good work!',
                 style: Theme.of(context).textTheme.headlineLarge!,
                 textAlign: TextAlign.center,
               ),

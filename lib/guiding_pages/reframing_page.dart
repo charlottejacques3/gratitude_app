@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 
@@ -24,7 +25,9 @@ class _ReframingPageState extends State<ReframingPage> {
 
   List<PromptWidget> prompt_widgets = [];
   Map<String, dynamic> reframingLogs = {};
-  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('NegativeEmotionLogs');
+  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
+                                                          .child(FirebaseAuth.instance.currentUser!.uid)
+                                                          .child('NegativeEmotionLogs');
 
   //prompts
   List<List<String>> prompts = [["I can't control ", " However, I can control "],

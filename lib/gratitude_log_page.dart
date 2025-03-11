@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'dart:io';
 
 //database imports
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:gratitude_app/congrats_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 //import files
 import 'guiding_pages/main_guiding_page.dart';
@@ -27,7 +27,9 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
   
   List<DynamicFormWidget> dynamicForms = [];//[DynamicFormWidget(key: Key(1.toString()), logController: TextEditingController(), manageFormList: manageFormList)];
   int nextKey = 2;
-  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('GratitudeLogs');
+  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
+                                                          .child(FirebaseAuth.instance.currentUser!.uid)
+                                                          .child('GratitudeLogs');
 
   bool guided = false; //keeps track of whether they worked through emotions in this session
 

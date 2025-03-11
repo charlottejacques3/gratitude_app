@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/guiding_pages/reframing_page.dart';
 
@@ -32,7 +33,9 @@ class _CBTPageState extends State<CBTPage> {
   Set<int> selectedIndexes = {};
   Map<String, dynamic> reframingLogs = {};
   
-  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('NegativeEmotionLogs');
+   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
+                                                          .child(FirebaseAuth.instance.currentUser!.uid)
+                                                          .child('NegativeEmotionLogs');
 
   //initialize reframingLogs with values passed
   @override

@@ -1,10 +1,12 @@
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 
 //import files
 import 'utilities/helper_functions.dart';
 import 'utilities/alarm_manager.dart';
+import 'authentication/auth_service.dart';
 
 //database imports
 import 'package:firebase_database/firebase_database.dart';
@@ -20,7 +22,9 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   
-  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('Settings');
+  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
+                                                          .child(FirebaseAuth.instance.currentUser!.uid)
+                                                          .child('Settings');
 
   bool randomNotifications = true;
 
@@ -221,7 +225,15 @@ class _SettingsPageState extends State<SettingsPage> {
                   wakeup: true
                 );
               },
-            )
+            ),
+
+            //log out
+            ElevatedButton(
+            onPressed: () async {
+              await AuthService().signout(context: context);
+            }, 
+            child: Text('logout')
+          ),
           ],
         ),
       )

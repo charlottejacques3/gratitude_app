@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/utilities/helper_functions.dart';
@@ -15,7 +16,9 @@ class ReflectionPage extends StatefulWidget {
 
 class _ReflectionPageState extends State<ReflectionPage> {
 
-  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('Reflections');
+  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
+                                                          .child(FirebaseAuth.instance.currentUser!.uid)
+                                                          .child('Reflections');
   List<Map<dynamic, dynamic>> pastReflections = [];
   bool loading = true;
 
@@ -36,26 +39,26 @@ class _ReflectionPageState extends State<ReflectionPage> {
       pastReflections = [];
 
       DataSnapshot dataSnapshot = event.snapshot;
-      Map<dynamic, dynamic> values = dataSnapshot.value as Map<dynamic, dynamic>;
-      print(values);
+      if (dataSnapshot.value != null) {
+        Map<dynamic, dynamic> values = dataSnapshot.value as Map<dynamic, dynamic>;
 
-      values.forEach((key, value) {
-        
-        // add to past reflections
-        if (mounted) {
-          //format date
-          value['format_date'] = formatDate(value['date']);
+        values.forEach((key, value) {
+          
+          // add to past reflections
+          if (mounted) {
+            //format date
+            value['format_date'] = formatDate(value['date']);
+            setState(() {
+              pastReflections.add(value);
+            });
+          }
+
+          //sort by date (most recent first)
           setState(() {
-            pastReflections.add(value);
+            pastReflections.sort((a, b) => b['date'].compareTo(a['date']));
           });
-        }
-
-        //sort by date (most recent first)
-        setState(() {
-          pastReflections.sort((a, b) => b['date'].compareTo(a['date']));
         });
-      });
-      print(pastReflections);
+      }
     });
 
     //done loading
@@ -67,7 +70,8 @@ class _ReflectionPageState extends State<ReflectionPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: loading //display progress indicator while loading
+      body: 
+        loading //display progress indicator while loading
           ? Center(child: CircularProgressIndicator())
       : ListView(
         children: [
@@ -115,7 +119,21 @@ class _ReflectionPageState extends State<ReflectionPage> {
           ),
 
           //past reflections
-          ListView.builder(
+          pastReflections.isEmpty ?
+          Column(
+            children: [
+              SizedBox(height: 30,),
+              Text(
+                'No reflections yet!',
+                style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          )
+          : ListView.builder(
             shrinkWrap: true,
             physics: NeverScrollableScrollPhysics(),
             scrollDirection: Axis.vertical,

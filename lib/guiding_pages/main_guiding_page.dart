@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/guiding_pages/inspiration_page.dart';
@@ -15,7 +16,9 @@ class GuidingPage extends StatefulWidget {
 
 class _GuidingPageState extends State<GuidingPage> {
 
-  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('Advice');
+  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
+                                                          .child(FirebaseAuth.instance.currentUser!.uid)
+                                                          .child('Advice');
   String selectedAdvice = '';
 
   @override
@@ -27,19 +30,21 @@ class _GuidingPageState extends State<GuidingPage> {
 
       //get list of keys
       DataSnapshot dataSnapshot = event.snapshot;
-      Map<dynamic, dynamic> values = dataSnapshot.value as Map<dynamic, dynamic>;
-      List<dynamic> keys = values.keys.toList();
+      if (dataSnapshot.value != null) {
+        Map<dynamic, dynamic> values = dataSnapshot.value as Map<dynamic, dynamic>;
+        List<dynamic> keys = values.keys.toList();
 
-      //pick random key
-      final randomNum = Random().nextInt(values.length);
-      dynamic pastLogKey = keys[randomNum];
+        //pick random key
+        final randomNum = Random().nextInt(values.length);
+        dynamic pastLogKey = keys[randomNum];
 
-      //set selectedPastLog to the log at that key
-      if (mounted) {
-        setState(() {
-          selectedAdvice = values[pastLogKey]['advice'];
-          print(selectedAdvice);
-        });
+        //set selectedPastLog to the log at that key
+        if (mounted) {
+          setState(() {
+            selectedAdvice = values[pastLogKey]['advice'];
+            print(selectedAdvice);
+          });
+        }
       }
     });
   }
@@ -69,15 +74,16 @@ class _GuidingPageState extends State<GuidingPage> {
             SizedBox(height: 20,),
 
             //show advice if there is any
-            Text('Remember, as past you said:',
+            selectedAdvice.isNotEmpty ? 
+            Text('Remember, as past you said:\n$selectedAdvice',
               style: Theme.of(context).textTheme.titleMedium!,
               textAlign: TextAlign.center,
-            ),
-            selectedAdvice.isNotEmpty ?
-              Text(selectedAdvice,
-                style: Theme.of(context).textTheme.titleMedium!,
-                textAlign: TextAlign.center,
-              )
+            )
+            
+              // Text(selectedAdvice,
+              //   style: Theme.of(context).textTheme.titleMedium!,
+              //   textAlign: TextAlign.center,
+              // )
             : Container(),
             SizedBox(height: 20,),
 
