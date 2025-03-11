@@ -56,6 +56,7 @@ dependencies:
   google_fonts: ^6.2.1
   firebase_auth: ^5.5.1
   fluttertoast: ^8.2.12
+  shared_preferences: ^2.5.2
 
 dev_dependencies:
   flutter_test:

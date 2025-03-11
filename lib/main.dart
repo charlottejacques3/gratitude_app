@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 //firebase imports
 import 'package:firebase_core/firebase_core.dart';
 import 'package:gratitude_app/authentication/auth_gate.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'utilities/firebase_options.dart';
 
 //notifications
@@ -37,17 +38,36 @@ void main() async {
   runApp(const MyApp());
   
   //set up alarm manager
+  //cancel a bunch of past alarms
+  // for (var i = 0; i < 100; i++) {
+  //    bool success = await AndroidAlarmManager.cancel(i);
+  //   print("Canceled alarm with ID $i: $success");
+  // }
+
+
+  await AndroidAlarmManager.cancel(0); //cancel past alarms to avoid backlog
   DateTime startTime = await startAlarmManager();
-  await AndroidAlarmManager.periodic(
-    const Duration(days: 1), 
-    0, 
-    notificationScheduler,
-    startAt: startTime, //DateTime(2025, 2, 24, 11, 18),
-    rescheduleOnReboot: true,
-    allowWhileIdle: true,
-    exact: true,
-    wakeup: true
-  );
+
+  //using shared preferences
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  bool alarmScheduled = prefs.getBool('alarmScheduled') ?? false;
+  print('is alarm scheduled already? $alarmScheduled');
+
+  // if (!alarmScheduled) {
+    print('scheduling new alarm for $startTime');
+    await AndroidAlarmManager.periodic(
+      const Duration(days: 1), 
+      0, 
+      notificationScheduler,
+      startAt: startTime, //DateTime(2025, 3, 11, 10, 00),
+      rescheduleOnReboot: true,
+      allowWhileIdle: true,
+      exact: true,
+      wakeup: true
+    );
+    prefs.setBool('alarmScheduled', true);
+  // }
+  
 }
 
 class MyApp extends StatelessWidget {
