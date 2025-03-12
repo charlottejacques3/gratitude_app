@@ -81,9 +81,10 @@ Future<void> notificationScheduler() async {
           // && !(hour == rn.hour && minute <= rn.minute)) {
       notificationDate = DateTime(rn.year, rn.month, rn.day, hour, minute);
 
-      //if it's after the current time, or the current time is after the notification period, escape the loop
+      //if it's after the current time and before the end of the range, escape the loop
+      //also escape if the current time is after the notification period to avoid an infinite loop
       DateTime endPeriod = DateTime(rn.year, rn.month, rn.day, end['hours'], end['minutes']);
-      if (notificationDate.isAfter(rn) || rn.isAfter(endPeriod)) {
+      if ((notificationDate.isAfter(rn) && notificationDate.isBefore(endPeriod)) || rn.isAfter(endPeriod)) {
         withinRange = true;
       }
       // }

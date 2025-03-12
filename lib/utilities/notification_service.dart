@@ -75,7 +75,7 @@ class NotificationService {
 
   //show a scheduled notification
   static Future<void> scheduledNotification({required String title, required String body, required DateTime scheduledTime}) async {
-
+    
     const NotificationDetails platformChannelSpecifics = NotificationDetails(
       android: AndroidNotificationDetails(
         "channelId", 

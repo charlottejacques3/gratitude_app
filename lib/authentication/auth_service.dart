@@ -1,9 +1,11 @@
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/authentication/login_page.dart';
 import 'package:gratitude_app/main.dart';
+import 'package:gratitude_app/utilities/alarm_manager.dart';
 
 class AuthService {
 
@@ -15,7 +17,11 @@ class AuthService {
         password: password
       );
 
+      print('before scheduling alarm');
+      
+
       //send to main page
+      print('before sending to main page');
       await Future.delayed(const Duration(seconds: 1));
       Navigator.pushReplacement(
         context, 
@@ -33,6 +39,23 @@ class AuthService {
       dbRef.child('random_end_time').child('minutes').set(0);
       dbRef.child('scheduled_time').child('hours').set(12); //12pm
       dbRef.child('scheduled_time').child('minutes').set(0);
+
+      //cancel past alarms to avoid backlog
+      bool success = await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
+      print("Canceled alarm with IDs 0 and 1: $success");
+
+      //schedule the next alarm
+      DateTime startTime = await startAlarmManager();
+      await AndroidAlarmManager.periodic(
+        const Duration(days: 1), 
+        0, 
+        notificationScheduler,
+        startAt: startTime, //DateTime(2025, 2, 24, 11, 18),
+        rescheduleOnReboot: true,
+        allowWhileIdle: true,
+        exact: true,
+        wakeup: true
+      );
     } 
     
     //catch signup errors
@@ -65,6 +88,23 @@ class AuthService {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email, 
         password: password
+      );
+
+      //cancel past alarms to avoid backlog
+      bool success = await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
+      print("Canceled alarm with IDs 0 and 1: $success");
+
+      //schedule the next alarm
+      DateTime startTime = await startAlarmManager();
+      await AndroidAlarmManager.periodic(
+        const Duration(days: 1), 
+        0, 
+        notificationScheduler,
+        startAt: startTime, //DateTime(2025, 2, 24, 11, 18),
+        rescheduleOnReboot: true,
+        allowWhileIdle: true,
+        exact: true,
+        wakeup: true
       );
 
       //send to main page
@@ -101,9 +141,10 @@ class AuthService {
     await FirebaseAuth.instance.signOut();
 
     //navigate back to login page
-    Navigator.pushReplacement(
+    Navigator.pushAndRemoveUntil(
       context, 
-      MaterialPageRoute(builder: (BuildContext context) => const LoginPage() )
+      MaterialPageRoute(builder: (BuildContext context) => const LoginPage()),
+      (route) => false
     );
   }
 }

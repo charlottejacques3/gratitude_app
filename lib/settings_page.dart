@@ -199,10 +199,16 @@ class _SettingsPageState extends State<SettingsPage> {
                 }
                 DateTime endTime = DateTime(rn.year, rn.month, rn.day, time['hours']!, time['minutes']!);
 
+                
+                //cancel past alarms to avoid backlog
+                bool success = await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
+                print("Canceled alarm with IDs 0 and 1: $success");
+
                 //if the period is not over, schedule today's notification with a one shot
                 if (endTime.isAfter(rn)) {
+                  print('scheduling oneshot');
                   await AndroidAlarmManager.oneShot(
-                    const Duration(minutes: 1), 
+                    const Duration(seconds: 30), //schedule 30 seconds later
                     1, 
                     notificationScheduler,
                     rescheduleOnReboot: true,
@@ -214,6 +220,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                 //schedule the next alarm
                 DateTime startTime = await startAlarmManager();
+                print('scheduling periodic for $startTime');
                 await AndroidAlarmManager.periodic(
                   const Duration(days: 1), 
                   0, 
@@ -232,7 +239,7 @@ class _SettingsPageState extends State<SettingsPage> {
             onPressed: () async {
               await AuthService().signout(context: context);
             }, 
-            child: Text('logout')
+            child: Text('Log Out')
           ),
           ],
         ),

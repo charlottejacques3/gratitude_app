@@ -1,10 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 //firebase imports
 import 'package:firebase_core/firebase_core.dart';
 import 'package:gratitude_app/authentication/auth_gate.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 import 'utilities/firebase_options.dart';
 
 //notifications
@@ -31,6 +32,15 @@ void main() async {
   await NotificationService.initNotifications();
   tz.initializeTimeZones();
 
+  // for (var i = 0; i < 100; i++) {
+  //    bool success = await AndroidAlarmManager.cancel(i);
+  //   print("Canceled alarm with ID $i: $success");
+  // }
+  
+  //cancel past alarms to avoid backlog
+  bool success = await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
+  print("Canceled alarm with IDs 0 and 1: $success");
+
   //initialize alarm manager
   await AndroidAlarmManager.initialize();
 
@@ -40,33 +50,38 @@ void main() async {
   //set up alarm manager
   //cancel a bunch of past alarms
   // for (var i = 0; i < 100; i++) {
-  //    bool success = await AndroidAlarmManager.cancel(i);
+  //   bool success = await AndroidAlarmManager.cancel(i);
   //   print("Canceled alarm with ID $i: $success");
   // }
 
 
-  await AndroidAlarmManager.cancel(0); //cancel past alarms to avoid backlog
-  DateTime startTime = await startAlarmManager();
+  // await AndroidAlarmManager.cancel(0); //cancel past alarms to avoid backlog
 
-  //using shared preferences
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  bool alarmScheduled = prefs.getBool('alarmScheduled') ?? false;
-  print('is alarm scheduled already? $alarmScheduled');
+  //only schedule notifications if logged in
+  if (FirebaseAuth.instance.currentUser != null) {
+    DateTime startTime = await startAlarmManager();
 
-  // if (!alarmScheduled) {
-    print('scheduling new alarm for $startTime');
-    await AndroidAlarmManager.periodic(
-      const Duration(days: 1), 
-      0, 
-      notificationScheduler,
-      startAt: startTime, //DateTime(2025, 3, 11, 10, 00),
-      rescheduleOnReboot: true,
-      allowWhileIdle: true,
-      exact: true,
-      wakeup: true
-    );
-    prefs.setBool('alarmScheduled', true);
-  // }
+    //using shared preferences
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
+    // bool alarmScheduled = prefs.getBool('alarmScheduled') ?? false;
+    // print('is alarm scheduled already? $alarmScheduled');
+
+    // if (!alarmScheduled) {
+      print('scheduling new alarm for $startTime');
+      await AndroidAlarmManager.periodic(
+        const Duration(days: 1), 
+        0, 
+        notificationScheduler,
+        startAt: startTime, //DateTime(2025, 3, 11, 10, 00),
+        rescheduleOnReboot: true,
+        allowWhileIdle: true,
+        exact: true,
+        wakeup: true
+      );
+      // prefs.setBool('alarmScheduled', true);
+    // }
+  }
+  
   
 }
 
