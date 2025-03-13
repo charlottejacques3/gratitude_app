@@ -57,27 +57,19 @@ Map<String, String> twenty4ToAmPm(Map<dynamic, dynamic> time) {
   Map<String, String> result = {};
   String hrsMins = '';
   String amPm = 'AM';
-  final hrs = time['hours'];
+  var hrs = time['hours'];
 
   //process hours
   if (hrs != null) {
-    if (hrs == 0) {
-      hrsMins = '12';
-    } else if (hrs <= 12) {
-      if (hrs < 10) {
-        hrsMins += '0';
-      }
-      if (hrs == 12) {
-        amPm = 'PM'; //if it's noon
-      }
-      hrsMins += hrs.toString();
-    } else {
-      if (hrs-12 < 10) {
-        hrsMins += '0';
-      }
-      hrsMins += (hrs-12).toString();
+    if (hrs >= 12) {
       amPm = 'PM';
+    } 
+    if (hrs > 12) {
+      hrs -= 12;
+    } else if (hrs == 0) {
+      hrs = 12;
     }
+    hrsMins += hrs.toString();
   } else {
     print('error: hours was null');
   }

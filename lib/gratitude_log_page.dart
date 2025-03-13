@@ -386,12 +386,12 @@ class DynamicFormWidget extends StatelessWidget {
               keyboardType: TextInputType.multiline,
               minLines: 1,
               maxLines: 3,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter some text';
-                }
-                return null;
-              }, 
+              // validator: (value) {
+              //   if (value == null || value.isEmpty) {
+              //     return 'Please enter some text';
+              //   }
+              //   return null;
+              // }, 
             ),
           ),
       
