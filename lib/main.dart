@@ -36,6 +36,9 @@ void main() async {
   //    bool success = await AndroidAlarmManager.cancel(i);
   //   print("Canceled alarm with ID $i: $success");
   // }
+
+  //request battery permissions
+  await requestBatteryOptimizationExemption();
   
   //cancel past alarms to avoid backlog
   bool success = await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);

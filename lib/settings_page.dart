@@ -3,6 +3,7 @@
   import 'package:flutter/material.dart';
   import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
   import 'package:flutter/services.dart';
+  import 'package:permission_handler/permission_handler.dart';
 
   //import files
   import 'utilities/helper_functions.dart';
@@ -226,17 +227,34 @@
 
                     //schedule the next alarm
                     DateTime startTime = await startAlarmManager();
-                    print('scheduling periodic for $startTime');
+                    // print('scheduling periodic for $startTime');
                     await AndroidAlarmManager.periodic(
                       const Duration(days: 1), 
                       0, 
                       notificationScheduler,
-                      startAt: startTime, //DateTime(2025, 2, 24, 11, 18),
+                      startAt: startTime, 
                       rescheduleOnReboot: true,
                       allowWhileIdle: true,
                       exact: true,
                       wakeup: true
                     );
+
+                    //test alarm - should notify right away
+                    // if (await Permission.ignoreBatteryOptimizations.isGranted) {
+                    //   print('Battery optimization already disabled for app, yay');
+                    // }
+                    // AndroidAlarmManager.cancel(3);
+                    // print('scheduling test periodic for $startTime');
+                    // await AndroidAlarmManager.periodic(
+                    //   const Duration(minutes: 2), 
+                    //   3, 
+                    //   testNotifications,
+                    //   startAt: startTime, //DateTime(2025, 2, 24, 11, 18),
+                    //   rescheduleOnReboot: true,
+                    //   allowWhileIdle: true,
+                    //   exact: true,
+                    //   wakeup: true
+                    // );
 
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(

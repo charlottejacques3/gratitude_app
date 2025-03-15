@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:gratitude_app/utilities/firebase_options.dart';
 import 'package:gratitude_app/utilities/notification_service.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
 Future<Map<dynamic, dynamic>> readSettings() async {
@@ -81,10 +82,11 @@ Future<void> notificationScheduler() async {
           // && !(hour == rn.hour && minute <= rn.minute)) {
       notificationDate = DateTime(rn.year, rn.month, rn.day, hour, minute);
 
-      //if it's after the current time and before the end of the range, escape the loop
+      //if it's after the current time, before the end of the range, and after the beginning of the range, escape the loop
       //also escape if the current time is after the notification period to avoid an infinite loop
+      DateTime startPeriod = DateTime(rn.year, rn.month, rn.day, start['hours'], start['minutes']);
       DateTime endPeriod = DateTime(rn.year, rn.month, rn.day, end['hours'], end['minutes']);
-      if ((notificationDate.isAfter(rn) && notificationDate.isBefore(endPeriod)) || rn.isAfter(endPeriod)) {
+      if ((notificationDate.isAfter(rn) && notificationDate.isBefore(endPeriod)) && notificationDate.isAfter(startPeriod)|| rn.isAfter(endPeriod)) {
         withinRange = true;
       }
       // }
@@ -115,4 +117,43 @@ Future<void> notificationScheduler() async {
     print("Exception caught while scheduling notification: $e");
   }
   print("notification has been scheduled");
+}
+
+
+@pragma('vm:entry-point')
+Future<void> testNotifications() async {
+  print('${DateTime.now()} - TEST ALARM');
+  try {
+    tz.initializeTimeZones();
+    NotificationService.scheduledNotification(
+      title: "Gratitude App", 
+      body: "Test notification!", 
+      scheduledTime: DateTime.now().add(Duration(seconds: 30))
+    );
+  } catch (e) {
+    print("Exception caught while scheduling notification: $e");
+  }
+  print("notification has been scheduled");
+}
+
+
+//request ignore battery optimizations so the app can run in the background
+Future<void> requestBatteryOptimizationExemption() async {
+  // Check if we already have the permission
+  print('initial: ${Permission.ignoreBatteryOptimizations.status}');
+  if (await Permission.ignoreBatteryOptimizations.isGranted) {
+    print('Battery optimization already disabled for app');
+    return;
+  }
+  
+  // Request the permission
+  final status = await Permission.ignoreBatteryOptimizations.request();
+  
+  if (status.isGranted) {
+    print('Battery optimization disabled for app');
+  } else {
+    print('Battery optimization permission denied');
+    print(status);
+    // You may want to show a dialog explaining why this is important
+  }
 }
