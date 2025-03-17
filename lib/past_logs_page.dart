@@ -139,6 +139,16 @@ class _PastLogsPageState extends State<PastLogsPage> {
                                         child: Image.network(
                                           lst[childIndex]['log']!,
                                           height: 130,
+                                          loadingBuilder: (context, child, loadingProgress) {
+                                            if (loadingProgress != null) {
+                                              return Align(
+                                                alignment: Alignment.centerLeft,
+                                                child: Center(child: CircularProgressIndicator())
+                                              );
+                                            } else {
+                                              return child;
+                                            }
+                                          },
                                         ),
                                       ),
                                     );

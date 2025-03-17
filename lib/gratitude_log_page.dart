@@ -137,6 +137,13 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                           imageUrls[index],
                           height: 200,
                           width: 200,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress != null) {
+                              return Center(child: CircularProgressIndicator());
+                            } else {
+                              return child;
+                            }
+                          },
                         ),
                       ),
                   

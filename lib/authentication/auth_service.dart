@@ -22,7 +22,6 @@ class AuthService {
 
       //send to main page
       print('before sending to main page');
-      await Future.delayed(const Duration(seconds: 1));
       Navigator.pushReplacement(
         context, 
         MaterialPageRoute(builder: (BuildContext context) => const MyHomePage() )
@@ -108,7 +107,6 @@ class AuthService {
       );
 
       //send to main page
-      await Future.delayed(const Duration(seconds: 1));
       Navigator.pushReplacement(
         context, 
         MaterialPageRoute(builder: (BuildContext context) => const MyHomePage() )

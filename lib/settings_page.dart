@@ -1,9 +1,7 @@
   import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
   import 'package:firebase_auth/firebase_auth.dart';
   import 'package:flutter/material.dart';
-  import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
   import 'package:flutter/services.dart';
-  import 'package:permission_handler/permission_handler.dart';
 
   //import files
   import 'utilities/helper_functions.dart';
@@ -167,22 +165,36 @@
               ElevatedButton(
                 child: Text("Update"),
                 onPressed: () async {
+                  //check for valid times
                   if (_formKey.currentState!.validate()) {
                     print(FirebaseAuth.instance.currentUser!.uid);
                     //update database
                     Map<String, int> time = {};
                     //random notifications
                     if (randomNotifications) {
-                      //check valid time 
-                      if (!validTime(randomStartTimeController.text) || !validTime(randomEndTimeController.text)) {
-                        
-                      }
+                      //check second time is after first 
+                      
+                      DateTime rn = DateTime.now();
                       //start time
-                      time = amPmTo24(randomStartTimeController.text, randomStartAMPMController.text);
-                      dbRef.child('random_start_time').update(time);
+                      Map<String, int> startTime = amPmTo24(randomStartTimeController.text, randomStartAMPMController.text);
+                      DateTime startDT = DateTime(rn.year, rn.month, rn.day, startTime['hours']!, startTime['minutes']!);
                       //end time
-                      time = amPmTo24(randomEndTimeController.text, randomEndAMPMController.text);
+                      Map<String, int> endTime = amPmTo24(randomEndTimeController.text, randomEndAMPMController.text);
+                      DateTime endDT = DateTime(rn.year, rn.month, rn.day, endTime['hours']!, endTime['minutes']!);
                       dbRef.child('random_end_time').update(time);
+
+                      //check if second time is after first
+                      if (endDT.isAfter(startDT)) {
+                        //if so, update database
+                        dbRef.child('random_start_time').update(startTime);
+                        dbRef.child('random_end_time').update(endTime);
+                      } else {
+                        //otherwise don't update anything
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Please ensure the end time is after the start time.')),
+                        );
+                        return;
+                      }
                     } 
                     //scheduled notifications
                     else {
