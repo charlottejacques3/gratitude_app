@@ -41,8 +41,8 @@ void main() async {
   await requestBatteryOptimizationExemption();
   
   //cancel past alarms to avoid backlog
-  bool success = await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
-  print("Canceled alarm with IDs 0 and 1: $success");
+  // bool success = await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
+  // print("Canceled alarm with IDs 0 and 1: $success");
 
   //initialize alarm manager
   await AndroidAlarmManager.initialize();
@@ -61,8 +61,8 @@ void main() async {
   // await AndroidAlarmManager.cancel(0); //cancel past alarms to avoid backlog
 
   //only schedule notifications if logged in
-  if (FirebaseAuth.instance.currentUser != null) {
-    DateTime startTime = await startAlarmManager();
+  // if (FirebaseAuth.instance.currentUser != null) {
+  //   DateTime startTime = await startAlarmManager();
 
     //using shared preferences
     // SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -70,20 +70,20 @@ void main() async {
     // print('is alarm scheduled already? $alarmScheduled');
 
     // if (!alarmScheduled) {
-      print('scheduling new alarm for $startTime');
-      await AndroidAlarmManager.periodic(
-        const Duration(days: 1), 
-        0, 
-        notificationScheduler,
-        startAt: startTime, //DateTime(2025, 3, 11, 10, 00),
-        rescheduleOnReboot: true,
-        allowWhileIdle: true,
-        exact: true,
-        wakeup: true
-      );
+      // print('scheduling new alarm for $startTime');
+      // await AndroidAlarmManager.periodic(
+      //   const Duration(days: 1), 
+      //   0, 
+      //   notificationScheduler,
+      //   startAt: startTime, //DateTime(2025, 3, 11, 10, 00),
+      //   rescheduleOnReboot: true,
+      //   allowWhileIdle: true,
+      //   exact: true,
+      //   wakeup: true
+      // );
       // prefs.setBool('alarmScheduled', true);
     // }
-  }
+  // }
   
   
 }

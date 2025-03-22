@@ -1,14 +1,15 @@
-//read settings from database
 import 'dart:math';
-
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:gratitude_app/utilities/firebase_options.dart';
 import 'package:gratitude_app/utilities/notification_service.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
+//read settings from database
 Future<Map<dynamic, dynamic>> readSettings() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -55,86 +56,106 @@ Future<void> notificationScheduler() async {
   final DateTime now = DateTime.now();
   print("[$now] Hello, world! function='$notificationScheduler'");
 
-  Map<dynamic, dynamic> settings = await readSettings();
-  DateTime notificationDate = DateTime.now();
-  DateTime rn = DateTime.now();
 
-  //random notifications
-  if (settings['random_notifications']) {
-    print('random');
-    
-    bool withinRange = false;
+  //only schedule a notification if one hasn't happened today yet
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? iso = prefs.getString('scheduled_notif_date');
+  if (iso == null || DateTime.parse(iso).day != DateTime.now().day || DateTime.parse(iso).isAfter(DateTime.now())) {
 
-    while(!withinRange) {
+    //make sure the period isn't over for today
+    Map<dynamic, dynamic> settings = await readSettings();
+    DateTime rn = DateTime.now();
+    var start = settings['random_start_time'];
+    var end = settings['random_end_time'];
+    var scheduled = settings['scheduled_time'];
+    bool rand = settings['random_notifications'];
+    DateTime startPeriod = DateTime(rn.year, rn.month, rn.day, start['hours'], start['minutes']);
+    DateTime endPeriod = DateTime(rn.year, rn.month, rn.day, end['hours'], end['minutes']);
+    DateTime scheduledTime = DateTime(rn.year, rn.month, rn.day, scheduled['hours'], scheduled['minutes']);
 
-      //pick a random hour
-      var start = settings['random_start_time'];
-      var end = settings['random_end_time'];
-      int starttime = start['hours'];
-      int hour = Random().nextInt(end['hours']-start['hours']+1) + starttime;
+    if ((rand && endPeriod.isAfter(rn)) || (!rand && scheduledTime.isAfter(rn))) {
+      DateTime notificationDate = DateTime.now();
 
-      //pick a random minute
-      int minute = 0;
-      minute = Random().nextInt(60); //generate a random minute
-      //check if it is within the range, and has not already happened
-      // if (!((hour == end['hours'] && minute > end['minutes']) ||
-      //       (hour == start['hours'] && minute < start['minutes']))) {
-          // && !(hour == rn.hour && minute <= rn.minute)) {
-      notificationDate = DateTime(rn.year, rn.month, rn.day, hour, minute);
+      //random notifications
+      if (rand) {
+        print('random');
+        
+        bool withinRange = false;
 
-      //if it's after the current time, before the end of the range, and after the beginning of the range, escape the loop
-      //also escape if the current time is after the notification period to avoid an infinite loop
-      DateTime startPeriod = DateTime(rn.year, rn.month, rn.day, start['hours'], start['minutes']);
-      DateTime endPeriod = DateTime(rn.year, rn.month, rn.day, end['hours'], end['minutes']);
-      if ((notificationDate.isAfter(rn) && notificationDate.isBefore(endPeriod)) && notificationDate.isAfter(startPeriod)|| rn.isAfter(endPeriod)) {
-        withinRange = true;
+        while(!withinRange) {
+
+          //pick a random hour
+          int starttime = start['hours'];
+          int hour = Random().nextInt(end['hours']-start['hours']+1) + starttime;
+
+          //pick a random minute
+          int minute = 0;
+          minute = Random().nextInt(60); //generate a random minute
+
+          notificationDate = DateTime(rn.year, rn.month, rn.day, hour, minute);
+
+          //if it's after the current time, before the end of the range, and after the beginning of the range, escape the loop
+          //also escape if the current time is after the notification period to avoid an infinite loop
+          if ((notificationDate.isAfter(rn) && notificationDate.isBefore(endPeriod)) && notificationDate.isAfter(startPeriod)|| rn.isAfter(endPeriod)) {
+            withinRange = true;
+          }
+        }
       }
-      // }
+
+      //scheduled notifications
+      else {
+        print('scheduled');
+        var time = settings['scheduled_time'];
+        notificationDate = DateTime(rn.year, rn.month, rn.day, time['hours'], time['minutes']);
+      }
+
+      //schedule the notification  
+      print(notificationDate);
+      try {
+        tz.initializeTimeZones();
+        NotificationService.scheduledNotification(
+          title: "Gratitude App", 
+          body: "Time to log your gratitude!", 
+          scheduledTime: notificationDate
+        );
+      } catch (e) {
+        print("Exception caught while scheduling notification: $e");
+      }
+      print("notification has been scheduled");
     }
-
-    
-
-    // notificationDate = DateTime(rn.year, rn.month, rn.day, hour, minute);
   }
 
-  //scheduled notifications
-  else {
-    print('scheduled');
-    var time = settings['scheduled_time'];
-    notificationDate = DateTime(rn.year, rn.month, rn.day, time['hours'], time['minutes']);
-  }
-
-  //schedule the notification  
-  print(notificationDate);
-  try {
-    tz.initializeTimeZones();
-    NotificationService.scheduledNotification(
-      title: "Gratitude App", 
-      body: "Time to log your gratitude!", 
-      scheduledTime: notificationDate
-    );
-  } catch (e) {
-    print("Exception caught while scheduling notification: $e");
-  }
-  print("notification has been scheduled");
+  //reschedule the next alarm
+  DateTime nextAlarm = await startAlarmManager();
+  var timeBetween = nextAlarm.difference(DateTime.now());
+  print('next alarm: $nextAlarm, which is in $timeBetween');
+  await AndroidAlarmManager.oneShot(
+    timeBetween, //schedule for next time
+    0, 
+    notificationScheduler,
+    rescheduleOnReboot: true,
+    allowWhileIdle: true,
+    exact: true,
+    wakeup: true
+  );
 }
 
 
-@pragma('vm:entry-point')
-Future<void> testNotifications() async {
-  print('${DateTime.now()} - TEST ALARM');
-  try {
-    tz.initializeTimeZones();
-    NotificationService.scheduledNotification(
-      title: "Gratitude App", 
-      body: "Test notification!", 
-      scheduledTime: DateTime.now().add(Duration(seconds: 30))
-    );
-  } catch (e) {
-    print("Exception caught while scheduling notification: $e");
-  }
-  print("notification has been scheduled");
-}
+// @pragma('vm:entry-point')
+// Future<void> testNotifications() async {
+//   print('${DateTime.now()} - TEST ALARM');
+//   try {
+//     tz.initializeTimeZones();
+//     NotificationService.scheduledNotification(
+//       title: "Gratitude App", 
+//       body: "Test notification!", 
+//       scheduledTime: DateTime.now().add(Duration(seconds: 30))
+//     );
+//   } catch (e) {
+//     print("Exception caught while scheduling notification: $e");
+//   }
+//   print("notification has been scheduled");
+// }
 
 
 //request ignore battery optimizations so the app can run in the background

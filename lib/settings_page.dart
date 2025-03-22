@@ -244,32 +244,32 @@ import 'package:shared_preferences/shared_preferences.dart';
                     print("Canceled alarm with IDs 0 and 1: $success");
 
                     //if the period is not over, schedule today's notification with a one shot
-                    if (endTime.isAfter(rn)) {
+                    // if (endTime.isAfter(rn)) {
                       print('scheduling oneshot');
                       await AndroidAlarmManager.oneShot(
-                        const Duration(seconds: 30), //schedule 30 seconds later
-                        1, 
+                        const Duration(seconds: 5), //schedule 30 seconds later
+                        0, 
                         notificationScheduler,
                         rescheduleOnReboot: true,
                         allowWhileIdle: true,
                         exact: true,
                         wakeup: true
                       );
-                    }
+                    // }
 
-                    //schedule the next alarm
-                    DateTime startTime = await startAlarmManager();
-                    // print('scheduling periodic for $startTime');
-                    await AndroidAlarmManager.periodic(
-                      const Duration(days: 1), 
-                      0, 
-                      notificationScheduler,
-                      startAt: startTime, 
-                      rescheduleOnReboot: true,
-                      allowWhileIdle: true,
-                      exact: true,
-                      wakeup: true
-                    );
+                    // //schedule the next alarm
+                    // DateTime startTime = await startAlarmManager();
+                    // // print('scheduling periodic for $startTime');
+                    // await AndroidAlarmManager.periodic(
+                    //   const Duration(days: 1), 
+                    //   0, 
+                    //   notificationScheduler,
+                    //   startAt: startTime, 
+                    //   rescheduleOnReboot: true,
+                    //   allowWhileIdle: true,
+                    //   exact: true,
+                    //   wakeup: true
+                    // );
 
                     //test alarm - should notify right away
                     // if (await Permission.ignoreBatteryOptimizations.isGranted) {

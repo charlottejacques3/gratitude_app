@@ -44,12 +44,11 @@ class AuthService {
       print("Canceled alarm with IDs 0 and 1: $success");
 
       //schedule the next alarm
-      DateTime startTime = await startAlarmManager();
-      await AndroidAlarmManager.periodic(
-        const Duration(days: 1), 
+      print('scheduling oneshot');
+      await AndroidAlarmManager.oneShot(
+        const Duration(seconds: 5), //schedule 30 seconds later
         0, 
         notificationScheduler,
-        startAt: startTime, //DateTime(2025, 2, 24, 11, 18),
         rescheduleOnReboot: true,
         allowWhileIdle: true,
         exact: true,
@@ -94,12 +93,11 @@ class AuthService {
       print("Canceled alarm with IDs 0 and 1: $success");
 
       //schedule the next alarm
-      DateTime startTime = await startAlarmManager();
-      await AndroidAlarmManager.periodic(
-        const Duration(days: 1), 
+      print('scheduling oneshot');
+      await AndroidAlarmManager.oneShot(
+        const Duration(seconds: 5), //schedule 30 seconds later
         0, 
         notificationScheduler,
-        startAt: startTime, //DateTime(2025, 2, 24, 11, 18),
         rescheduleOnReboot: true,
         allowWhileIdle: true,
         exact: true,
@@ -136,6 +134,10 @@ class AuthService {
 
 
   Future<void> signout({required BuildContext context}) async {
+    //cancel past alarms
+    bool success = await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
+    print("Canceled alarm with IDs 0 and 1: $success");
+
     await FirebaseAuth.instance.signOut();
 
     //navigate back to login page
