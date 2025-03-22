@@ -2,6 +2,7 @@
   import 'package:firebase_auth/firebase_auth.dart';
   import 'package:flutter/material.dart';
   import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
   //import files
   import 'utilities/helper_functions.dart';
@@ -28,6 +29,7 @@
 
     bool randomNotifications = true;
     final _formKey = GlobalKey<FormState>();
+    bool allowAI = true; // await SharedPreferences.getInstance().getBool('allow_ai');
 
     //controllers
     TextEditingController randomStartTimeController= TextEditingController();
@@ -40,6 +42,7 @@
     @override
     void initState() {
       super.initState();
+      getSharedPrefs();
 
       //read from the database
       dbRef.onValue.listen((event) {
@@ -63,6 +66,16 @@
       });
     }
 
+    void getSharedPrefs() async {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      bool? ai = prefs.getBool('allow_ai');
+      if (ai != null) {
+        setState(() {
+          allowAI = ai;
+        });
+      }
+    }
+
     @override
     Widget build(BuildContext context) {
       return Scaffold(
@@ -77,10 +90,17 @@
             ),
         ),
         body: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
+          padding: const EdgeInsets.all(16.0),
+          child: ListView(
             children: [
 
+              Text('Notifications',
+                style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold
+                ),
+              ),
+              SizedBox(height: 10,),
               //pick random or scheduled notifications
               Row(
                 children: [
@@ -90,7 +110,7 @@
                       selected: randomNotifications,
                       selectedTileColor: Colors.purple[100],
                       shape: RoundedRectangleBorder(
-                        side: BorderSide(color: Color.fromARGB(153, 236, 183, 234), width: 0.5),
+                        side: BorderSide(color: Colors.grey, width: 0.5),
                         borderRadius: BorderRadius.circular(5),
                       ), 
                       onTap: () {
@@ -276,7 +296,39 @@
                 },
               ),
 
+              //allow ai
+              SizedBox(height: 50,),
+              Text('Guiding Settings',
+                style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold
+                ),
+              ),
+              SizedBox(height: 10,),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text('AI-generated reframing prompts',
+                      style: Theme.of(context).textTheme.bodyLarge!
+                    ),
+                  ),
+                  Switch(
+                    value: allowAI,
+                    onChanged: (bool value) async {
+                      setState(() {
+                        allowAI = value;
+                      });
+                      //set preferences
+                      final SharedPreferences prefs = await SharedPreferences.getInstance();
+                      await prefs.setBool('allow_ai', allowAI);
+                    }
+                  )
+                ],
+              ),
+              Text('AI helps generate more effective reframing prompts that are tailored to your situation and the negative emotions you are currently experiencing.'),
+
               //log out
+              SizedBox(height: 50,),
               ElevatedButton(
               onPressed: () async {
                 await AuthService().signout(context: context);

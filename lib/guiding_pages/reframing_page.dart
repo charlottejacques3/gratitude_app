@@ -4,7 +4,10 @@ import 'dart:math';
 
 //database imports
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter_multi_formatter/extensions/exports.dart';
 import 'package:gratitude_app/guiding_pages/final_page.dart';
+import 'package:firebase_vertexai/firebase_vertexai.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class ReframingPage extends StatefulWidget {
@@ -22,6 +25,7 @@ class _ReframingPageState extends State<ReframingPage> {
 
   TextEditingController logController = TextEditingController();
   bool needHelp = false;
+  bool allowAI = false;
 
   List<PromptWidget> prompt_widgets = [];
   Map<String, dynamic> reframingLogs = {};
@@ -34,16 +38,107 @@ class _ReframingPageState extends State<ReframingPage> {
                                 ["Although this situation is challenging, at least "],
                                 ["Although it may seem this way in my brain, I don't actually have any evidence that "],
                                 ["If a close friend was in my situation, I would tell them "]];
+                                
 
   
-  //initialize reframingLogs with values passed
+  //initialize reframingLogs with values passed, and check AI settings
   @override
   void initState() {
     super.initState();
     setState(() {
       reframingLogs = widget.initialReframingLogs;
     });
+    checkAIAllowed();
   }
+
+   void checkAIAllowed() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool? ai = prefs.getBool('allow_ai');
+    if (ai != null) {
+      setState(() {
+        allowAI = ai;
+      });
+    }
+  }
+
+  Future<List<String>> generateAIContent() async {
+    
+    final instructions = Content.text('''
+      <OBJECTIVE_AND_PERSONA>
+        You are supportive and helping users to work through their negative emotions. 
+        You are given a log of negative emotions and events, and a list of cognitive-behavioural therapy thought traps that the user is falling into.
+        Your task is to generate a fill-in-the-blank prompt, written in the first person, to help the user reframe their emotions.
+        Make the prompts 1-2 sentences in length, with 1-2 fill-in-the-blanks - however, do not put more than one fill-in-the-blank per sentence.
+        Also, make sure the last sentence has a fill-in-the-blank.
+        ONLY put periods at the end of the sentence if the sentence does not contain a fill-in-the-blank.
+        Emphasize self-compassion and use reframing techniques from the cognitive-behavioural therapy thought traps specified in the input.
+      </OBJECTIVE_AND_PERSONA>
+
+      <INSTRUCTIONS>
+        To complete the task, you need to follow these steps:
+        1. Read through the log an understand what the user is struggling with.
+        2. Based on the given CBT thought traps (or other CBT techniques), come up with a supportive reframing prompt.
+      </INSTRUCTIONS>
+
+      <CONSTRAINTS>
+        Make sure to:
+        1. Don't emphasize any sort of regret about the situation.
+        2. Don't necessarily prompt action, instead, prompt a change in mindset. For example, this is NOT a good prompt:
+          "In the future, I will _______" 
+        3. DO NOT prompt the user to think about what the negative situation means. Do not put "Instead, it means _____ We want to avoid this because it could send the user into more of a spiral.
+        3. Do make the prompts relatively simple - remember that this is a person in a vulnerable state.
+      </CONSTRAINTS>
+
+      <FEW_SHOT_EXAMPLES>
+        Here is an example:
+        1. Lost job
+        Input: "Log: I was fired from my job, and I feel worthless. I feel like a failure, and I'll never amount to anything.
+                Thought traps: [Catastrophizing, All-or-nothing thinking, Labeling, Overgeneralization]"
+        Output: Instead of making the generalization that I'll never amount to anything, I can recognize that _______
+        2. Worrying what other people think
+        Input: "Log: I was hanging out with my friends today and I feel like they hate me. I don't think anybody likes me.
+                Thought traps: [Mind reading]"
+        Output: Even though my brain is telling me that my friends don't like me, I don't have any evidence of this. Here is some evidence that they DO like me: _______
+        3. Breakup
+        Input: "Log: My boyfriend just broke up with me. I must be a terrible person.
+                Thought traps: [Personalization]"
+        Output: It's okay to feel sad, but I can't control that my boyfriend broke up with me, and it may not be a direct reflection of me. However, I can control _______
+
+        Here are some more general prompts, not tailored to any specific situation. However, something similar to these would be good.
+        1. I can't control _______ However, I can control _______
+        2. Although this situation is challenging, at least _______
+        3. Although it may seem this way in my brain, I don't actually have any evidence that _______
+        4. If a close friend was in my situation, I would tell them _______
+      </FEW_SHOT_EXAMPLES>
+
+      <SAFEGUARDS>
+        DO NOT end the prompt with "instead this means _______" This can cause the user to spiral further, which we do NOT want.
+      </SAFEGUARDS>
+    ''');
+    final model = FirebaseVertexAI.instance.generativeModel(model: 'gemini-2.0-flash', systemInstruction: instructions);
+
+    //build prompt from logs
+    final prompt = [Content.text("Log: ${reframingLogs['negative_emotions']} Thought traps: ${reframingLogs['thought_traps']}")];
+
+    final response = await model.generateContent(prompt);
+
+    //split string into separate prompts
+    String formatted_response = response.text!;
+    while (formatted_response.contains('_______.')) {
+      int periodIndex = formatted_response.indexOf('_______.') + 7;
+      formatted_response.removeCharAt(periodIndex); //remove extra period
+    }
+    List<String> split = response.text!.trim().split('_______');
+    List<String> prompts = [];
+    for (final str in split) {
+      if (str.isNotEmpty) {
+        prompts.add(str);
+      }
+    }
+    print(prompts);
+    return prompts;
+  }
+
   
   @override
   Widget build(BuildContext context) {
@@ -126,11 +221,16 @@ class _ReframingPageState extends State<ReframingPage> {
                           child: Align(
                             alignment: Alignment.center,
                             child: ElevatedButton(
-                              onPressed: () {
+                              onPressed: () async {
         
                                 //pick a random prompt + make controllers
-                                final randomNum = Random().nextInt(prompts.length);
-                                List<String> selectedPrompt = prompts[randomNum];
+                                List<String> selectedPrompt = [];
+                                if (allowAI) {
+                                  selectedPrompt = await generateAIContent();
+                                } else {
+                                  final randomNum = Random().nextInt(prompts.length);
+                                  selectedPrompt = prompts[randomNum];
+                                }
                                 List<TextEditingController> newControllers = [];
                                 for (int i = 0; i < prompts.length; i++) {
                                   newControllers.add(TextEditingController());

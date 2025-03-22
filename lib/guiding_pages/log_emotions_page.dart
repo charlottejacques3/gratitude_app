@@ -39,7 +39,7 @@ class _LogEmotionsPageState extends State<LogEmotionsPage> {
         child: Column(
           children: [
             SizedBox(height: 30),
-            Text("Let's do it! Use this space to log your negative emotions.",
+            Text("Sounds like a plan. Use this space to log your negative emotions.",
               style: Theme.of(context).textTheme.titleMedium!,
               textAlign: TextAlign.center,
             ),
