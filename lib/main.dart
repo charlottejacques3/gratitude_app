@@ -133,7 +133,8 @@ class MyApp extends StatelessWidget {
 
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+  final startingPageIndex;
+  const MyHomePage({super.key, required this.startingPageIndex});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -142,7 +143,14 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   var currentPageIndex = 0;
+  bool pastLogsEditMode = false;
   String pageHeader = '';
+
+  @override
+  void initState() {
+    super.initState();
+    currentPageIndex = widget.startingPageIndex;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -155,7 +163,7 @@ class _MyHomePageState extends State<MyHomePage> {
         page = GratitudeLogPage();
         pageHeader = 'Log Gratitude';
       case 1:
-        page = PastLogsPage();
+        page = PastLogsPage(editMode: pastLogsEditMode);
         pageHeader = 'Past Logs';
       case 2:
         page = ReflectionPage();
@@ -172,6 +180,23 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+
+            //add edit button for past logs page
+            currentPageIndex == 1 ?
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(
+                  onPressed: () {
+                    setState(() {
+                      pastLogsEditMode = !pastLogsEditMode;
+                    });
+                  },
+                  child: pastLogsEditMode ? Text('Cancel') : Text('Edit'),
+                )
+              ),
+            )
+            :
             Spacer(),
             Text(pageHeader, 
               style: Theme.of(context).textTheme.titleLarge!.copyWith(

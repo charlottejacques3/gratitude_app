@@ -24,7 +24,7 @@ class AuthService {
       print('before sending to main page');
       Navigator.pushReplacement(
         context, 
-        MaterialPageRoute(builder: (BuildContext context) => const MyHomePage() )
+        MaterialPageRoute(builder: (BuildContext context) => const MyHomePage(startingPageIndex: 0,) )
       );
 
       //save default settings to database
@@ -109,7 +109,7 @@ class AuthService {
       //send to main page
       Navigator.pushReplacement(
         context, 
-        MaterialPageRoute(builder: (BuildContext context) => const MyHomePage() )
+        MaterialPageRoute(builder: (BuildContext context) => const MyHomePage(startingPageIndex: 0,) )
       );
     } 
     
