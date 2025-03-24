@@ -45,35 +45,58 @@ import 'package:shared_preferences/shared_preferences.dart';
       getSharedPrefs();
 
       //read from the database
-      dbRef.onValue.listen((event) {
-        DataSnapshot dataSnapshot = event.snapshot;
-        Map<dynamic, dynamic> values = dataSnapshot.value as Map<dynamic, dynamic>;
-        //set the defaults for the controllers
-        Map<String, String> startTime = twenty4ToAmPm(values['random_start_time']);
-        Map<String, String> endTime = twenty4ToAmPm(values['random_end_time']);
-        Map<String, String> scheduledTime = twenty4ToAmPm(values['scheduled_time']);
-        if (mounted) {
-          setState(() {
-            randomStartTimeController = TextEditingController(text: startTime['hrs_mins']);
-            randomStartAMPMController = TextEditingController(text: startTime['am_pm']);
-            randomEndTimeController = TextEditingController(text: endTime['hrs_mins']);
-            randomEndAMPMController = TextEditingController(text: endTime['am_pm']);
-            scheduledTimeController = TextEditingController(text: scheduledTime['hrs_mins']);
-            scheduledAMPMController = TextEditingController(text: scheduledTime['am_pm']);
-            randomNotifications = values['random_notifications'];
-          });
-        }
-      });
+      // dbRef.onValue.listen((event) {
+      //   DataSnapshot dataSnapshot = event.snapshot;
+      //   Map<dynamic, dynamic> values = dataSnapshot.value as Map<dynamic, dynamic>;
+      //   //set the defaults for the controllers
+      //   Map<String, String> startTime = twenty4ToAmPm(values['random_start_time']);
+      //   Map<String, String> endTime = twenty4ToAmPm(values['random_end_time']);
+      //   Map<String, String> scheduledTime = twenty4ToAmPm(values['scheduled_time']);
+      //   if (mounted) {
+      //     setState(() {
+      //       randomStartTimeController = TextEditingController(text: startTime['hrs_mins']);
+      //       randomStartAMPMController = TextEditingController(text: startTime['am_pm']);
+      //       randomEndTimeController = TextEditingController(text: endTime['hrs_mins']);
+      //       randomEndAMPMController = TextEditingController(text: endTime['am_pm']);
+      //       scheduledTimeController = TextEditingController(text: scheduledTime['hrs_mins']);
+      //       scheduledAMPMController = TextEditingController(text: scheduledTime['am_pm']);
+      //       randomNotifications = values['random_notifications'];
+      //     });
+      //   }
+      // });
     }
 
     void getSharedPrefs() async {
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       bool? ai = prefs.getBool('allow_ai');
-      if (ai != null) {
-        setState(() {
-          allowAI = ai;
+      bool ? rand = prefs.getBool('random_notifications');
+
+      //set the defaults for the controllers
+        Map<String, String> startTime = twenty4ToAmPm({
+          'hours': prefs.getInt('random_start_hours'),
+          'minutes': prefs.getInt('random_start_minutes'),
         });
-      }
+        Map<String, String> endTime = twenty4ToAmPm({
+          'hours': prefs.getInt('random_end_hours'),
+          'minutes': prefs.getInt('random_end_minutes'),
+        });
+        Map<String, String> scheduledTime = twenty4ToAmPm({
+          'hours': prefs.getInt('scheduled_hours'),
+          'minutes': prefs.getInt('scheduled_minutes'),
+        });
+
+      //set state
+      setState(() {
+        if (ai != null ) allowAI = ai;
+        if (rand != null ) randomNotifications = rand;
+        randomStartTimeController = TextEditingController(text: startTime['hrs_mins']);
+        randomStartAMPMController = TextEditingController(text: startTime['am_pm']);
+        randomEndTimeController = TextEditingController(text: endTime['hrs_mins']);
+        randomEndAMPMController = TextEditingController(text: endTime['am_pm']);
+        scheduledTimeController = TextEditingController(text: scheduledTime['hrs_mins']);
+        scheduledAMPMController = TextEditingController(text: scheduledTime['am_pm']);
+      });
+
     }
 
     @override
@@ -187,8 +210,13 @@ import 'package:shared_preferences/shared_preferences.dart';
                 onPressed: () async {
                   //check for valid times
                   if (_formKey.currentState!.validate()) {
-                    print(FirebaseAuth.instance.currentUser!.uid);
-                    //update database
+                    // print(FirebaseAuth.instance.currentUser!.uid);
+
+                    //set up shared preferences
+                    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+
+                    //update shared preferences
                     Map<String, int> time = {};
                     //random notifications
                     if (randomNotifications) {
@@ -201,13 +229,17 @@ import 'package:shared_preferences/shared_preferences.dart';
                       //end time
                       Map<String, int> endTime = amPmTo24(randomEndTimeController.text, randomEndAMPMController.text);
                       DateTime endDT = DateTime(rn.year, rn.month, rn.day, endTime['hours']!, endTime['minutes']!);
-                      dbRef.child('random_end_time').update(time);
 
                       //check if second time is after first
                       if (endDT.isAfter(startDT)) {
-                        //if so, update database
-                        dbRef.child('random_start_time').update(startTime);
-                        dbRef.child('random_end_time').update(endTime);
+                        //if so, update shared preferences
+                        prefs.setInt('random_start_hours', startTime['hours']!);
+                        prefs.setInt('random_start_minutes', startTime['minutes']!);
+                        prefs.setInt('random_end_hours', endTime['hours']!);
+                        prefs.setInt('random_end_minutes', endTime['minutes']!);
+                        print('updating start time to: ${prefs.getInt('random_start_hours')}:${prefs.getInt('random_start_minutes')}');
+                        // dbRef.child('random_start_time').update(startTime);
+                        // dbRef.child('random_end_time').update(endTime);
                       } else {
                         //otherwise don't update anything
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -219,10 +251,13 @@ import 'package:shared_preferences/shared_preferences.dart';
                     //scheduled notifications
                     else {
                       time = amPmTo24(scheduledTimeController.text, scheduledAMPMController.text);
-                      dbRef.child('scheduled_time').update(time);
+                      // dbRef.child('scheduled_time').update(time);
+                        prefs.setInt('schduled_hours', time['hours']!);
+                        prefs.setInt('scheduled_minutes', time['minutes']!);
                     }
                     //set notification style
-                    dbRef.update({'random_notifications': randomNotifications});
+                    prefs.setBool('random_notifications', randomNotifications);
+                    // dbRef.update({'random_notifications': randomNotifications});
 
 
                     //update alarm manager
@@ -236,7 +271,6 @@ import 'package:shared_preferences/shared_preferences.dart';
                       //just normal scheduled time
                       time = amPmTo24(scheduledTimeController.text, scheduledAMPMController.text);
                     }
-                    DateTime endTime = DateTime(rn.year, rn.month, rn.day, time['hours']!, time['minutes']!);
 
                     
                     //cancel past alarms to avoid backlog

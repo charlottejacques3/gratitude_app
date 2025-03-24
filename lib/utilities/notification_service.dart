@@ -81,6 +81,7 @@ class NotificationService {
     String iso = scheduledTime.toIso8601String();
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('scheduled_notif_date', iso);
+    print('set time: ${prefs.getString('scheduled_notif_date')}');
     
     const NotificationDetails platformChannelSpecifics = NotificationDetails(
       android: AndroidNotificationDetails(

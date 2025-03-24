@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 //firebase imports
 import 'package:firebase_core/firebase_core.dart';
 import 'package:gratitude_app/authentication/auth_gate.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:shared_preferences/shared_preferences.dart';
 import 'utilities/firebase_options.dart';
 
@@ -49,6 +50,8 @@ void main() async {
 
   //debugRepaintRainbowEnabled = true;
   runApp(const MyApp());
+
+  
   
   //set up alarm manager
   //cancel a bunch of past alarms
@@ -65,7 +68,9 @@ void main() async {
   //   DateTime startTime = await startAlarmManager();
 
     //using shared preferences
-    // SharedPreferences prefs = await SharedPreferences.getInstance();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    print('start: ${prefs.getInt('random_start_hours')}:${prefs.getInt('random_start_minutes')}');
+    print('end: ${prefs.getInt('random_end_hours')}:${prefs.getInt('random_end_minutes')}');
     // bool alarmScheduled = prefs.getBool('alarmScheduled') ?? false;
     // print('is alarm scheduled already? $alarmScheduled');
 

@@ -9,7 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
-//read settings from database
+//read settings from settings - NOT USED ANYMORE
 Future<Map<dynamic, dynamic>> readSettings() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -30,15 +30,22 @@ Future<Map<dynamic, dynamic>> readSettings() async {
 
 //find time to start alarm manager
 Future<DateTime> startAlarmManager() async {
-  Map<dynamic, dynamic> settings = await readSettings();
-  var time;
-  if (settings['random_notifications']) {
-    time = settings['random_start_time'];
+  // Map<dynamic, dynamic> settings = await readSettings();
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.reload();
+
+  int hr;
+  int min;
+  if (prefs.getBool('random_notifications')!) {
+    hr = prefs.getInt('random_start_hours')!;
+    min = prefs.getInt('random_start_minutes')!;
   } else {
-    time = settings['scheduled_time'];
+    hr = prefs.getInt('scheduled_hours')!;
+    min = prefs.getInt('scheduled_minutes')!;
   }
+  print('start time: ${prefs.getInt('random_start_hours')}:${prefs.getInt('random_start_minutes')}');
   DateTime rn = DateTime.now();
-  DateTime alarmTime = DateTime(rn.year, rn.month, rn.day, time['hours']-1, time['minutes']);
+  DateTime alarmTime = DateTime(rn.year, rn.month, rn.day, hr-1, min);
 
   //if already passed, schedule for tomorrow
   if (alarmTime.isBefore(rn)) {
@@ -59,20 +66,22 @@ Future<void> notificationScheduler() async {
 
   //only schedule a notification if one hasn't happened today yet
   final SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.reload();
   String? iso = prefs.getString('scheduled_notif_date');
+  print('iso: $iso');
   if (iso == null || DateTime.parse(iso).day != DateTime.now().day || DateTime.parse(iso).isAfter(DateTime.now())) {
 
     //make sure the period isn't over for today
-    Map<dynamic, dynamic> settings = await readSettings();
+    // Map<dynamic, dynamic> settings = await readSettings();
     DateTime rn = DateTime.now();
-    var start = settings['random_start_time'];
-    var end = settings['random_end_time'];
-    var scheduled = settings['scheduled_time'];
-    bool rand = settings['random_notifications'];
-    DateTime startPeriod = DateTime(rn.year, rn.month, rn.day, start['hours'], start['minutes']);
-    DateTime endPeriod = DateTime(rn.year, rn.month, rn.day, end['hours'], end['minutes']);
-    DateTime scheduledTime = DateTime(rn.year, rn.month, rn.day, scheduled['hours'], scheduled['minutes']);
+    int startHrs = prefs.getInt('random_start_hours')!;
+    int endHrs = prefs.getInt('random_end_hours')!;
+    bool rand = prefs.getBool('random_notifications')!;
+    DateTime startPeriod = DateTime(rn.year, rn.month, rn.day, startHrs, prefs.getInt('random_start_minutes')!);
+    DateTime endPeriod = DateTime(rn.year, rn.month, rn.day, endHrs, prefs.getInt('random_end_minutes')!);
+    DateTime scheduledTime = DateTime(rn.year, rn.month, rn.day, prefs.getInt('scheduled_hours')!, prefs.getInt('scheduled_minutes')!);
 
+    print('random: $rand, end time: $endPeriod');
     if ((rand && endPeriod.isAfter(rn)) || (!rand && scheduledTime.isAfter(rn))) {
       DateTime notificationDate = DateTime.now();
 
@@ -85,8 +94,7 @@ Future<void> notificationScheduler() async {
         while(!withinRange) {
 
           //pick a random hour
-          int starttime = start['hours'];
-          int hour = Random().nextInt(end['hours']-start['hours']+1) + starttime;
+          int hour = Random().nextInt(endHrs-startHrs+1) + startHrs;
 
           //pick a random minute
           int minute = 0;
@@ -105,8 +113,7 @@ Future<void> notificationScheduler() async {
       //scheduled notifications
       else {
         print('scheduled');
-        var time = settings['scheduled_time'];
-        notificationDate = DateTime(rn.year, rn.month, rn.day, time['hours'], time['minutes']);
+        notificationDate = scheduledTime;
       }
 
       //schedule the notification  
