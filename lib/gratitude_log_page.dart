@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 
@@ -77,8 +78,6 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
       setState(() {
         imageUrls.add(url);
       });
-      print('urls: $imageUrls');
-      print('after download url');
     } catch(e) {
       print('error storing images: $e');
     }
@@ -91,6 +90,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
     setState(() {
       guided = false;
       dynamicForms = [DynamicFormWidget(key: Key('1'), logController: TextEditingController(), manageFormList: manageFormList)];
+      dbRef.keepSynced(true);
     });
   }
 

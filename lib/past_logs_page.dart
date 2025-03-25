@@ -27,6 +27,7 @@ class _PastLogsPageState extends State<PastLogsPage> {
   @override
   void initState() {
     super.initState();
+    dbRef.keepSynced(true);
     // print('initially mounted: $mounted');
     
     dbRef.onValue.listen((event) {

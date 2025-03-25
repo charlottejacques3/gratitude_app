@@ -64,6 +64,18 @@ Future<void> notificationScheduler() async {
   print("[$now] Hello, world! function='$notificationScheduler'");
 
 
+  //schedule a notification right away for testing
+  // try {
+  //   tz.initializeTimeZones();
+  //   NotificationService.scheduledNotification(
+  //     title: "Gratitude App", 
+  //     body: "Time to log your gratitude!", 
+  //     scheduledTime: DateTime.now().add(Duration(seconds:30))
+  //   );
+  // } catch (e) {
+  //   print("Exception caught while scheduling notification: $e");
+  // }
+
   //only schedule a notification if one hasn't happened today yet
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.reload();
