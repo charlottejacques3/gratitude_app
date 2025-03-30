@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -73,8 +72,9 @@ void main() async {
 
     //using shared preferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    print('start: ${prefs.getInt('random_start_hours')}:${prefs.getInt('random_start_minutes')}');
-    print('end: ${prefs.getInt('random_end_hours')}:${prefs.getInt('random_end_minutes')}');
+    print('LAST NOTIFICATION TIME: ${prefs.getString('scheduled_notif_date')}');
+    // print('start: ${prefs.getInt('random_start_hours')}:${prefs.getInt('random_start_minutes')}');
+    // print('end: ${prefs.getInt('random_end_hours')}:${prefs.getInt('random_end_minutes')}');
     // bool alarmScheduled = prefs.getBool('alarmScheduled') ?? false;
     // print('is alarm scheduled already? $alarmScheduled');
 

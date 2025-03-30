@@ -204,7 +204,7 @@ import 'package:shared_preferences/shared_preferences.dart';
               ),
               SizedBox(height: 20),
 
-              //send settings to the database
+              //send settings to shared preferences
               ElevatedButton(
                 child: Text("Update"),
                 onPressed: () async {
@@ -294,11 +294,11 @@ import 'package:shared_preferences/shared_preferences.dart';
                     // //schedule the next alarm
                     // DateTime startTime = await startAlarmManager();
                     // // print('scheduling periodic for $startTime');
+                    // print('IMMEDIATELY scheduling periodic');
                     // await AndroidAlarmManager.periodic(
-                    //   const Duration(days: 1), 
+                    //   const Duration(minutes: 10), 
                     //   0, 
                     //   notificationScheduler,
-                    //   startAt: startTime, 
                     //   rescheduleOnReboot: true,
                     //   allowWhileIdle: true,
                     //   exact: true,
