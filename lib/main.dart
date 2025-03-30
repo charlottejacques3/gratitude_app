@@ -1,13 +1,10 @@
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 //firebase imports
 import 'package:firebase_core/firebase_core.dart';
-import 'package:gratitude_app/authentication/auth_gate.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
 import 'utilities/firebase_options.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 //notifications
 import 'package:timezone/data/latest.dart' as tz;
@@ -15,11 +12,11 @@ import 'package:gratitude_app/utilities/notification_service.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
 //import pages
+import 'authentication/auth_gate.dart';
 import 'gratitude_log_page.dart';
 import 'past_logs_page.dart';
 import 'reflection_pages/reflection_page.dart';
 import 'settings_page.dart';
-import 'utilities/alarm_manager.dart';
 
 
 void main() async {
@@ -36,65 +33,10 @@ void main() async {
   await NotificationService.initNotifications();
   tz.initializeTimeZones();
 
-  // for (var i = 0; i < 100; i++) {
-  //    bool success = await AndroidAlarmManager.cancel(i);
-  //   print("Canceled alarm with ID $i: $success");
-  // }
-
-  //request battery permissions
-  await requestBatteryOptimizationExemption();
-  
-  //cancel past alarms to avoid backlog
-  // bool success = await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
-  // print("Canceled alarm with IDs 0 and 1: $success");
-
   //initialize alarm manager
   await AndroidAlarmManager.initialize();
 
-  //debugRepaintRainbowEnabled = true;
   runApp(const MyApp());
-
-  
-  
-  //set up alarm manager
-  //cancel a bunch of past alarms
-  // for (var i = 0; i < 100; i++) {
-  //   bool success = await AndroidAlarmManager.cancel(i);
-  //   print("Canceled alarm with ID $i: $success");
-  // }
-
-
-  // await AndroidAlarmManager.cancel(0); //cancel past alarms to avoid backlog
-
-  //only schedule notifications if logged in
-  // if (FirebaseAuth.instance.currentUser != null) {
-  //   DateTime startTime = await startAlarmManager();
-
-    //using shared preferences
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    print('LAST NOTIFICATION TIME: ${prefs.getString('scheduled_notif_date')}');
-    // print('start: ${prefs.getInt('random_start_hours')}:${prefs.getInt('random_start_minutes')}');
-    // print('end: ${prefs.getInt('random_end_hours')}:${prefs.getInt('random_end_minutes')}');
-    // bool alarmScheduled = prefs.getBool('alarmScheduled') ?? false;
-    // print('is alarm scheduled already? $alarmScheduled');
-
-    // if (!alarmScheduled) {
-      // print('scheduling new alarm for $startTime');
-      // await AndroidAlarmManager.periodic(
-      //   const Duration(days: 1), 
-      //   0, 
-      //   notificationScheduler,
-      //   startAt: startTime, //DateTime(2025, 3, 11, 10, 00),
-      //   rescheduleOnReboot: true,
-      //   allowWhileIdle: true,
-      //   exact: true,
-      //   wakeup: true
-      // );
-      // prefs.setBool('alarmScheduled', true);
-    // }
-  // }
-  
-  
 }
 
 class MyApp extends StatelessWidget {
@@ -103,6 +45,8 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+
+    //set styles for the app
     Color bg = Color.fromARGB(255, 250, 240, 230);
     return MaterialApp(
       title: 'Gratitude App',
@@ -124,15 +68,14 @@ class MyApp extends StatelessWidget {
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Color.fromARGB(255, 249, 241, 237),//Color.fromARGB(255, 249, 245, 241),
+            backgroundColor: Color.fromARGB(255, 249, 241, 237),
             textStyle: GoogleFonts.instrumentSansTextTheme().bodyMedium!.copyWith(
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold
             ),
           )
         ),
-        dialogBackgroundColor: bg,
-        useMaterial3: true,
+        useMaterial3: true, dialogTheme: DialogThemeData(backgroundColor: bg),
       ),
       home: AuthGate(), 
       debugShowCheckedModeBanner: false,
@@ -142,7 +85,7 @@ class MyApp extends StatelessWidget {
 
 
 class MyHomePage extends StatefulWidget {
-  final startingPageIndex;
+  final int startingPageIndex;
   const MyHomePage({super.key, required this.startingPageIndex});
 
   @override
@@ -163,7 +106,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    //reruns every time setState is called
     
     //select the correct page to load
     Widget page;
@@ -232,7 +174,6 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       //navigation
       bottomNavigationBar: NavigationBar(
-        // type: BottomNavigationBarType.fixed,
         onDestinationSelected: (int index) {
           //change currentIndex based on what's been selected
           setState(() {

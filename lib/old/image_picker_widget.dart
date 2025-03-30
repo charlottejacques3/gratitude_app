@@ -11,7 +11,7 @@ class ImagePickerWidget extends StatefulWidget {
 
 
 class _ImagePickerWidgetState extends State<ImagePickerWidget> {
-  var _image;
+  // var _image;
   var imagePicker;
   var type;
 

@@ -1,8 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/guiding_pages/reframing_page.dart';
-
-//database imports
 import 'package:firebase_database/firebase_database.dart';
 
 
@@ -37,7 +35,7 @@ class _CBTPageState extends State<CBTPage> {
                                                           .child(FirebaseAuth.instance.currentUser!.uid)
                                                           .child('NegativeEmotionLogs');
 
-  //initialize reframingLogs with values passed
+  //initialize reframingLogs with values passed from previous pages
   @override
   void initState() {
     super.initState();
@@ -48,11 +46,11 @@ class _CBTPageState extends State<CBTPage> {
 
   //add data to reframingLogs map to send to database or next page
   void dataToMap() {
-    List<String> selected_traps = [];
+    List<String> selectedTraps = [];
     for (final index in selectedIndexes) {
-      selected_traps.add(thoughtTraps[index]);
+      selectedTraps.add(thoughtTraps[index]);
     }
-    reframingLogs['thought_traps'] = selected_traps;
+    reframingLogs['thought_traps'] = selectedTraps;
   }
 
   @override

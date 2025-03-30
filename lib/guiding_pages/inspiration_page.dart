@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import '../utilities/helper_functions.dart';
+import '../utilities/date_functions.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 
@@ -55,7 +55,6 @@ class _InspirationPageState extends State<InspirationPage> {
 
   //pick a category of inspiration
   void pickType() {
-    print('new type');
     setState(() {
       inspoType = selectedInspoTypes[Random().nextInt(selectedInspoTypes.length)]; //pick a random type
     });
@@ -63,11 +62,9 @@ class _InspirationPageState extends State<InspirationPage> {
     switch (inspoType) {
       case 'Random Past Log':
         generatePastLogs();
-        print('past log');
         break;
       case 'Random Photo':
         getRandomPhoto();
-        print('random photo');
         break;
       case 'Gratitude Prompt':
         //pick random number for prompt
@@ -114,12 +111,10 @@ class _InspirationPageState extends State<InspirationPage> {
   //request permission for + get a random photo
   Future<void> getRandomPhoto() async {
 
-    print('initial permissions: ${PhotoManager.getPermissionState(requestOption: PermissionRequestOption())}');
     final PermissionState ps = await PhotoManager.requestPermissionExtend();
 
-    print('permissions after request: $ps');
     // permission granted, get the photos
-    // if (ps.isAuth || ps == PermissionState.limited) {
+    if (ps.isAuth || ps == PermissionState.limited) {
       List<AssetEntity> photos = [];
       
       final List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
@@ -129,20 +124,18 @@ class _InspirationPageState extends State<InspirationPage> {
         final AssetPathEntity cameraRoll = albums.first;
         photos = await cameraRoll.getAssetListPaged(page: 0, size: 100);
       }
-      print('photos list: $photos');
 
       //get random photo
       int rand = Random().nextInt(photos.length);
       setState(() {
         selectedPhoto = photos[rand];
       });
-    // } 
+    } 
     
     //permission denied
-    // else {
-    //   PhotoManager.openSetting();
-    //   print('permission denied');
-    // }
+    else {
+      PhotoManager.openSetting();
+    }
   }
 
   @override
@@ -183,7 +176,7 @@ class _InspirationPageState extends State<InspirationPage> {
                         ? CircularProgressIndicator()
                       :
                       //past log
-                      Text(selectedLogRelativeDate + ', you were grateful for:',
+                      Text('$selectedLogRelativeDate, you were grateful for:',
                         style: Theme.of(context).textTheme.titleMedium!,
                         textAlign: TextAlign.center,
                       ),
@@ -213,7 +206,6 @@ class _InspirationPageState extends State<InspirationPage> {
                               return Container();
                             }   
                           } else {
-                            print('else case: $selectedPastLogType');
                             return Container();
                           }
                         }
@@ -318,6 +310,8 @@ class _InspirationPageState extends State<InspirationPage> {
                         fit: FlexFit.loose,
                         child: Text('Refresh')
                       ),
+
+                      //select which options to allow
                       Flexible(
                         fit: FlexFit.loose,
                         child: MenuAnchor(

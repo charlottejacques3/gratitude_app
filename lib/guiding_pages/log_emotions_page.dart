@@ -1,8 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-
-//import files
 import 'package:gratitude_app/guiding_pages/cbt_page.dart';
 
 
@@ -66,66 +64,63 @@ class _LogEmotionsPageState extends State<LogEmotionsPage> {
             ),
 
             //buttons
-            // Flexible(
-            //   fit: FlexFit.loose,
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  
-                  //go to next page
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          //create reframingLogs map to be passed through children and eventually saved to the database
-                          Map<String, dynamic> reframingLogs = {
-                            'negative_emotions': logController.text,
-                            'date': DateTime.now().toIso8601String(),
-                          };
-                      
-                          //navigate to next page
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => CBTPage(initialReframingLogs: reframingLogs))
-                          );
-                        }, 
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: Size(80, 40)
-                        ),
-                        child: Text("Next",
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  //go back to logs + save negative emotion logs to database
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          //save to database
-                          Map<String, dynamic> reframingLogs = {
-                            'negative_emotions': logController.text,
-                            'date': DateTime.now().toIso8601String(),
-                          };
-                          dbRef.push().set(reframingLogs);
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                
+                //go to next page
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        //create reframingLogs map to be passed through children and eventually saved to the database
+                        Map<String, dynamic> reframingLogs = {
+                          'negative_emotions': logController.text,
+                          'date': DateTime.now().toIso8601String(),
+                        };
                     
-                          //go back to log page
-                          Navigator.pop(context);
-                          Navigator.pop(context, {'guided':true});
-                        }, 
-                        child: Text("I've thought of something to log!",
-                          textAlign: TextAlign.center,
-                        )
+                        //navigate to next page
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => CBTPage(initialReframingLogs: reframingLogs))
+                        );
+                      }, 
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: Size(80, 40)
+                      ),
+                      child: Text("Next",
+                        textAlign: TextAlign.center,
                       ),
                     ),
                   ),
-                ],
-              ),
-            // ),
+                ),
+
+                //go back to logs + save negative emotion logs to database
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        //save to database
+                        Map<String, dynamic> reframingLogs = {
+                          'negative_emotions': logController.text,
+                          'date': DateTime.now().toIso8601String(),
+                        };
+                        dbRef.push().set(reframingLogs);
+                  
+                        //go back to log page
+                        Navigator.pop(context);
+                        Navigator.pop(context, {'guided':true});
+                      }, 
+                      child: Text("I've thought of something to log!",
+                        textAlign: TextAlign.center,
+                      )
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ]
         ),
       ),

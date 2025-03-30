@@ -1,17 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
-
-//database imports
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:gratitude_app/congrats_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-//import files
 import 'guiding_pages/main_guiding_page.dart';
-
-//image selection
 import 'package:image_picker/image_picker.dart';
 enum ImageSourceType { gallery, camera }
 
@@ -26,7 +19,7 @@ class GratitudeLogPage extends StatefulWidget {
 
 class _GratitudeLogPageState extends State<GratitudeLogPage> {
   
-  List<DynamicFormWidget> dynamicForms = [];//[DynamicFormWidget(key: Key(1.toString()), logController: TextEditingController(), manageFormList: manageFormList)];
+  List<DynamicFormWidget> dynamicForms = [];
   int nextKey = 2;
   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
                                                           .child(FirebaseAuth.instance.currentUser!.uid)
@@ -39,7 +32,6 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
 
   //manage deletions of forms from the form widget
   void manageFormList(Key key) {
-    print('rgoing to delete $key');
 
     //find right one to delete
     for (var formWidget in dynamicForms) {
@@ -47,7 +39,6 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
         setState(() {
           dynamicForms.remove(formWidget);
         });
-        print(formWidget.key);
       }
     }
   }
@@ -57,13 +48,11 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
     //get image from camera/gallery
     ImagePicker imagePicker = ImagePicker();
     XFile? file = await imagePicker.pickImage(source: source);
-    print(file?.path);
 
     if (file == null) return;
 
     //create unique filename with the datetime
     String filename = DateTime.now().toIso8601String();
-    print(filename);
 
     //create references of folders/files
     Reference refRoot = FirebaseStorage.instance.ref();
@@ -107,6 +96,8 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
               textAlign: TextAlign.center,
             ),
           ),
+
+          //display form fields
           ListView.builder(
             physics: NeverScrollableScrollPhysics(),
             itemCount: dynamicForms.length,
@@ -224,6 +215,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                           handleImageUpload(ImageSource.camera);
                         },
                       ),
+                      //choose from library
                       MenuItemButton(
                         child: Text('Choose From Library'),
                         onPressed: () async {
@@ -287,8 +279,6 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                     child: Text('Done'),
                     onPressed: () async {
                     try {
-                      print("in the try blockk");
-                  
                       //send all text entries to database
                       for (final item in dynamicForms) {
                         String log = item.logController.text;
@@ -348,36 +338,14 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
 class DynamicFormWidget extends StatelessWidget {
 
   // final String initialVal;
-  const DynamicFormWidget({super.key, required this.logController, required this.manageFormList});//required this.initialVal});
+  const DynamicFormWidget({super.key, required this.logController, required this.manageFormList});
 
-  final TextEditingController logController; // = TextEditingController(text: initialVal);
-  final manageFormList;
+  final TextEditingController logController; 
+  final dynamic manageFormList;
 
-  //how to dispose of controller after?
 
   @override
   Widget build(BuildContext context) {
-    // return ListTile(
-    //   title: TextFormField(
-    //     controller: logController,
-    //     // initialValue: initialVal,
-    //     keyboardType: TextInputType.multiline,
-    //     minLines: 1,
-    //     maxLines: 3,
-    //     validator: (value) {
-    //       if (value == null || value.isEmpty) {
-    //         return 'Please enter some text';
-    //       }
-    //       return null;
-    //     },
-    //   ),
-
-    //   //delete log button
-    //   trailing: IconButton(
-    //     icon: Icon(Icons.delete),
-    //     onPressed: () => manageFormList(key)
-    //   ),
-    // );
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -389,16 +357,9 @@ class DynamicFormWidget extends StatelessWidget {
             flex: 7,
             child: TextFormField(
               controller: logController,
-              // initialValue: initialVal,
               keyboardType: TextInputType.multiline,
               minLines: 1,
               maxLines: 3,
-              // validator: (value) {
-              //   if (value == null || value.isEmpty) {
-              //     return 'Please enter some text';
-              //   }
-              //   return null;
-              // }, 
             ),
           ),
       

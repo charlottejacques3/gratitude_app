@@ -12,7 +12,7 @@ class CongratsPage extends StatefulWidget {
   State<CongratsPage> createState() => _CongratsPageState();
 }
 
-
+//where it goes after submitting logs
 class _CongratsPageState extends State<CongratsPage> {
 
   TextEditingController adviceController = TextEditingController();
@@ -101,7 +101,6 @@ class _CongratsPageState extends State<CongratsPage> {
                     )
                   ],
                 )
-                //
               : Text('Good job logging your gratitude!'),
               Spacer(
                 flex: 3

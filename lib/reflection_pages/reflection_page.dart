@@ -1,9 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:gratitude_app/utilities/helper_functions.dart';
+import 'package:gratitude_app/utilities/date_functions.dart';
 import 'package:gratitude_app/reflection_pages/new_reflection.dart';
-
 import 'reflection_detail_page.dart';
 
 class ReflectionPage extends StatefulWidget {

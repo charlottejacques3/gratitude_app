@@ -39,6 +39,8 @@ class _FinalPageState extends State<FinalPage> {
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 30,),
+
+            //bring back to main page
             ElevatedButton(
               onPressed: () {
                 for(var i = 0; i < 4; i++) {

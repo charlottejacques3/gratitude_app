@@ -1,12 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
-//database imports
 import 'package:firebase_database/firebase_database.dart';
 import 'package:gratitude_app/main.dart';
-
-//helper functions
-import 'utilities/helper_functions.dart';
+import 'utilities/date_functions.dart';
 
 class PastLogsPage extends StatefulWidget {
   final bool editMode;
@@ -32,7 +28,6 @@ class _PastLogsPageState extends State<PastLogsPage> {
   void initState() {
     super.initState();
     dbRef.keepSynced(true);
-    // print('initially mounted: $mounted');
     
     dbRef.onValue.listen((event) {
       //re-initialize gratitudeLogs to empty
@@ -74,9 +69,9 @@ class _PastLogsPageState extends State<PastLogsPage> {
           if (mounted) {
             setState(() {
               if (categorizedLogs.containsKey(formatted)) {
-                categorizedLogs[formatted]!.add(data);//item['gratitude_item']);
+                categorizedLogs[formatted]!.add(data);
               } else {
-                categorizedLogs[formatted] = [data];//item['gratitude_item']];
+                categorizedLogs[formatted] = [data];
               }
             });
           }
@@ -118,6 +113,7 @@ class _PastLogsPageState extends State<PastLogsPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(height: 10),
+                          //display date
                           Text(categorizedLogs.keys.elementAt(categorizedLogs.length - 1 - parentIndex),
                             style: Theme.of(context).textTheme.titleMedium!.copyWith(
                               fontSize: 20,
@@ -169,7 +165,6 @@ class _PastLogsPageState extends State<PastLogsPage> {
                                           return Container();
                                         }   
                                       } else {
-                                        print('else case: ${lst[childIndex]['type']}');
                                         return Container();
                                       }
                                     }
@@ -204,7 +199,7 @@ class _PastLogsPageState extends State<PastLogsPage> {
                         ],
                       );
                     },
-                    childCount: categorizedLogs.length, // Number of parent items
+                    childCount: categorizedLogs.length, // number of parent items
                   ),
                 ),
               ],

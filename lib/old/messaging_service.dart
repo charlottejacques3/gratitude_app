@@ -7,7 +7,7 @@ class MessagingService {
     try {
       // Request notification permissions (provisional)
       print("before notication settings");
-      final notificationSettings = await _firebaseMessaging.requestPermission(provisional: true);
+      // final notificationSettings = await _firebaseMessaging.requestPermission(provisional: true);
       print("after notification settings");
     } catch (e) {
       print("caught notications settings exception $e");

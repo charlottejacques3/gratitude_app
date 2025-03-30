@@ -1,36 +1,13 @@
 import 'dart:math';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_database/firebase_database.dart';
-import 'package:gratitude_app/utilities/firebase_options.dart';
 import 'package:gratitude_app/utilities/notification_service.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
-//read settings from settings - NOT USED ANYMORE
-Future<Map<dynamic, dynamic>> readSettings() async {
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  Map<dynamic, dynamic> values = {};
-  try {
-    DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
-                                                          .child(FirebaseAuth.instance.currentUser!.uid)
-                                                          .child('Settings');
-    var dataSnapshot = await dbRef.once();
-    values = dataSnapshot.snapshot.value as Map<dynamic, dynamic>;
-    print(values);
-  } catch (e) {
-    print("error reading from firebase: $e");
-  }
-  return values;
-}
 
 //find time to start alarm manager
 Future<DateTime> startAlarmManager() async {
-  // Map<dynamic, dynamic> settings = await readSettings();
+  //get shared preferences
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.reload();
 
@@ -43,7 +20,6 @@ Future<DateTime> startAlarmManager() async {
     hr = prefs.getInt('scheduled_hours')!;
     min = prefs.getInt('scheduled_minutes')!;
   }
-  print('start time: ${prefs.getInt('random_start_hours')}:${prefs.getInt('random_start_minutes')}');
   DateTime rn = DateTime.now();
   DateTime alarmTime = DateTime(rn.year, rn.month, rn.day, hr-1, min);
 
@@ -51,7 +27,6 @@ Future<DateTime> startAlarmManager() async {
   if (alarmTime.isBefore(rn)) {
     alarmTime = alarmTime.add(Duration(days: 1));
   }
-  print('Alarm manager should go off at $alarmTime');
   return alarmTime;
 }
 
@@ -63,28 +38,13 @@ Future<void> notificationScheduler() async {
   final DateTime now = DateTime.now();
   print("[$now] Hello, world! function='$notificationScheduler'");
 
-
-  //schedule a notification right away for testing
-  // try {
-  //   tz.initializeTimeZones();
-  //   NotificationService.scheduledNotification(
-  //     title: "Gratitude App", 
-  //     body: "Time to log your gratitude!", 
-  //     scheduledTime: DateTime.now().add(Duration(seconds:30))
-  //   );
-  // } catch (e) {
-  //   print("Exception caught while scheduling notification: $e");
-  // }
-
   //only schedule a notification if one hasn't happened today yet
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.reload();
   String? iso = prefs.getString('scheduled_notif_date');
-  print('iso: $iso');
   if (iso == null || DateTime.parse(iso).day != DateTime.now().day || DateTime.parse(iso).isAfter(DateTime.now())) {
 
     //make sure the period isn't over for today
-    // Map<dynamic, dynamic> settings = await readSettings();
     DateTime rn = DateTime.now();
     int startHrs = prefs.getInt('random_start_hours')!;
     int endHrs = prefs.getInt('random_end_hours')!;
@@ -93,14 +53,11 @@ Future<void> notificationScheduler() async {
     DateTime endPeriod = DateTime(rn.year, rn.month, rn.day, endHrs, prefs.getInt('random_end_minutes')!);
     DateTime scheduledTime = DateTime(rn.year, rn.month, rn.day, prefs.getInt('scheduled_hours')!, prefs.getInt('scheduled_minutes')!);
 
-    print('random: $rand, end time: $endPeriod');
     if ((rand && endPeriod.isAfter(rn)) || (!rand && scheduledTime.isAfter(rn))) {
       DateTime notificationDate = DateTime.now();
 
       //random notifications
       if (rand) {
-        print('random');
-        
         bool withinRange = false;
 
         while(!withinRange) {
@@ -124,7 +81,6 @@ Future<void> notificationScheduler() async {
 
       //scheduled notifications
       else {
-        print('scheduled');
         notificationDate = scheduledTime;
       }
 
@@ -140,7 +96,6 @@ Future<void> notificationScheduler() async {
       } catch (e) {
         print("Exception caught while scheduling notification: $e");
       }
-      print("notification has been scheduled");
     }
   }
 
@@ -157,43 +112,4 @@ Future<void> notificationScheduler() async {
     exact: true,
     wakeup: true
   );
-}
-
-
-// @pragma('vm:entry-point')
-// Future<void> testNotifications() async {
-//   print('${DateTime.now()} - TEST ALARM');
-//   try {
-//     tz.initializeTimeZones();
-//     NotificationService.scheduledNotification(
-//       title: "Gratitude App", 
-//       body: "Test notification!", 
-//       scheduledTime: DateTime.now().add(Duration(seconds: 30))
-//     );
-//   } catch (e) {
-//     print("Exception caught while scheduling notification: $e");
-//   }
-//   print("notification has been scheduled");
-// }
-
-
-//request ignore battery optimizations so the app can run in the background
-Future<void> requestBatteryOptimizationExemption() async {
-  // Check if we already have the permission
-  print('initial: ${Permission.ignoreBatteryOptimizations.status}');
-  if (await Permission.ignoreBatteryOptimizations.isGranted) {
-    print('Battery optimization already disabled for app');
-    return;
-  }
-  
-  // Request the permission
-  final status = await Permission.ignoreBatteryOptimizations.request();
-  
-  if (status.isGranted) {
-    print('Battery optimization disabled for app');
-  } else {
-    print('Battery optimization permission denied');
-    print(status);
-    // You may want to show a dialog explaining why this is important
-  }
 }

@@ -43,7 +43,6 @@ class _GuidingPageState extends State<GuidingPage> {
         if (mounted) {
           setState(() {
             selectedAdvice = values[pastLogKey]['advice'];
-            print(selectedAdvice);
           });
         }
       }
@@ -81,10 +80,6 @@ class _GuidingPageState extends State<GuidingPage> {
               textAlign: TextAlign.center,
             )
             
-              // Text(selectedAdvice,
-              //   style: Theme.of(context).textTheme.titleMedium!,
-              //   textAlign: TextAlign.center,
-              // )
             : Container(),
             SizedBox(height: 20,),
 

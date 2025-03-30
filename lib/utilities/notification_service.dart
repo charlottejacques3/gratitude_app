@@ -4,9 +4,6 @@ import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin notificationsPlugin = FlutterLocalNotificationsPlugin();
-  // bool _isInitialized = false;
-
-  // bool get isInitialized => _isInitialized;
 
   static Future<void> onDidReceiveNotificationResponse(NotificationResponse response) async {
     print("received notification response");
@@ -14,7 +11,6 @@ class NotificationService {
 
   //initialize
   static Future<void> initNotifications() async {
-    // if (_isInitialized) return; //prevent re-initialization
 
     //prepare android init settings (would have to do more for ios)
     const initSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher'); //default flutter icon, can change
@@ -38,20 +34,6 @@ class NotificationService {
       ?.requestNotificationsPermission();
   }
   
-
-  //notifications detail setup
-  // NotificationDetails notificationDetails() {
-  //   return const NotificationDetails(
-  //     android: AndroidNotificationDetails(
-  //       'daily_channel_id', 
-  //       'Daily Notifications',
-  //       channelDescription: 'Daily Notification Channel',
-  //       importance: Importance.max,
-  //       priority: Priority.high
-  //     )
-  //   );
-
-  // }
   
   //show instant notification
   static Future<void> showInstantNotification({required String title, required String body}) async {
@@ -66,12 +48,6 @@ class NotificationService {
     );
 
     await notificationsPlugin.show(0, title, body, platformChannelSpecifics);
-
-    // try {
-    //   return notificationsPlugin.show(id, title, body, const NotificationDetails());
-    // } catch (e) {
-    //   print("error caught in show notification: $e");
-    // }
   }
 
   //show a scheduled notification
@@ -101,42 +77,4 @@ class NotificationService {
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle
     );
   }
-
-  //show a repetitive notification
-//   static Future<void> showRepetitiveNotification() async {
-//     int randomId = Random().nextInt(1000);
-
-//     final AndroidNotificationDetails _repetitiveAndroidNotificationDetails = 
-//       const AndroidNotificationDetails(
-//         "channelRemainderId",
-//         "channelRemainderName",
-//         channelDescription: "channelRemainderDescription",
-//         importance: Importance.max,
-//         priority: Priority.high,
-//         playSound: true,
-//         enableVibration: true,
-//       );
-
-//   final AndroidNotificationChannel _repetitiveNotificationChannel = 
-//       const AndroidNotificationChannel(
-//         "channelRemainderId",
-//         "channelRemainderName",
-//         description: "channelRemainderDescription",
-//         importance: Importance.high,
-//         playSound: true,
-//         enableVibration: true,
-//       );
-
-//   notificationsPlugin.periodicallyShow(
-//     randomId,
-//     "Repetitive $randomId",
-//     "Testing Zoned Notification $randomId",
-//     RepeatInterval.everyMinute,
-//     NotificationDetails(android: _repetitiveAndroidNotificationDetails),
-//     androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle
-//   );
-//   print(DateTime.now());
-//   }
-
-//   //on notification tap
 }

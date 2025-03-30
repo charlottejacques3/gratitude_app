@@ -1,16 +1,10 @@
   import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
-  import 'package:firebase_auth/firebase_auth.dart';
   import 'package:flutter/material.dart';
   import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-  //import files
-  import 'utilities/helper_functions.dart';
+  import 'package:shared_preferences/shared_preferences.dart';
+  import 'utilities/date_functions.dart';
   import 'utilities/alarm_manager.dart';
   import 'authentication/auth_service.dart';
-
-  //database imports
-  import 'package:firebase_database/firebase_database.dart';
 
 
   class SettingsPage extends StatefulWidget {
@@ -22,14 +16,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 
   class _SettingsPageState extends State<SettingsPage> {
-    
-    DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
-                                                            .child(FirebaseAuth.instance.currentUser!.uid)
-                                                            .child('Settings');
 
     bool randomNotifications = true;
     final _formKey = GlobalKey<FormState>();
-    bool allowAI = true; // await SharedPreferences.getInstance().getBool('allow_ai');
+    bool allowAI = true;
 
     //controllers
     TextEditingController randomStartTimeController= TextEditingController();
@@ -43,27 +33,6 @@ import 'package:shared_preferences/shared_preferences.dart';
     void initState() {
       super.initState();
       getSharedPrefs();
-
-      //read from the database
-      // dbRef.onValue.listen((event) {
-      //   DataSnapshot dataSnapshot = event.snapshot;
-      //   Map<dynamic, dynamic> values = dataSnapshot.value as Map<dynamic, dynamic>;
-      //   //set the defaults for the controllers
-      //   Map<String, String> startTime = twenty4ToAmPm(values['random_start_time']);
-      //   Map<String, String> endTime = twenty4ToAmPm(values['random_end_time']);
-      //   Map<String, String> scheduledTime = twenty4ToAmPm(values['scheduled_time']);
-      //   if (mounted) {
-      //     setState(() {
-      //       randomStartTimeController = TextEditingController(text: startTime['hrs_mins']);
-      //       randomStartAMPMController = TextEditingController(text: startTime['am_pm']);
-      //       randomEndTimeController = TextEditingController(text: endTime['hrs_mins']);
-      //       randomEndAMPMController = TextEditingController(text: endTime['am_pm']);
-      //       scheduledTimeController = TextEditingController(text: scheduledTime['hrs_mins']);
-      //       scheduledAMPMController = TextEditingController(text: scheduledTime['am_pm']);
-      //       randomNotifications = values['random_notifications'];
-      //     });
-      //   }
-      // });
     }
 
     void getSharedPrefs() async {
@@ -96,7 +65,6 @@ import 'package:shared_preferences/shared_preferences.dart';
         scheduledTimeController = TextEditingController(text: scheduledTime['hrs_mins']);
         scheduledAMPMController = TextEditingController(text: scheduledTime['am_pm']);
       });
-
     }
 
     @override
@@ -210,17 +178,12 @@ import 'package:shared_preferences/shared_preferences.dart';
                 onPressed: () async {
                   //check for valid times
                   if (_formKey.currentState!.validate()) {
-                    // print(FirebaseAuth.instance.currentUser!.uid);
 
                     //set up shared preferences
                     SharedPreferences prefs = await SharedPreferences.getInstance();
-
-
-                    //update shared preferences
                     Map<String, int> time = {};
                     //random notifications
                     if (randomNotifications) {
-                      //check second time is after first 
                       
                       DateTime rn = DateTime.now();
                       //start time
@@ -237,9 +200,6 @@ import 'package:shared_preferences/shared_preferences.dart';
                         prefs.setInt('random_start_minutes', startTime['minutes']!);
                         prefs.setInt('random_end_hours', endTime['hours']!);
                         prefs.setInt('random_end_minutes', endTime['minutes']!);
-                        print('updating start time to: ${prefs.getInt('random_start_hours')}:${prefs.getInt('random_start_minutes')}');
-                        // dbRef.child('random_start_time').update(startTime);
-                        // dbRef.child('random_end_time').update(endTime);
                       } else {
                         //otherwise don't update anything
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -251,77 +211,27 @@ import 'package:shared_preferences/shared_preferences.dart';
                     //scheduled notifications
                     else {
                       time = amPmTo24(scheduledTimeController.text, scheduledAMPMController.text);
-                      // dbRef.child('scheduled_time').update(time);
-                        prefs.setInt('schduled_hours', time['hours']!);
-                        prefs.setInt('scheduled_minutes', time['minutes']!);
+                      prefs.setInt('schduled_hours', time['hours']!);
+                      prefs.setInt('scheduled_minutes', time['minutes']!);
                     }
                     //set notification style
                     prefs.setBool('random_notifications', randomNotifications);
-                    // dbRef.update({'random_notifications': randomNotifications});
-
-
-                    //update alarm manager
-
-                    //see if the period is over
-                    DateTime rn = DateTime.now();
-                    if (randomNotifications) {
-                      //end of allowed period
-                      time = amPmTo24(randomEndTimeController.text, randomEndAMPMController.text);
-                    } else {
-                      //just normal scheduled time
-                      time = amPmTo24(scheduledTimeController.text, scheduledAMPMController.text);
-                    }
 
                     
                     //cancel past alarms to avoid backlog
-                    bool success = await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
-                    print("Canceled alarm with IDs 0 and 1: $success");
+                    await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
 
-                    //if the period is not over, schedule today's notification with a one shot
-                    // if (endTime.isAfter(rn)) {
-                      print('scheduling oneshot');
-                      await AndroidAlarmManager.oneShot(
-                        const Duration(seconds: 5), //schedule 30 seconds later
-                        0, 
-                        notificationScheduler,
-                        rescheduleOnReboot: true,
-                        allowWhileIdle: true,
-                        exact: true,
-                        wakeup: true
-                      );
-                    // }
-
-                    // //schedule the next alarm
-                    // DateTime startTime = await startAlarmManager();
-                    // // print('scheduling periodic for $startTime');
-                    // print('IMMEDIATELY scheduling periodic');
-                    // await AndroidAlarmManager.periodic(
-                    //   const Duration(minutes: 10), 
-                    //   0, 
-                    //   notificationScheduler,
-                    //   rescheduleOnReboot: true,
-                    //   allowWhileIdle: true,
-                    //   exact: true,
-                    //   wakeup: true
-                    // );
-
-                    //test alarm - should notify right away
-                    // if (await Permission.ignoreBatteryOptimizations.isGranted) {
-                    //   print('Battery optimization already disabled for app, yay');
-                    // }
-                    // AndroidAlarmManager.cancel(3);
-                    // print('scheduling test periodic for $startTime');
-                    // await AndroidAlarmManager.periodic(
-                    //   const Duration(minutes: 2), 
-                    //   3, 
-                    //   testNotifications,
-                    //   startAt: startTime, //DateTime(2025, 2, 24, 11, 18),
-                    //   rescheduleOnReboot: true,
-                    //   allowWhileIdle: true,
-                    //   exact: true,
-                    //   wakeup: true
-                    // );
-
+                    //immediately schedule a one shot
+                    print('scheduling oneshot');
+                    await AndroidAlarmManager.oneShot(
+                      const Duration(seconds: 5), //schedule 5 seconds later
+                      0, 
+                      notificationScheduler,
+                      rescheduleOnReboot: true,
+                      allowWhileIdle: true,
+                      exact: true,
+                      wakeup: true
+                    );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Please enter a valid time.')),
@@ -380,10 +290,8 @@ import 'package:shared_preferences/shared_preferences.dart';
   //time picker widget
   class TimePickerWidget extends StatelessWidget {
 
-    const TimePickerWidget({super.key, required this.timeController, required this.amPmController});//, required this.initialAmPm});//required this.initialTime});
+    const TimePickerWidget({super.key, required this.timeController, required this.amPmController});
 
-    // final String initialTime;
-    // final String initialAmPm;
     final TextEditingController timeController;
     final TextEditingController amPmController;
 
@@ -434,8 +342,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
     @override
     TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
-      print('old: $oldValue');
-      print('new: $newValue');
       int oldlen = oldValue.text.length;
       int newlen = newValue.text.length;
 
@@ -471,7 +377,7 @@ import 'package:shared_preferences/shared_preferences.dart';
           } else if (oldlen == 2 && newlen == 1) {
             //automatically remove colon
             return TextEditingValue(
-              text: '',//newValue.text.substring(0,1),
+              text: '',
               selection: TextSelection.collapsed(
                 offset: newValue.selection.end - 1
               )

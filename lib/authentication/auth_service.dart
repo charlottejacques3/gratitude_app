@@ -1,6 +1,5 @@
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/authentication/login_page.dart';
@@ -16,22 +15,15 @@ class AuthService {
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email, 
         password: password
-      );
-
-      print('before scheduling alarm');
-      
+      );      
 
       //send to main page
-      print('before sending to main page');
       Navigator.pushReplacement(
         context, 
         MaterialPageRoute(builder: (BuildContext context) => const MyHomePage(startingPageIndex: 0,) )
       );
 
       //save default settings to shared preferences
-      // DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
-      //                                                     .child(FirebaseAuth.instance.currentUser!.uid)
-      //                                                     .child('Settings');
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setBool('random_notifications', true);
       prefs.setInt('random_start_hours', 9); //9am start
@@ -41,16 +33,13 @@ class AuthService {
       prefs.setInt('scheduled_hours', 12); //12pm
       prefs.setInt('scheduled_minutes', 0);
       prefs.setBool('allow_ai', true);
-      print('settings set successfully: random start hours: ${prefs.getInt('random_start_hours')}' );
 
       //cancel past alarms to avoid backlog
-      bool success = await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
-      print("Canceled alarm with IDs 0 and 1: $success");
+      await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
 
       //schedule the next alarm
-      print('scheduling oneshot');
       await AndroidAlarmManager.oneShot(
-        const Duration(seconds: 5), //schedule 30 seconds later
+        const Duration(seconds: 5), //schedule 5 seconds later
         0, 
         notificationScheduler,
         rescheduleOnReboot: true,
@@ -93,13 +82,11 @@ class AuthService {
       );
 
       //cancel past alarms to avoid backlog
-      bool success = await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
-      print("Canceled alarm with IDs 0 and 1: $success");
+      await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
 
       //schedule the next alarm
-      print('scheduling oneshot');
       await AndroidAlarmManager.oneShot(
-        const Duration(seconds: 5), //schedule 30 seconds later
+        const Duration(seconds: 5), //schedule 5 seconds later
         0, 
         notificationScheduler,
         rescheduleOnReboot: true,

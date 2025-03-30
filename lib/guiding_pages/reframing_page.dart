@@ -1,8 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
-
-//database imports
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_multi_formatter/extensions/exports.dart';
 import 'package:gratitude_app/guiding_pages/final_page.dart';
@@ -27,7 +25,7 @@ class _ReframingPageState extends State<ReframingPage> {
   bool needHelp = false;
   bool allowAI = false;
 
-  List<PromptWidget> prompt_widgets = [];
+  List<PromptWidget> promptWidgets = [];
   Map<String, dynamic> reframingLogs = {};
   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
                                                           .child(FirebaseAuth.instance.currentUser!.uid)
@@ -123,10 +121,10 @@ class _ReframingPageState extends State<ReframingPage> {
     final response = await model.generateContent(prompt);
 
     //split string into separate prompts
-    String formatted_response = response.text!;
-    while (formatted_response.contains('_______.')) {
-      int periodIndex = formatted_response.indexOf('_______.') + 7;
-      formatted_response.removeCharAt(periodIndex); //remove extra period
+    String formattedResponse = response.text!;
+    while (formattedResponse.contains('_______.')) {
+      int periodIndex = formattedResponse.indexOf('_______.') + 7;
+      formattedResponse.removeCharAt(periodIndex); //remove extra period
     }
     List<String> split = response.text!.trim().split('_______');
     List<String> prompts = [];
@@ -135,7 +133,6 @@ class _ReframingPageState extends State<ReframingPage> {
         prompts.add(str);
       }
     }
-    print(prompts);
     return prompts;
   }
 
@@ -197,11 +194,11 @@ class _ReframingPageState extends State<ReframingPage> {
                 (context, index) {
                   return Column (
                     children: [
-                      prompt_widgets[index],
+                      promptWidgets[index],
                       SizedBox(height: 10,)
                   ]);
                 },
-                childCount: prompt_widgets.length,
+                childCount: promptWidgets.length,
               )
             ),
         
@@ -238,7 +235,7 @@ class _ReframingPageState extends State<ReframingPage> {
         
                                 //create a new prompt widget
                                 setState(() {
-                                  prompt_widgets.add(PromptWidget(controllers: newControllers, prompt: selectedPrompt));
+                                  promptWidgets.add(PromptWidget(controllers: newControllers, prompt: selectedPrompt));
                                   needHelp = true;
                                 });
                               },
@@ -253,7 +250,6 @@ class _ReframingPageState extends State<ReframingPage> {
                       //next button
                       Flexible(
                         fit: FlexFit.loose,
-                        // padding: EdgeInsets.only(left: 4.0, right: 8.0),
                         child: Padding(
                           padding: const EdgeInsets.only(left: 8.0, right: 4.0),
                           child: ElevatedButton(
@@ -262,7 +258,7 @@ class _ReframingPageState extends State<ReframingPage> {
                             ),
                             onPressed: () {
                               List<String> logs = [];
-                              for (final log in prompt_widgets) { //go through all logs
+                              for (final log in promptWidgets) { //go through all logs
                                 
                                 //get full text including prompt text
                                 String wholeLog = '';
@@ -275,7 +271,6 @@ class _ReframingPageState extends State<ReframingPage> {
                                     emptyLogs = false; 
                                     }
                                   }
-                                  print(wholeLog);
                                 }
                                 //add to list if not empty
                                 if (!emptyLogs) {
@@ -331,6 +326,7 @@ class PromptWidget extends StatelessWidget {
           color: Colors.grey
         )
       ),
+      //iterate through all fill-in-the-blanks
       child: ListView.builder(
         shrinkWrap: true,
         physics: NeverScrollableScrollPhysics(),

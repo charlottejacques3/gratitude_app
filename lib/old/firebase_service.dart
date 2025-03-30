@@ -1,7 +1,5 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart'; // Import Firebase Database
 import 'package:firebase_messaging/firebase_messaging.dart'; // Import Firebase Messaging
-import 'package:flutter/material.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     // Handle background message
