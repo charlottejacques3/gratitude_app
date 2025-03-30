@@ -2,7 +2,7 @@
   import 'package:firebase_auth/firebase_auth.dart';
   import 'package:flutter/material.dart';
   import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+  import 'package:shared_preferences/shared_preferences.dart';
 
   //import files
   import 'utilities/helper_functions.dart';
