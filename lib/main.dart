@@ -1,10 +1,11 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 //firebase imports
 import 'package:firebase_core/firebase_core.dart';
 import 'package:gratitude_app/authentication/auth_gate.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:shared_preferences/shared_preferences.dart';
 import 'utilities/firebase_options.dart';
 
@@ -28,6 +29,9 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  //cache data so available offline
+  FirebaseDatabase.instance.setPersistenceEnabled(true);
+
   //init notifications
   await NotificationService.initNotifications();
   tz.initializeTimeZones();
@@ -41,14 +45,16 @@ void main() async {
   await requestBatteryOptimizationExemption();
   
   //cancel past alarms to avoid backlog
-  bool success = await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
-  print("Canceled alarm with IDs 0 and 1: $success");
+  // bool success = await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
+  // print("Canceled alarm with IDs 0 and 1: $success");
 
   //initialize alarm manager
   await AndroidAlarmManager.initialize();
 
   //debugRepaintRainbowEnabled = true;
   runApp(const MyApp());
+
+  
   
   //set up alarm manager
   //cancel a bunch of past alarms
@@ -61,29 +67,32 @@ void main() async {
   // await AndroidAlarmManager.cancel(0); //cancel past alarms to avoid backlog
 
   //only schedule notifications if logged in
-  if (FirebaseAuth.instance.currentUser != null) {
-    DateTime startTime = await startAlarmManager();
+  // if (FirebaseAuth.instance.currentUser != null) {
+  //   DateTime startTime = await startAlarmManager();
 
     //using shared preferences
-    // SharedPreferences prefs = await SharedPreferences.getInstance();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    print('LAST NOTIFICATION TIME: ${prefs.getString('scheduled_notif_date')}');
+    // print('start: ${prefs.getInt('random_start_hours')}:${prefs.getInt('random_start_minutes')}');
+    // print('end: ${prefs.getInt('random_end_hours')}:${prefs.getInt('random_end_minutes')}');
     // bool alarmScheduled = prefs.getBool('alarmScheduled') ?? false;
     // print('is alarm scheduled already? $alarmScheduled');
 
     // if (!alarmScheduled) {
-      print('scheduling new alarm for $startTime');
-      await AndroidAlarmManager.periodic(
-        const Duration(days: 1), 
-        0, 
-        notificationScheduler,
-        startAt: startTime, //DateTime(2025, 3, 11, 10, 00),
-        rescheduleOnReboot: true,
-        allowWhileIdle: true,
-        exact: true,
-        wakeup: true
-      );
+      // print('scheduling new alarm for $startTime');
+      // await AndroidAlarmManager.periodic(
+      //   const Duration(days: 1), 
+      //   0, 
+      //   notificationScheduler,
+      //   startAt: startTime, //DateTime(2025, 3, 11, 10, 00),
+      //   rescheduleOnReboot: true,
+      //   allowWhileIdle: true,
+      //   exact: true,
+      //   wakeup: true
+      // );
       // prefs.setBool('alarmScheduled', true);
     // }
-  }
+  // }
   
   
 }
