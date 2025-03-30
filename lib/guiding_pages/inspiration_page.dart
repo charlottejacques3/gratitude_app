@@ -49,6 +49,7 @@ class _InspirationPageState extends State<InspirationPage> {
   @override
   void initState() {
     super.initState();
+    dbRef.keepSynced(true);
     pickType();
   }
 
@@ -199,7 +200,7 @@ class _InspirationPageState extends State<InspirationPage> {
                             );
                           } 
                   
-                          //displaying images - USE FUTURE BUILDER?
+                          //displaying images 
                           else if ('image'.compareTo(selectedPastLogType) == 0) {
                             try {
                               return Image.network(

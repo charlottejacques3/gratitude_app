@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService {
@@ -75,6 +76,12 @@ class NotificationService {
 
   //show a scheduled notification
   static Future<void> scheduledNotification({required String title, required String body, required DateTime scheduledTime}) async {
+
+    //store time it's scheduled for
+    String iso = scheduledTime.toIso8601String();
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('scheduled_notif_date', iso);
+    print('set time: ${prefs.getString('scheduled_notif_date')}');
     
     const NotificationDetails platformChannelSpecifics = NotificationDetails(
       android: AndroidNotificationDetails(

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:gratitude_app/authentication/login_page.dart';
 import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/utilities/alarm_manager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
 
@@ -27,29 +28,31 @@ class AuthService {
         MaterialPageRoute(builder: (BuildContext context) => const MyHomePage(startingPageIndex: 0,) )
       );
 
-      //save default settings to database
-      DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
-                                                          .child(FirebaseAuth.instance.currentUser!.uid)
-                                                          .child('Settings');
-      dbRef.child('random_notifications').set(true);
-      dbRef.child('random_start_time').child('hours').set(9); //9am start
-      dbRef.child('random_start_time').child('minutes').set(0);
-      dbRef.child('random_end_time').child('hours').set(17); //5pm end
-      dbRef.child('random_end_time').child('minutes').set(0);
-      dbRef.child('scheduled_time').child('hours').set(12); //12pm
-      dbRef.child('scheduled_time').child('minutes').set(0);
+      //save default settings to shared preferences
+      // DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
+      //                                                     .child(FirebaseAuth.instance.currentUser!.uid)
+      //                                                     .child('Settings');
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setBool('random_notifications', true);
+      prefs.setInt('random_start_hours', 9); //9am start
+      prefs.setInt('random_start_minutes', 0);
+      prefs.setInt('random_end_hours', 17); //5pm end
+      prefs.setInt('random_end_minutes', 0);
+      prefs.setInt('scheduled_hours', 12); //12pm
+      prefs.setInt('scheduled_minutes', 0);
+      prefs.setBool('allow_ai', true);
+      print('settings set successfully: random start hours: ${prefs.getInt('random_start_hours')}' );
 
       //cancel past alarms to avoid backlog
       bool success = await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
       print("Canceled alarm with IDs 0 and 1: $success");
 
       //schedule the next alarm
-      DateTime startTime = await startAlarmManager();
-      await AndroidAlarmManager.periodic(
-        const Duration(days: 1), 
+      print('scheduling oneshot');
+      await AndroidAlarmManager.oneShot(
+        const Duration(seconds: 5), //schedule 30 seconds later
         0, 
         notificationScheduler,
-        startAt: startTime, //DateTime(2025, 2, 24, 11, 18),
         rescheduleOnReboot: true,
         allowWhileIdle: true,
         exact: true,
@@ -94,12 +97,11 @@ class AuthService {
       print("Canceled alarm with IDs 0 and 1: $success");
 
       //schedule the next alarm
-      DateTime startTime = await startAlarmManager();
-      await AndroidAlarmManager.periodic(
-        const Duration(days: 1), 
+      print('scheduling oneshot');
+      await AndroidAlarmManager.oneShot(
+        const Duration(seconds: 5), //schedule 30 seconds later
         0, 
         notificationScheduler,
-        startAt: startTime, //DateTime(2025, 2, 24, 11, 18),
         rescheduleOnReboot: true,
         allowWhileIdle: true,
         exact: true,
@@ -136,6 +138,10 @@ class AuthService {
 
 
   Future<void> signout({required BuildContext context}) async {
+    //cancel past alarms
+    bool success = await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
+    print("Canceled alarm with IDs 0 and 1: $success");
+
     await FirebaseAuth.instance.signOut();
 
     //navigate back to login page

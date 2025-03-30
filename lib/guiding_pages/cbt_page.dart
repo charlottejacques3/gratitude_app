@@ -178,44 +178,50 @@ class _CBTPageState extends State<CBTPage> {
                 children: [
                   
                   //go to next page
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        //add data to reframingLogs map
-                        dataToMap();
-
-                        //navigate to next page
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => ReframingPage(initialReframingLogs: reframingLogs))
-                        );
-                      }, 
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: Size(80, 40)
-                      ),
-                      child: Text("Next",
-                        textAlign: TextAlign.center,
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          //add data to reframingLogs map
+                          dataToMap();
+                    
+                          //navigate to next page
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => ReframingPage(initialReframingLogs: reframingLogs))
+                          );
+                        }, 
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: Size(80, 40)
+                        ),
+                        child: Text("Next",
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
                   ),
 
                   //go back to logs + save negative emotion logs to database
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        //save to database
-                        dataToMap();
-                        dbRef.push().set(reframingLogs);
-
-                        //go back to log page
-                        for(var i = 0; i < 2; i++) {
-                          Navigator.pop(context);
-                        }
-                        Navigator.pop(context, {'guided':true});
-                      }, 
-                      child: Text("I've thought of something to log!")
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          //save to database
+                          dataToMap();
+                          dbRef.push().set(reframingLogs);
+                    
+                          //go back to log page
+                          for(var i = 0; i < 2; i++) {
+                            Navigator.pop(context);
+                          }
+                          Navigator.pop(context, {'guided':true});
+                        }, 
+                        child: Text("I've thought of something to log!",
+                          textAlign: TextAlign.center,
+                        )
+                      ),
                     ),
                   ),
                 ],
