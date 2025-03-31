@@ -34,7 +34,7 @@ class _LogEmotionsPageState extends State<LogEmotionsPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Column(
+        child: ListView(
           children: [
             SizedBox(height: 30),
             Text("Sounds like a plan. Use this space to log your negative emotions.",

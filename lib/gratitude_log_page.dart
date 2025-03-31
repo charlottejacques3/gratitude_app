@@ -33,12 +33,19 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
   //manage deletions of forms from the form widget
   void manageFormList(Key key) {
 
-    //find right one to delete
-    for (var formWidget in dynamicForms) {
-      if (formWidget.key == key) {
-        setState(() {
-          dynamicForms.remove(formWidget);
-        });
+    //if was the last one, just clear it
+    if (dynamicForms.length == 1) {
+      dynamicForms[0].logController.clear();
+    }
+
+    //otherwise, find right one to delete
+    else {
+      for (var formWidget in dynamicForms) {
+        if (formWidget.key == key) {
+          setState(() {
+            dynamicForms.remove(formWidget);
+          });
+        }
       }
     }
   }
@@ -174,6 +181,8 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                         dynamicForms.add(DynamicFormWidget(key: Key(nextKey.toString()), logController: TextEditingController(), manageFormList: manageFormList));
                         nextKey++;
                       });
+
+
                     }, 
                     style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(
@@ -246,22 +255,22 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                         );
 
                         if (preloaded != null) {
-                            setState(() {
-                              //if there is preloaded data from the inspiration page, set it
-                              if (preloaded.containsKey('type') && preloaded.containsKey('log')) {
-                                if (preloaded['type'].compareTo('text') == 0) {
-                                  dynamicForms = [DynamicFormWidget(key: Key('1'), logController: TextEditingController(text: preloaded['log']), manageFormList: manageFormList)];
-                                } else if (preloaded['type'].compareTo('image') == 0) {
-                                  imageUrls.add(preloaded['log']);
-                                }
+                          setState(() {
+                            //if there is preloaded data from the inspiration page, set it
+                            if (preloaded.containsKey('type') && preloaded.containsKey('log')) {
+                              if (preloaded['type'].compareTo('text') == 0) {
+                                dynamicForms = [DynamicFormWidget(key: Key('1'), logController: TextEditingController(text: preloaded['log']), manageFormList: manageFormList)];
+                              } else if (preloaded['type'].compareTo('image') == 0) {
+                                imageUrls.add(preloaded['log']);
                               }
+                            }
 
-                              //keep track of whether they worked through their emotions in that session
-                              if (preloaded.containsKey('guided')) {
-                                guided = preloaded['guided'];
-                              }
-                            });
-                          }
+                            //keep track of whether they worked through their emotions in that session
+                            if (preloaded.containsKey('guided')) {
+                              guided = preloaded['guided'];
+                            }
+                          });
+                        }
                       },
                       child: Text("I can't think of anything",
                         textAlign: TextAlign.center,
@@ -278,28 +287,28 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                   child: ElevatedButton(
                     child: Text('Done'),
                     onPressed: () async {
-                    try {
-                      //send all text entries to database
-                      for (final item in dynamicForms) {
-                        String log = item.logController.text;
-                        if (log.isNotEmpty) { //don't add empty entries
-                          //map to a dictionary
-                          Map<String, String> gratitudeLogs = {
-                            'gratitude_item': log,
-                            'date': DateTime.now().toIso8601String(),
-                            'type': 'text'
-                          };
-                          //push creates a unique key
-                          dbRef.push().set(gratitudeLogs);
-                  
-                          //clear text fields
-                          item.logController.text = '';
+                      try {
+                        //send all text entries to database
+                        for (final item in dynamicForms) {
+                          String log = item.logController.text;
+                          if (log.isNotEmpty) { //don't add empty entries
+                            //map to a dictionary
+                            Map<String, String> gratitudeLogs = {
+                              'gratitude_item': log,
+                              'date': DateTime.now().toIso8601String(),
+                              'type': 'text'
+                            };
+                            //push creates a unique key
+                            dbRef.push().set(gratitudeLogs);
+                    
+                            //clear text fields
+                            item.logController.text = '';
+                          }
                         }
-                      }
 
-                      //send all image urls to database
-                      for (final url in imageUrls) {
-                        //map to a dictionary
+                        //send all image urls to database
+                        for (final url in imageUrls) {
+                          //map to a dictionary
                           Map<String, String> gratitudeImages = {
                             'gratitude_item': url,
                             'date': DateTime.now().toIso8601String(),
@@ -311,17 +320,25 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                           setState(() {
                             imageUrls = [];
                           });
+                        }
+                      } catch (e) {
+                        print('error writing data: $e');
                       }
-                    } catch (e) {
-                      print('error writing data: $e');
-                    }
-                    
-                    //navigate to congrats page
-                    Navigator.push(
-                      context, 
-                      MaterialPageRoute(builder: (context) => CongratsPage(reframed: guided,))
-                    );
-                  }, 
+
+                      
+                      //navigate to congrats page
+                      Navigator.push(
+                        context, 
+                        MaterialPageRoute(builder: (context) => CongratsPage(reframed: guided,))
+                      ).then((_) {
+                        //update page
+                        setState(() {
+                          guided = false;
+                          dynamicForms = [DynamicFormWidget(key: Key('1'), logController: TextEditingController(), manageFormList: manageFormList)];
+                          dbRef.keepSynced(true);
+                        });
+                      });
+                    }, 
                   ),
                 ),
               ),
@@ -337,7 +354,6 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
 
 class DynamicFormWidget extends StatelessWidget {
 
-  // final String initialVal;
   const DynamicFormWidget({super.key, required this.logController, required this.manageFormList});
 
   final TextEditingController logController; 

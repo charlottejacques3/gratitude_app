@@ -41,9 +41,7 @@ class _CongratsPageState extends State<CongratsPage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Center(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            
+          child: ListView(
             children: [
               Spacer(
                 flex: 1
@@ -95,13 +93,16 @@ class _CongratsPageState extends State<CongratsPage> {
                             print('error writing to database: $e');
                           }
                         }
-                        Navigator.pop(context, {'guided':false});
+                        Navigator.pop(context);
                       },
                       child: Text('Save')
                     )
                   ],
                 )
-              : Text('Good job logging your gratitude!'),
+              : Text('Good job logging your gratitude!',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyLarge!,
+              ),
               Spacer(
                 flex: 3
               )
