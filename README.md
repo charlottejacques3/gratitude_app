@@ -1,6 +1,6 @@
 # Gratitude Buddy
 
-[App Video Walkthrough]https://www.youtube.com/watch?v=2dPMIcg9Akw
+[App Video Walkthrough](https://www.youtube.com/watch?v=2dPMIcg9Akw)
 
 ## About
 
