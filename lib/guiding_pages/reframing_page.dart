@@ -5,6 +5,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_multi_formatter/extensions/exports.dart';
 import 'package:gratitude_app/guiding_pages/final_page.dart';
 import 'package:firebase_vertexai/firebase_vertexai.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
@@ -222,7 +223,8 @@ class _ReframingPageState extends State<ReframingPage> {
         
                                 //pick a random prompt + make controllers
                                 List<String> selectedPrompt = [];
-                                if (allowAI) {
+                                bool connected = await InternetConnection().hasInternetAccess;
+                                if (allowAI && connected) {
                                   selectedPrompt = await generateAIContent();
                                 } else {
                                   final randomNum = Random().nextInt(prompts.length);
@@ -231,6 +233,13 @@ class _ReframingPageState extends State<ReframingPage> {
                                 List<TextEditingController> newControllers = [];
                                 for (int i = 0; i < prompts.length; i++) {
                                   newControllers.add(TextEditingController());
+                                }
+
+                                //ai no wifi disclaimer
+                                if (allowAI && !connected) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('To enable AI prompting, please connect to the internet')),
+                                  );
                                 }
         
                                 //create a new prompt widget

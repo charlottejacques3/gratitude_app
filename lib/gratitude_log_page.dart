@@ -29,6 +29,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
 
   //images
   List<String> imageUrls = [];
+  bool loadingImages = true;
 
   //manage deletions of forms from the form widget
   void manageFormList(Key key) {
@@ -63,6 +64,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
 
     //create references of folders/files
     Reference refRoot = FirebaseStorage.instance.ref();
+
     Reference refImageDir = refRoot.child('images'); //get reference to storage root
     Reference refImage = refImageDir.child(filename); //create a reference for the image to be stored
 
@@ -73,6 +75,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
       String url = await refImage.getDownloadURL();
       setState(() {
         imageUrls.add(url);
+        loadingImages = false;
       });
     } catch(e) {
       print('error storing images: $e');

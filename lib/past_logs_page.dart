@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:gratitude_app/main.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'utilities/date_functions.dart';
 
 class PastLogsPage extends StatefulWidget {
@@ -23,13 +24,15 @@ class _PastLogsPageState extends State<PastLogsPage> {
   Map<String, List<Map<String, String>>> categorizedLogs = {};
   bool loading = true;
   List<dynamic> idsToDelete = [];
+  bool connected = false;
+  bool checkingInternet = true;
 
   @override
   void initState() {
     super.initState();
     dbRef.keepSynced(true);
     
-    dbRef.onValue.listen((event) {
+    dbRef.onValue.listen((event) async {
       //re-initialize gratitudeLogs to empty
       gratitudeLogs = [];
 
@@ -60,7 +63,16 @@ class _PastLogsPageState extends State<PastLogsPage> {
         for (final item in gratitudeLogs) {
           String formatted = formatDate(item['date']);
           item['date'] = formatted;
-          Map<String, String> data = {
+
+          //so it will give the no internet notice
+          bool connection = true;
+          if (item['type'].compareTo('image') == 0) {
+            connection = await checkInternetConnection();
+          }
+
+          //don't add images if no internet
+          // if (connection && item['type'].compareTo('image') != 0) {
+            Map<String, String> data = {
             'log': item['gratitude_item'],
             'type': item['type'],
             'id': item['id']
@@ -74,16 +86,26 @@ class _PastLogsPageState extends State<PastLogsPage> {
                 categorizedLogs[formatted] = [data];
               }
             });
+          // }
           }
+          
         }
       }
-      
     });
+  }
+
+  Future<bool> checkInternetConnection() async {
+    bool conn = await InternetConnection().hasInternetAccess;
+    if (!conn) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please connect to the internet to view image logs')),
+      );
+    }
+    return conn;
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       body: 
         gratitudeLogs.isEmpty ? 
@@ -140,6 +162,11 @@ class _PastLogsPageState extends State<PastLogsPage> {
                                       } 
                                       //displaying images
                                       else if ('image'.compareTo(lst[childIndex]['type']!) == 0) {
+                                        //check internet connection
+                                        // bool connected = await InternetConnection().hasInternetAccess;
+                                        // if (!connected) {
+                                        //   return Text('No internet connection - please go online to view photo logs');
+                                        // }
                                         try {
                                           return ListTile(
                                             title: Align(

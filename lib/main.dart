@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 //firebase imports
 import 'package:firebase_core/firebase_core.dart';
@@ -35,6 +36,10 @@ void main() async {
 
   //initialize alarm manager
   await AndroidAlarmManager.initialize();
+
+  //print last notif date
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  print('LAST NOTIF TIME: ${prefs.getString('scheduled_notif_date')}');
 
   runApp(const MyApp());
 }

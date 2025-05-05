@@ -7,4 +7,5 @@
     "dart.showDartDeveloperLogs": true,
       
     "editor.inlineSuggest.enabled": false,
+    "cmake.sourceDirectory": "C:/Users/charl/Documents/flutter/gratitude_app/linux",
 }
