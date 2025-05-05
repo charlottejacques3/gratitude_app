@@ -178,7 +178,12 @@ class _PastLogsPageState extends State<PastLogsPage> {
                                                   if (loadingProgress != null) {
                                                     return Align(
                                                       alignment: Alignment.centerLeft,
-                                                      child: Center(child: CircularProgressIndicator())
+                                                      child: Container(
+                                                        alignment: Alignment.center,
+                                                        height: 200,
+                                                        width: 200,
+                                                        child: CircularProgressIndicator()
+                                                      )
                                                     );
                                                   } else {
                                                     return child;

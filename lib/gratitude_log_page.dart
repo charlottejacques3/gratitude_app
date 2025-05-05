@@ -21,6 +21,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
   
   List<DynamicFormWidget> dynamicForms = [];
   int nextKey = 2;
+  String uid = FirebaseAuth.instance.currentUser!.uid;
   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
                                                           .child(FirebaseAuth.instance.currentUser!.uid)
                                                           .child('GratitudeLogs');
@@ -29,7 +30,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
 
   //images
   List<String> imageUrls = [];
-  bool loadingImages = true;
+  int numImages = 0;
 
   //manage deletions of forms from the form widget
   void manageFormList(Key key) {
@@ -53,9 +54,14 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
 
   //get images
   void handleImageUpload(var source) async {
+    
     //get image from camera/gallery
     ImagePicker imagePicker = ImagePicker();
     XFile? file = await imagePicker.pickImage(source: source);
+
+    setState(() {
+      numImages++;
+    });
 
     if (file == null) return;
 
@@ -65,17 +71,16 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
     //create references of folders/files
     Reference refRoot = FirebaseStorage.instance.ref();
 
-    Reference refImageDir = refRoot.child('images'); //get reference to storage root
+    Reference refImageDir = refRoot.child('images').child(uid); //get reference to storage root and the user's folder
     Reference refImage = refImageDir.child(filename); //create a reference for the image to be stored
 
     //store file
     try {
       await refImage.putFile(File(file.path));
-      //get downnload url
+      //get download url
       String url = await refImage.getDownloadURL();
       setState(() {
         imageUrls.add(url);
-        loadingImages = false;
       });
     } catch(e) {
       print('error storing images: $e');
@@ -122,7 +127,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
           // display images
           ListView.builder(
             physics: NeverScrollableScrollPhysics(),
-            itemCount: imageUrls.length,
+            itemCount: numImages, //imageUrls.length,
             scrollDirection: Axis.vertical,
             shrinkWrap: true,
             itemBuilder: (context, index) {
@@ -134,18 +139,32 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                     children: [
                       Expanded(
                         flex: 7,
-                        child: Image.network(
+                        child: 
+                        //display image if added to list
+                        index < imageUrls.length ? Image.network(
                           imageUrls[index],
                           height: 200,
                           width: 200,
                           loadingBuilder: (context, child, loadingProgress) {
                             if (loadingProgress != null) {
-                              return Center(child: CircularProgressIndicator());
+                              return Container(
+                                alignment: Alignment.center,
+                                height: 200,
+                                width: 200,
+                                child: CircularProgressIndicator()
+                              );
                             } else {
                               return child;
                             }
                           },
-                        ),
+                        )
+                        //otherwise display circular progress indicator
+                        : Container(
+                          alignment: Alignment.center,
+                          height: 200,
+                          width: 200,
+                          child: CircularProgressIndicator()
+                        )
                       ),
                   
                       //remove image
@@ -154,6 +173,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                           onPressed: () {
                             setState(() {
                               imageUrls.removeAt(index);
+                              numImages--;
                             });
                           }, 
                           icon: Icon(Icons.delete)
@@ -169,6 +189,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
             }
           ),
 
+          
           //buttons to add form entries/multimedia
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -322,6 +343,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                           //remove images from screen
                           setState(() {
                             imageUrls = [];
+                            numImages = 0;
                           });
                         }
                       } catch (e) {
