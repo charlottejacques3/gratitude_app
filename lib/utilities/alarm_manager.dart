@@ -85,7 +85,7 @@ Future<void> notificationScheduler() async {
       }
 
       //schedule the notification  
-      print(notificationDate);
+      print('NOTIF DATE: $notificationDate');
       try {
         tz.initializeTimeZones();
         NotificationService.scheduledNotification(

@@ -1,6 +1,7 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
+import 'package:permission_handler/permission_handler.dart';
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin notificationsPlugin = FlutterLocalNotificationsPlugin();
@@ -32,6 +33,41 @@ class NotificationService {
     await notificationsPlugin
       .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
       ?.requestNotificationsPermission();
+
+    //request schedule exact alarms for android
+    if (await Permission.scheduleExactAlarm.isGranted) {
+      print('Schedule exact alarm permission already granted');
+    } else {
+      // Request the permission
+      final status = await Permission.scheduleExactAlarm.request();
+      if (status.isGranted) {
+        print('Schedule exact alarm granted');
+      } else {
+        print('Schedule exact alarm denied');
+        print(status);
+      }
+    }
+  }
+
+
+  //request schedule exact alarm permission for android
+  Future<void> requestScheduleExactAlarm() async {
+    // Check if we already have the permission
+    print('initial: ${Permission.scheduleExactAlarm.status}');
+    if (await Permission.scheduleExactAlarm.isGranted) {
+      print('Schedule exact alarm permission already granted');
+      return;
+    }
+    
+    // Request the permission
+    final status = await Permission.scheduleExactAlarm.request();
+    
+    if (status.isGranted) {
+      print('Schedule exact alarm granted');
+    } else {
+      print('Schedule exact alarm denied');
+      print(status);
+    }
   }
   
   

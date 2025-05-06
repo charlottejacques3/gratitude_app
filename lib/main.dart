@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:gratitude_app/utilities/alarm_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 //firebase imports
@@ -36,6 +37,20 @@ void main() async {
 
   //initialize alarm manager
   await AndroidAlarmManager.initialize();
+
+  //cancel past alarms to avoid backlog
+      await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
+
+      //schedule the next alarm
+      await AndroidAlarmManager.oneShot(
+        const Duration(seconds: 5), //schedule 5 seconds later
+        0, 
+        notificationScheduler,
+        rescheduleOnReboot: true,
+        allowWhileIdle: true,
+        exact: true,
+        wakeup: true
+      );
 
   //print last notif date
   final SharedPreferences prefs = await SharedPreferences.getInstance();
