@@ -2,6 +2,7 @@ import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
+import 'package:gratitude_app/authentication/consent_form_page.dart';
 import 'package:gratitude_app/authentication/login_page.dart';
 import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/utilities/alarm_manager.dart';
@@ -17,11 +18,17 @@ class AuthService {
         password: password
       );      
 
-      //send to main page
-      Navigator.pushReplacement(
+      //send to consent form page
+      Navigator.push(
         context, 
-        MaterialPageRoute(builder: (BuildContext context) => const MyHomePage(startingPageIndex: 0,) )
+        MaterialPageRoute(builder: (BuildContext context) => const ConsentFormPage())
       );
+
+      //send to main page
+      // Navigator.pushReplacement(
+      //   context, 
+      //   MaterialPageRoute(builder: (BuildContext context) => const MyHomePage(startingPageIndex: 0,) )
+      // );
 
       //save default settings to shared preferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
