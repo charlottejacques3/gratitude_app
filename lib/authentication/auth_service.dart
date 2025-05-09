@@ -1,6 +1,5 @@
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/authentication/consent_form_page.dart';
 import 'package:gratitude_app/authentication/login_page.dart';
@@ -63,12 +62,8 @@ class AuthService {
         message = 'An error occurred: ${e.code}';
       }
 
-      //show message to user
-      Fluttertoast.showToast(
-        msg: message,
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.SNACKBAR,
-        //can also set background colour, text colour, font size, etc.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
       );
     }
   }
@@ -110,16 +105,15 @@ class AuthService {
         message = 'The username or password is incorrect.';
       } else if (e.code == 'user-not-found') {
         message = 'No user found for that email.';
+      } else if (e.code == 'invalid-email') {
+        message = 'Please provide a valid email address.';
       } else {
         message = 'An error occurred: ${e.code}';
       }
 
       //show message to user
-      Fluttertoast.showToast(
-        msg: message,
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.SNACKBAR,
-        //can also set background colour, text colour, font size, etc.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
       );
     }
   }

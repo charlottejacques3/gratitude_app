@@ -271,17 +271,122 @@
               ),
               Text('AI helps generate more effective reframing prompts that are tailored to your situation and the negative emotions you are currently experiencing.'),
 
+              //study information
+              SizedBox(height: 50,),
+              Text('Study Information',
+                style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold
+                ),
+              ),
+              InfoButton(
+                text: 'View My Consent Form', 
+                action: () {}
+              ),
+              InfoButton(
+                text: 'Tutorial Video', 
+                action: () {}
+              ),
+
+              //opt out of study
+              InfoButton(
+                text: 'Withdraw From Study', 
+                action: () => showDialog(
+                  context: context, 
+                  builder: (BuildContext context) => Dialog(
+                    child: Padding(
+                      padding: EdgeInsets.all(15),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('Are you sure you would like to withdraw from the study?',
+                            style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 10,),
+                          Text('If you choose to withdraw from the study, your data will be deleted and you will no longer be able to use the app.',
+                            textAlign: TextAlign.center,
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: ElevatedButton(
+                                    onPressed: () => Navigator.pop(context), 
+                                    child: Text('No, go back', 
+                                      textAlign: TextAlign.center,
+                                    )
+                                  ),
+                                ),
+                              ),
+
+                              //confirm opt out
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: ElevatedButton(
+                                    style: Theme.of(context).elevatedButtonTheme.style!.copyWith(
+                                      backgroundColor: WidgetStatePropertyAll<Color>(Color.fromARGB(255, 209, 108, 103)),
+                                    ),
+                                    onPressed: () {
+
+                                    }, 
+                                    child: Text('Yes, withdraw',
+                                      style: TextStyle(
+                                        color: Colors.white
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    )
+                                  ),
+                                ),
+                              )
+                            ],
+                          )
+                        ],
+                      ),
+                    )
+                  )
+                )
+              ),
+
+
               //log out
               SizedBox(height: 50,),
               ElevatedButton(
-              onPressed: () async {
-                await AuthService().signout(context: context);
-              }, 
-              child: Text('Log Out')
-            ),
+                onPressed: () async {
+                  await AuthService().signout(context: context);
+                }, 
+                child: Text('Log Out')
+              ),
             ],
           ),
         )
+      );
+    }
+  }
+
+
+  //study info buttons
+  class InfoButton extends StatelessWidget {
+    const InfoButton({super.key, required this.text, required this.action});
+    final String text;
+    final Function action;
+
+    @override
+    Widget build(BuildContext context) {
+      return InkWell(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Text(text,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary
+            ),
+          ),
+        ),
+        onTap: () => action(),
       );
     }
   }
