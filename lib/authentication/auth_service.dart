@@ -24,12 +24,6 @@ class AuthService {
         MaterialPageRoute(builder: (BuildContext context) => const ConsentFormPage())
       );
 
-      //send to main page
-      // Navigator.pushReplacement(
-      //   context, 
-      //   MaterialPageRoute(builder: (BuildContext context) => const MyHomePage(startingPageIndex: 0,) )
-      // );
-
       //save default settings to shared preferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setBool('random_notifications', true);

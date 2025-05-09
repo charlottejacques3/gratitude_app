@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/authentication/auth_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 
 class LoginPage extends StatefulWidget {
@@ -16,6 +17,7 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController emailController = TextEditingController();
   TextEditingController pwController = TextEditingController();
   bool hasAccount = true;
+  bool agreeToTerms = false;
 
   void switchPage() {
     setState(() {
@@ -69,17 +71,49 @@ class _LoginPageState extends State<LoginPage> {
                 )
               ],
             ),
+
+            //agree to terms if signing up
+            !hasAccount ? 
+              Row(
+                children: [
+                  Checkbox(
+                    value: agreeToTerms, 
+                    onChanged: (isSelected) {
+                      setState(() {
+                        agreeToTerms = isSelected!;
+                      });
+                    }
+                  ),
+                  Text('I agree to the '),
+                  InkWell(
+                    child: Text('Terms of Use',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary
+                      )
+                    ),
+                    onTap: () {} //ADD TERMS OF USE ONCE I HAVE THEM!!
+                  )
+                ],
+              )
+            : Container(),
         
             //log in button
             ElevatedButton(
               onPressed: () async {
                 //sign up
                 if (!hasAccount) {
-                  await AuthService().signup(
-                    email: emailController.text,
-                    password: pwController.text,
-                    context: context
-                  );
+                  //check if agreed to terms
+                  if (!agreeToTerms) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please accept the Terms of Use')),
+                    );
+                  } else {
+                    await AuthService().signup(
+                      email: emailController.text,
+                      password: pwController.text,
+                      context: context
+                    );
+                  }
                 } else {
                   //log in
                   await AuthService().signin(

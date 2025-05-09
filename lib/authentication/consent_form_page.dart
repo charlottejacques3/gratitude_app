@@ -1,13 +1,7 @@
-import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
-import 'dart:ui';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:scroll_screenshot/scroll_screenshot.dart';
-import 'package:pdf/pdf.dart';
+import 'package:gratitude_app/main.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:signature/signature.dart';
@@ -21,12 +15,10 @@ class ConsentFormPage extends StatefulWidget {
   State<ConsentFormPage> createState() => _ConsentFormPageState();
 }
 
+
 class _ConsentFormPageState extends State<ConsentFormPage> {
 
   final formKey = GlobalKey<FormState>();
-  final screenshotKey = GlobalKey();
-
-  // Image imageDecode = Image(image);// = Uint8List(0);
 
   bool readForm = false;
   bool askQuestions = false; 
@@ -35,69 +27,63 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
   bool consent = false;
   TextEditingController name = TextEditingController();
   TextEditingController date = TextEditingController();
-  SignatureController signatureController = SignatureController(); //can set pen colour, etc.
-  Uint8List? signatureBytes;// = Uint8List(0);
-
-  double? formHeight;
-
-
-  @override
-  void initState() {
-    super.initState();
-
-    //get form height
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final RenderBox box = screenshotKey.currentContext!.findRenderObject() as RenderBox;
-      setState(() {
-        formHeight = box.size.height;
-      });
-    });
-  }
+  SignatureController signatureController = SignatureController(); 
+  Uint8List? signatureBytes;
 
 
   //generate pdf from consent form data
-  void generatePdf(Uint8List imgBytes) async {
-    final imgProvider = pw.MemoryImage(imgBytes);
+  void generatePdf() async {
     final pdf = pw.Document();
 
     pdf.addPage(
       pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        build: (pw.Context context) => pw.Center(child: pw.Image(imgProvider))
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(
+                'Dynamic Scaffolding Gratitude Application Study',
+                style: pw.TextStyle(
+                  fontSize: 20,
+                  fontWeight: pw.FontWeight.bold
+                ),
+                textAlign: pw.TextAlign.center
+              ),
+              pw.Text('CONSENT FORM STUFF',
+              ),
+              pw.Text('Please remember that participation in this study is voluntary.',
+                style: pw.TextStyle(
+                  fontWeight: pw.FontWeight.bold
+                ),
+              ),
+
+              //yes/no selections
+              readForm && askQuestions && voluntary && withdrawConsent && consent ?
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Paragraph(text: 'I have read the consent form - Yes'),
+                    pw.Paragraph(text: 'I understand that if I have questions, I am free to contact the researcher at the email address specified above - Yes'),
+                    pw.Paragraph(text: 'I understand that my participation in this study is voluntary - Yes'),
+                    pw.Paragraph(text: 'I understand that I can withdraw my consent at any time - Yes'),
+                    pw.Paragraph(text: 'I agree to take part in the study - Yes'),
+                  ]
+                ) : pw.Container(),
+              
+              //participant info
+              pw.Text('Name: ${name.text}'),
+              pw.Text('Date: ${date.text}'),
+              pw.Row(
+                children: [
+                  pw.Text('Signature: '),
+                  pw.Image(pw.MemoryImage(signatureBytes!))
+                ]
+              )
+            ]
+          );
+        }
       )
     );
-    // pdf.addPage(
-    //   pw.Page(
-    //     build: (pw.Context context) {
-    //       return pw.Column(
-    //         children: [
-    //           pw.Text(
-    //             'Dynamic Scaffolding Gratitude Application Study',
-    //             style: pw.TextStyle(
-    //               fontSize: 20,
-    //               fontWeight: pw.FontWeight.bold
-    //             ),
-    //             textAlign: pw.TextAlign.center
-    //           ),
-    //           pw.Text('CONSENT FORM STUFF',
-    //           ),
-    //           pw.Text('Please remember that participation in this study is voluntary.',
-    //             style: pw.TextStyle(
-    //               fontWeight: pw.FontWeight.bold
-    //             ),
-    //           ),
-
-    //           //radio buttons
-    //           pw.Text('Label'),
-    //           pw.Row(
-    //           ),
-
-    //           pw.Text('Name: ${name.text}')
-    //         ]
-    //       );
-    //     }
-    //   )
-    // );
     Uint8List pdfBytes = Uint8List(0);
 
     //save pdf to cloud storage
@@ -108,7 +94,7 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
         Reference refRoot = FirebaseStorage.instance.ref();
 
         Reference refFileDir = refRoot.child('consent_forms'); //get reference to storage root
-        Reference refFile = refFileDir.child('filename'); //create a reference for the file to be stored
+        Reference refFile = refFileDir.child(FirebaseAuth.instance.currentUser!.uid); //create a reference for the file to be stored
 
         final upload = refFile.putData(pdfBytes, SettableMetadata(contentType: 'application/pdf'));
         await upload;
@@ -136,7 +122,6 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
         child: Form(
           key: formKey,
           child: RepaintBoundary(
-            key: screenshotKey,
             child: ListView(
               children: [
                 Text(
@@ -247,97 +232,110 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
                   ],
                 ),
 
-                //e-signature
-                ElevatedButton(
-                  child: Text('Sign Electronically'),
-                  onPressed: () => showDialog(
-                    context: context, 
-                    builder: (BuildContext context) => Dialog(
-                      child: Column(
-                        children: [
-                          //signing box
-                          Signature(
-                            controller: signatureController,
-                            width: 300,
-                            height: 300,
-                          ),
-
-                          //save and clear
-                          Row(
-                            children: [
-                              ElevatedButton(
-                                onPressed: () => signatureController.clear(),
-                                child: Text('Clear')
-                              ),
-                              ElevatedButton(
-                                onPressed: () async {
-                                  final bytes = await signatureController.toPngBytes();
-                                  setState(() {
-                                    signatureBytes = bytes;
-                                  });
-                                  Navigator.pop(context);
-                                }, 
-                                child: Text('Save')
+                //show e-signature
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Text('Signature '),
+                      Expanded(
+                        child: signatureBytes != null ? 
+                          Image.memory(
+                            signatureBytes!,
+                            height: 50,
+                            alignment: Alignment.centerLeft,
+                          ) 
+                        : Container(
+                            height: 50,
+                            decoration: const BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(color: Colors.black)
                               )
-                            ],
-                          )
-                        ],
+                            ),
+                          ),
                       ),
-                    )
+
+                      //e-signature popup
+                      IconButton(
+                        icon: Icon(Icons.edit),
+                        alignment: Alignment.centerRight,
+                        onPressed: () => showDialog(
+                          context: context, 
+                          builder: (BuildContext context) => Dialog(
+                            child: Padding(
+                              padding: const EdgeInsets.all(15.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  //signing box
+                                  Signature(
+                                    controller: signatureController,
+                                    width: 300,
+                                    height: 125,
+                                  ),
+                              
+                                  //save and clear
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: ElevatedButton(
+                                            onPressed: () => signatureController.clear(),
+                                            child: Text('Clear')
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: ElevatedButton(
+                                            onPressed: () async {
+                                              final bytes = await signatureController.toPngBytes();
+                                              setState(() {
+                                                signatureBytes = bytes;
+                                              });
+                                              Navigator.pop(context);
+                                            }, 
+                                            child: Text('Save')
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  )
+                                ],
+                              ),
+                            ),
+                          )
+                        ),
+                      )
+                    ],
                   ),
                 ),
-
-                //show e-signature
-                signatureBytes != null ? Image.memory(signatureBytes!) : Container(),
-                
             
                 //finish consent form
                 ElevatedButton(
                   child: Text('Submit Form and Sign Up'),
                   onPressed: () async {
-                    print(formKey.currentState);
                     if(!readForm || !askQuestions || !voluntary || !withdrawConsent || !consent) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please accept all terms to use the app')),
+                        const SnackBar(content: Text('Please accept all terms of the consent form to use the app')),
+                      );
+                    } else if (signatureBytes == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please add an e-signature to use the app')),
                       );
                     } else if (formKey.currentState!.validate()){
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Success')),
+                      generatePdf();
+                      //send to main page
+                      Navigator.pushReplacement(
+                        context, 
+                        MaterialPageRoute(builder: (BuildContext context) => const MyHomePage(startingPageIndex: 0,) )
                       );
-            
-                      //take screenshot
-                      // String? screenshot = await ScrollScreenshot.captureAndSaveScreenshot(screenshotKey);
-                      // if (screenshot != null) {
-                      //   print('SCREENSHOT: $screenshot');
-                      //   // final decode = base64Decode(screenshot);
-                      //   // final image = Image.memory(decode);
-                      //   setState(() {
-                      //     imageDecode = base64Decode(screenshot);
-                      //   });
-                      //   print('THEIR EMAIL: ${FirebaseAuth.instance.currentUser!.email}');
-                      // } 
-
-                      //take screenshot
-                      if (formHeight != null) {
-                        final recorder = PictureRecorder();
-                        final canvas = Canvas(recorder);
-                        final size = Size(MediaQuery.of(context).size.width, formHeight!);
-
-                        final repaintBoundary = screenshotKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-                        final image = await repaintBoundary.toImage(pixelRatio: 3.0);
-                        final byteData = await image.toByteData(format: ImageByteFormat.png);
-                        final pngBytes = byteData!.buffer.asUint8List();
-                        
-
-                        generatePdf(pngBytes);
-                        print('AFTER GENERATING PDF');
-                      }
-                      
                     }
                   },
                 ),
-
-                // imageDecode.isNotEmpty ? Image.memory(imageDecode) : Container()
               ],
             ),
           ),
