@@ -67,7 +67,31 @@ class _LogEmotionsPageState extends State<LogEmotionsPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                
+
+                //go back to logs + save negative emotion logs to database
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        //save to database
+                        Map<String, dynamic> reframingLogs = {
+                          'negative_emotions': logController.text,
+                          'date': DateTime.now().toIso8601String(),
+                        };
+                        dbRef.push().set(reframingLogs);
+                  
+                        //go back to log page
+                        Navigator.pop(context);
+                        Navigator.pop(context, {'guided':true});
+                      }, 
+                      child: Text("I've thought of something to log!",
+                        textAlign: TextAlign.center,
+                      )
+                    ),
+                  ),
+                ),
+
                 //go to next page
                 Expanded(
                   child: Padding(
@@ -92,30 +116,6 @@ class _LogEmotionsPageState extends State<LogEmotionsPage> {
                       child: Text("Next",
                         textAlign: TextAlign.center,
                       ),
-                    ),
-                  ),
-                ),
-
-                //go back to logs + save negative emotion logs to database
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        //save to database
-                        Map<String, dynamic> reframingLogs = {
-                          'negative_emotions': logController.text,
-                          'date': DateTime.now().toIso8601String(),
-                        };
-                        dbRef.push().set(reframingLogs);
-                  
-                        //go back to log page
-                        Navigator.pop(context);
-                        Navigator.pop(context, {'guided':true});
-                      }, 
-                      child: Text("I've thought of something to log!",
-                        textAlign: TextAlign.center,
-                      )
                     ),
                   ),
                 ),

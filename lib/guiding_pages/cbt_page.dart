@@ -174,7 +174,30 @@ class _CBTPageState extends State<CBTPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  
+
+                  //go back to logs + save negative emotion logs to database
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          //save to database
+                          dataToMap();
+                          dbRef.push().set(reframingLogs);
+                    
+                          //go back to log page
+                          for(var i = 0; i < 2; i++) {
+                            Navigator.pop(context);
+                          }
+                          Navigator.pop(context, {'guided':true});
+                        }, 
+                        child: Text("I've thought of something to log!",
+                          textAlign: TextAlign.center,
+                        )
+                      ),
+                    ),
+                  ),
+
                   //go to next page
                   Expanded(
                     child: Padding(
@@ -196,29 +219,6 @@ class _CBTPageState extends State<CBTPage> {
                         child: Text("Next",
                           textAlign: TextAlign.center,
                         ),
-                      ),
-                    ),
-                  ),
-
-                  //go back to logs + save negative emotion logs to database
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          //save to database
-                          dataToMap();
-                          dbRef.push().set(reframingLogs);
-                    
-                          //go back to log page
-                          for(var i = 0; i < 2; i++) {
-                            Navigator.pop(context);
-                          }
-                          Navigator.pop(context, {'guided':true});
-                        }, 
-                        child: Text("I've thought of something to log!",
-                          textAlign: TextAlign.center,
-                        )
                       ),
                     ),
                   ),

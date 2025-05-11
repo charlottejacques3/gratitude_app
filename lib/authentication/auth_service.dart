@@ -33,6 +33,7 @@ class AuthService {
       prefs.setInt('scheduled_hours', 12); //12pm
       prefs.setInt('scheduled_minutes', 0);
       prefs.setBool('allow_ai', true);
+      prefs.setBool('withdraw', false);
 
       //cancel past alarms to avoid backlog
       await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
@@ -125,12 +126,5 @@ class AuthService {
     print("Canceled alarm with IDs 0 and 1: $success");
 
     await FirebaseAuth.instance.signOut();
-
-    //navigate back to login page
-    Navigator.pushAndRemoveUntil(
-      context, 
-      MaterialPageRoute(builder: (BuildContext context) => const LoginPage()),
-      (route) => false
-    );
   }
 }

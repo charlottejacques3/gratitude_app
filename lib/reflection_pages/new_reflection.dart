@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:gratitude_app/widgets.dart';
 
 class NewReflectionPage extends StatefulWidget {
   const NewReflectionPage({super.key, required this.type});
@@ -124,9 +125,9 @@ class _NewReflectionPageState extends State<NewReflectionPage> {
             ),
 
             //send reflections to database
-            ElevatedButton(
-              child: Text('Save'),
-              onPressed: () {
+            SwitchedColourButton(
+              text: 'Save',
+              onClick: () {
                 //create initial map
                 Map<String, dynamic> reflectionLog = {
                   'date': DateTime.now().toIso8601String(),

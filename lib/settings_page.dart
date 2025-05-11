@@ -1,10 +1,16 @@
   import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
   import 'package:flutter/material.dart';
   import 'package:flutter/services.dart';
+import 'package:gratitude_app/authentication/login_page.dart';
+import 'package:gratitude_app/withdraw_page.dart';
   import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
   import 'utilities/date_functions.dart';
   import 'utilities/alarm_manager.dart';
   import 'authentication/auth_service.dart';
+import 'view_consent_form.dart';
 
 
   class SettingsPage extends StatefulWidget {
@@ -281,7 +287,19 @@
               ),
               InfoButton(
                 text: 'View My Consent Form', 
-                action: () {}
+                action: () async {
+                  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users').child(FirebaseAuth.instance.currentUser!.uid);
+                  final snapshot = await dbRef.child('consent_form').get();
+                  if (snapshot.exists) {
+                    Uri url = Uri.parse(snapshot.value as String);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ViewConsentForm(uri: url))
+                    );
+                  } else {
+                    print('No consent form available.');
+                  }
+                }
               ),
               InfoButton(
                 text: 'Tutorial Video', 
@@ -331,8 +349,17 @@
                                     style: Theme.of(context).elevatedButtonTheme.style!.copyWith(
                                       backgroundColor: WidgetStatePropertyAll<Color>(Color.fromARGB(255, 209, 108, 103)),
                                     ),
-                                    onPressed: () {
-
+                                    onPressed: () async {
+                                      //delete data
+                                      DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
+                                                          .child(FirebaseAuth.instance.currentUser!.uid);
+                                      dbRef.remove();
+                                      //log out
+                                      await AuthService().signout(context: context);
+                                      //send to withdraw page and save preferences
+                                      SharedPreferences prefs = await SharedPreferences.getInstance();
+                                      prefs.setBool('withdraw', true);
+                                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => WithdrawPage()));
                                     }, 
                                     child: Text('Yes, withdraw',
                                       style: TextStyle(
@@ -358,6 +385,11 @@
               ElevatedButton(
                 onPressed: () async {
                   await AuthService().signout(context: context);
+                  Navigator.pushAndRemoveUntil(
+                    context, 
+                    MaterialPageRoute(builder: (BuildContext context) => const LoginPage()),
+                    (route) => false
+                  );
                 }, 
                 child: Text('Log Out')
               ),

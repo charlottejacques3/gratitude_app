@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/main.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -96,8 +97,13 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
         Reference refFileDir = refRoot.child('consent_forms'); //get reference to storage root
         Reference refFile = refFileDir.child(FirebaseAuth.instance.currentUser!.uid); //create a reference for the file to be stored
 
-        final upload = refFile.putData(pdfBytes, SettableMetadata(contentType: 'application/pdf'));
-        await upload;
+        await refFile.putData(pdfBytes, SettableMetadata(contentType: 'application/pdf'));
+        String url = await refFile.getDownloadURL();
+
+        //store to database
+        DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users').child(FirebaseAuth.instance.currentUser!.uid);
+        await dbRef.set({'consent_form': url});
+
       } catch(e) {
         print('upload failed: $e');
       }

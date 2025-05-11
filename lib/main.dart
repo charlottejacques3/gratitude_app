@@ -38,20 +38,6 @@ void main() async {
   //initialize alarm manager
   await AndroidAlarmManager.initialize();
 
-  //cancel past alarms to avoid backlog
-      await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
-
-      //schedule the next alarm
-      await AndroidAlarmManager.oneShot(
-        const Duration(seconds: 5), //schedule 5 seconds later
-        0, 
-        notificationScheduler,
-        rescheduleOnReboot: true,
-        allowWhileIdle: true,
-        exact: true,
-        wakeup: true
-      );
-
   //print last notif date
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   print('LAST NOTIF TIME: ${prefs.getString('scheduled_notif_date')}');
@@ -68,10 +54,13 @@ class MyApp extends StatelessWidget {
 
     //set styles for the app
     Color bg = Color.fromARGB(255, 250, 240, 230);
+    Color prim = Theme.of(context).colorScheme.primary;
     return MaterialApp(
       title: 'Gratitude App',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 188, 143, 186)),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color.fromARGB(255, 188, 143, 186)
+        ),
         fontFamily: GoogleFonts.instrumentSans().fontFamily,
         textTheme: GoogleFonts.instrumentSansTextTheme().copyWith(
           titleMedium: TextStyle(
@@ -97,7 +86,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true, dialogTheme: DialogThemeData(backgroundColor: bg),
       ),
-      home: AuthGate(), 
+      home: ParticipantGate(), 
       debugShowCheckedModeBanner: false,
     );
   }
@@ -122,6 +111,24 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     currentPageIndex = widget.startingPageIndex;
+    scheduleNextAlarm();
+  }
+
+  //schedule next alarm
+  void scheduleNextAlarm() async {
+    //cancel past alarms to avoid backlog
+    await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
+
+    //schedule the next alarm
+    await AndroidAlarmManager.oneShot(
+      const Duration(seconds: 5), //schedule 5 seconds later
+      0, 
+      notificationScheduler,
+      rescheduleOnReboot: true,
+      allowWhileIdle: true,
+      exact: true,
+      wakeup: true
+    );
   }
 
   @override
@@ -171,9 +178,9 @@ class _MyHomePageState extends State<MyHomePage> {
             Spacer(),
             Text(pageHeader, 
               style: Theme.of(context).textTheme.titleLarge!.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.bold
-            ),
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.bold
+              ),
             ),
             Expanded(
               child: Align(
