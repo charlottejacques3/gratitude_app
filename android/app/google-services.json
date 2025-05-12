@@ -8,6 +8,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:888375458694:android:95054dd80b669716528a07",
+        "android_client_info": {
+          "package_name": "com.charlottej.gratitude_buddy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAiv6MefsfBy0GduAZ496sNVnThY3og7Ss"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:888375458694:android:b6cce6e411a95b0b528a07",
         "android_client_info": {
           "package_name": "com.example.gratitude_app"
