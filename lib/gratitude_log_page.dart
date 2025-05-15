@@ -4,7 +4,12 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:gratitude_app/congrats_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:gratitude_app/utilities/firebase_storage.dart';
+import 'package:gratitude_app/utilities/upload_task.dart';
 import 'package:gratitude_app/widgets.dart';
+import 'package:hive/hive.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:path_provider/path_provider.dart';
 import 'guiding_pages/main_guiding_page.dart';
 import 'package:image_picker/image_picker.dart';
 enum ImageSourceType { gallery, camera }
@@ -33,6 +38,10 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
   List<String> imageUrls = [];
   int numImages = 0;
 
+  //local image caching for no wifi
+  final uploadsBox = Hive.box<UploadTaskData>('uploads');
+  List<File> localImages = [];
+
   //manage deletions of forms from the form widget
   void manageFormList(Key key) {
 
@@ -58,33 +67,72 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
     
     //get image from camera/gallery
     ImagePicker imagePicker = ImagePicker();
-    XFile? file = await imagePicker.pickImage(source: source);
+    XFile? xfile = await imagePicker.pickImage(source: source);
+    File file;
+    
+    if (xfile != null) {
+      file = File(xfile.path);
+    } else {
+      return;
+    }
 
     setState(() {
       numImages++;
     });
 
-    if (file == null) return;
 
     //create unique filename with the datetime
     String filename = DateTime.now().toIso8601String();
 
-    //create references of folders/files
-    Reference refRoot = FirebaseStorage.instance.ref();
+    //check internet
+    bool connected = await InternetConnection().hasInternetAccess;
 
-    Reference refImageDir = refRoot.child('images').child(uid); //get reference to storage root and the user's folder
-    Reference refImage = refImageDir.child(filename); //create a reference for the image to be stored
+    //connected - upload automatically to firebase
+    if (connected) {
 
-    //store file
-    try {
-      await refImage.putFile(File(file.path));
-      //get download url
-      String url = await refImage.getDownloadURL();
+      try {
+        String url = await uploadToFirebase(file, filename);
+        setState(() {
+          imageUrls.add(url);
+        });
+      } catch(e) {
+        print('error storing images: $e');
+      }
+
+      //create references of folders/files
+      // Reference refRoot = FirebaseStorage.instance.ref();
+
+      // Reference refImageDir = refRoot.child('images').child(uid); //get reference to storage root and the user's folder
+      // Reference refImage = refImageDir.child(filename); //create a reference for the image to be stored
+
+      // //store file
+      // try {
+      //   await refImage.putFile(File(file.path));
+      //   //get download url
+      //   String url = await refImage.getDownloadURL();
+      //   setState(() {
+      //     imageUrls.add(url);
+      //   });
+      // } catch(e) {
+      //   print('error storing images: $e');
+      // }
+    } 
+
+    //not connected - save locally 
+    else {
+      final dir = await getApplicationDocumentsDirectory();
+      final localPath = '${dir.path}/$filename';
+      final localFile = File(localPath);
+
+      await File(file.path).copy(localPath); //is this right?
+
       setState(() {
-        imageUrls.add(url);
+        localImages.add(localFile);
       });
-    } catch(e) {
-      print('error storing images: $e');
+      print('LOCAL IMAGES: $localImages');
+
+      await uploadsBox.add(UploadTaskData(localPath: localPath, fileName: filename));
+      print('AFTER AWAIT');
     }
   }
 
@@ -140,31 +188,50 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                     children: [
                       Expanded(
                         flex: 7,
-                        child: 
-                        //display image if added to list
-                        index < imageUrls.length ? Image.network(
-                          imageUrls[index],
-                          height: 200,
-                          width: 200,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress != null) {
+                        child: Builder(
+                        // index < imageUrls.length ? Builder(
+                          builder: (context) {
+                            //if not locally stored - display from firebase storage
+                            //also check if image added to list
+                            if (localImages.isEmpty && index < imageUrls.length) {
+                              return Image.network(
+                                imageUrls[index],
+                                height: 200,
+                                width: 200,
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress != null) {
+                                    return Container(
+                                      alignment: Alignment.center,
+                                      height: 200,
+                                      width: 200,
+                                      child: CircularProgressIndicator()
+                                    );
+                                  } else {
+                                    return child;
+                                  }
+                                },
+                              );
+                            }
+                            //otherwise display local copy and check if added to list
+                            else if (localImages.isNotEmpty && index < localImages.length) {
+                              print('LOCAL IMAGES NOT EMPTY');
+                              return Image.file(
+                                localImages[index],
+                                height: 200,
+                                width: 200,
+                              );
+                            } 
+                            
+                            //or if not added yet
+                            else {
                               return Container(
                                 alignment: Alignment.center,
                                 height: 200,
                                 width: 200,
                                 child: CircularProgressIndicator()
                               );
-                            } else {
-                              return child;
                             }
-                          },
-                        )
-                        //otherwise display circular progress indicator
-                        : Container(
-                          alignment: Alignment.center,
-                          height: 200,
-                          width: 200,
-                          child: CircularProgressIndicator()
+                          }
                         )
                       ),
                   
