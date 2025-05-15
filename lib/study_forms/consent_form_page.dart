@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/main.dart';
+import 'package:markdown_widget/config/toc.dart';
+import 'package:markdown_widget/markdown_widget.dart';
 import 'package:markdown_widget/widget/all.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -29,7 +31,9 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
   bool askQuestions = false; 
   bool voluntary = false;
   bool withdrawConsent = false;
+  bool ageResidency = false;
   bool consent = false;
+  bool interviewRecorded = false;
   TextEditingController name = TextEditingController();
   TextEditingController date = TextEditingController();
   SignatureController signatureController = SignatureController(); 
@@ -72,15 +76,17 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
               ),
 
               //yes/no selections
-              readForm && askQuestions && voluntary && withdrawConsent && consent ?
+              readForm && askQuestions && voluntary && withdrawConsent && ageResidency && consent && interviewRecorded ?
                 pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
                     pw.Paragraph(text: 'I have read the consent form - Yes'),
-                    pw.Paragraph(text: 'I understand that if I have questions, I am free to contact the researcher at the email address specified above - Yes'),
+                    pw.Paragraph(text: 'I have had the opportunity to ask questions - Yes'),
                     pw.Paragraph(text: 'I understand that my participation in this study is voluntary - Yes'),
                     pw.Paragraph(text: 'I understand that I can withdraw my consent at any time - Yes'),
+                    pw.Paragraph(text: 'I certify that I reside in North America and am over the age of 18 - Yes'),
                     pw.Paragraph(text: 'I agree to take part in the study - Yes'),
+                    pw.Paragraph(text: 'I agree to have my interview recorded, if I choose to take part in one - Yes')
                   ]
                 ) : pw.Container(),
               
@@ -129,16 +135,65 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
     setText();
   }
 
+  //get text from markdown file
   void setText() async {
-    // File formText = File('/consent_form.md');
-    // String text = await formText.readAsString();
-    // setState(() {
-    //   data = text;
-    // });
     String fileText = await rootBundle.loadString('assets/consent_form.md');
     setState(() {
       data = fileText;
     });
+  }
+
+  //open e-signature popup
+  void signaturePopup() {
+    showDialog(
+      context: context, 
+      builder: (BuildContext context) => Dialog(
+        child: Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              //signing box
+              Signature(
+                controller: signatureController,
+                width: 300,
+                height: 125,
+              ),
+          
+              //save and clear
+              Row(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton(
+                        onPressed: () => signatureController.clear(),
+                        child: Text('Clear')
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          final bytes = await signatureController.toPngBytes();
+                          setState(() {
+                            signatureBytes = bytes;
+                          });
+                          Navigator.pop(context);
+                        }, 
+                        child: Text('Save')
+                      ),
+                    ),
+                  )
+                ],
+              )
+            ],
+          ),
+        ),
+      )
+    );
   }
 
   @override
@@ -158,228 +213,190 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
         padding: const EdgeInsets.all(16),
         child: Form(
           key: formKey,
-          child: RepaintBoundary(
-            child: MarkdownWidget(data: data)
-            // child: ListView(
-            //   children: [
-            //     Text(
-            //       'Evaluating a Mobile Gratitude Application',
-            //       style: Theme.of(context).textTheme.titleMedium!.copyWith(
-            //         fontSize: 20,
-            //         fontWeight: FontWeight.bold
-            //       ),
-            //       textAlign: TextAlign.center,
-            //     ),
-            //     Text('CONSENT FORM STUFF'),
-            //     MarkdownWidget(
-            //       data: data,
-            //       physics: NeverScrollableScrollPhysics(),
-            //     ),
-            //     Text('Please remember that participation in this study is voluntary.',
-            //       style: Theme.of(context).textTheme.titleMedium!.copyWith(
-            //         fontWeight: FontWeight.bold
-            //       ),
-            //     ),
-            
-            //     //read form
-            //     YesNoRadio(
-            //       label: 'I have read the consent form',
-            //       radioSelected: readForm, 
-            //       onChanged: (bool newValue) {
-            //         setState(() {
-            //           readForm = newValue;
-            //         });
-            //       }
-            //     ),
-            
-            //     //questions
-            //     YesNoRadio(
-            //       label: 'I understand that if I have questions, I am free to contact the researcher at the email address specified above',
-            //       radioSelected: askQuestions, 
-            //       onChanged: (bool newValue) {
-            //         setState(() {
-            //           askQuestions = newValue;
-            //         });
-            //       }
-            //     ),
-            
-            //     //voluntary
-            //     YesNoRadio(
-            //       label: 'I understand that my participation in this study is voluntary',
-            //       radioSelected: voluntary, 
-            //       onChanged: (bool newValue) {
-            //         setState(() {
-            //           voluntary = newValue;
-            //         });
-            //       }
-            //     ),
-            
-            //     //withdraw consent
-            //     YesNoRadio(
-            //       label: 'I understand that I can withdraw my consent at any time',
-            //       radioSelected: withdrawConsent, 
-            //       onChanged: (bool newValue) {
-            //         setState(() {
-            //           withdrawConsent = newValue;
-            //         });
-            //       }
-            //     ),
-            
-            //     //overall consent
-            //     YesNoRadio(
-            //       label: 'I agree to take part in the study',
-            //       radioSelected: consent, 
-            //       onChanged: (bool newValue) {
-            //         setState(() {
-            //           consent = newValue;
-            //         });
-            //       }
-            //     ),
-            
-            //     //name
-            //     Row(
-            //       children: [
-            //         Text('Name'),
-            //         SizedBox(width: 10,),
-            //         Expanded(
-            //           child: TextFormField(
-            //             controller: name,
-            //             validator: (value) {
-            //               if (value == null || value.isEmpty) {
-            //                 return 'Please fill out this field';
-            //               }
-            //               return null;
-            //             },
-            //           ),
-            //         ),
-            //       ],
-            //     ),
-            
-            //     //date
-            //     Row(
-            //       children: [
-            //         Text('Date'),
-            //         SizedBox(width: 10,),
-            //         Expanded(
-            //           child: TextFormField(
-            //             controller: date,
-            //             validator: (value) {
-            //               if (value == null || value.isEmpty) {
-            //                 return 'Please fill out this field';
-            //               }
-            //               return null;
-            //             },
-            //           ),
-            //         ),
-            //       ],
-            //     ),
+          child: ListView(
+            children: [
+              //form text
+              MarkdownWidget(
+                data: data,
+                physics: NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+              ),
+          
+              //read form
+              YesNoRadio(
+                label: 'I have read the consent form',
+                radioSelected: readForm, 
+                onChanged: (bool newValue) {
+                  setState(() {
+                    readForm = newValue;
+                  });
+                }
+              ),
+          
+              //questions
+              YesNoRadio(
+                label: 'I have had the opportunity to ask questions',
+                radioSelected: askQuestions, 
+                onChanged: (bool newValue) {
+                  setState(() {
+                    askQuestions = newValue;
+                  });
+                }
+              ),
+          
+              //voluntary
+              YesNoRadio(
+                label: 'I understand that my participation in this study is voluntary',
+                radioSelected: voluntary, 
+                onChanged: (bool newValue) {
+                  setState(() {
+                    voluntary = newValue;
+                  });
+                }
+              ),
+          
+              //withdraw consent
+              YesNoRadio(
+                label: 'I understand that I can withdraw my consent at any time',
+                radioSelected: withdrawConsent, 
+                onChanged: (bool newValue) {
+                  setState(() {
+                    withdrawConsent = newValue;
+                  });
+                }
+              ),
 
-            //     //show e-signature
-            //     Padding(
-            //       padding: const EdgeInsets.symmetric(vertical: 16),
-            //       child: Row(
-            //         mainAxisSize: MainAxisSize.max,
-            //         children: [
-            //           Text('Signature '),
-            //           Expanded(
-            //             child: signatureBytes != null ? 
-            //               Image.memory(
-            //                 signatureBytes!,
-            //                 height: 50,
-            //                 alignment: Alignment.centerLeft,
-            //               ) 
-            //             : Container(
-            //                 height: 50,
-            //                 decoration: const BoxDecoration(
-            //                   border: Border(
-            //                     bottom: BorderSide(color: Colors.black)
-            //                   )
-            //                 ),
-            //               ),
-            //           ),
+              //over the age of 18 + north america
+              YesNoRadio(
+                label: 'I certify that I reside in North America and am over the age of 18',
+                radioSelected: ageResidency, 
+                onChanged: (bool newValue) {
+                  setState(() {
+                    ageResidency = newValue;
+                  });
+                }
+              ),
+          
+              //overall consent
+              YesNoRadio(
+                label: 'I agree to take part in the study',
+                radioSelected: consent, 
+                onChanged: (bool newValue) {
+                  setState(() {
+                    consent = newValue;
+                  });
+                }
+              ),
 
-            //           //e-signature popup
-            //           IconButton(
-            //             icon: Icon(Icons.edit),
-            //             alignment: Alignment.centerRight,
-            //             onPressed: () => showDialog(
-            //               context: context, 
-            //               builder: (BuildContext context) => Dialog(
-            //                 child: Padding(
-            //                   padding: const EdgeInsets.all(15.0),
-            //                   child: Column(
-            //                     mainAxisSize: MainAxisSize.min,
-            //                     children: [
-            //                       //signing box
-            //                       Signature(
-            //                         controller: signatureController,
-            //                         width: 300,
-            //                         height: 125,
-            //                       ),
-                              
-            //                       //save and clear
-            //                       Row(
-            //                         children: [
-            //                           Expanded(
-            //                             child: Padding(
-            //                               padding: const EdgeInsets.all(8.0),
-            //                               child: ElevatedButton(
-            //                                 onPressed: () => signatureController.clear(),
-            //                                 child: Text('Clear')
-            //                               ),
-            //                             ),
-            //                           ),
-            //                           Expanded(
-            //                             child: Padding(
-            //                               padding: const EdgeInsets.all(8.0),
-            //                               child: ElevatedButton(
-            //                                 onPressed: () async {
-            //                                   final bytes = await signatureController.toPngBytes();
-            //                                   setState(() {
-            //                                     signatureBytes = bytes;
-            //                                   });
-            //                                   Navigator.pop(context);
-            //                                 }, 
-            //                                 child: Text('Save')
-            //                               ),
-            //                             ),
-            //                           )
-            //                         ],
-            //                       )
-            //                     ],
-            //                   ),
-            //                 ),
-            //               )
-            //             ),
-            //           )
-            //         ],
-            //       ),
-            //     ),
-            
-            //     //finish consent form
-            //     ElevatedButton(
-            //       child: Text('Submit Form and Sign Up'),
-            //       onPressed: () async {
-            //         if(!readForm || !askQuestions || !voluntary || !withdrawConsent || !consent) {
-            //           ScaffoldMessenger.of(context).showSnackBar(
-            //             const SnackBar(content: Text('Please accept all terms of the consent form to use the app')),
-            //           );
-            //         } else if (signatureBytes == null) {
-            //           ScaffoldMessenger.of(context).showSnackBar(
-            //             const SnackBar(content: Text('Please add an e-signature to use the app')),
-            //           );
-            //         } else if (formKey.currentState!.validate()){
-            //           generatePdf();
-            //           //send to main page
-            //           Navigator.pushReplacement(
-            //             context, 
-            //             MaterialPageRoute(builder: (BuildContext context) => const MyHomePage(startingPageIndex: 0,) )
-            //           );
-            //         }
-            //       },
-            //     ),
-            //   ],
-            // ),
+              //interview recorded
+              YesNoRadio(
+                label: 'I agree to have my interview recorded, if I choose to take part in one',
+                radioSelected: interviewRecorded, 
+                onChanged: (bool newValue) {
+                  setState(() {
+                    interviewRecorded = newValue;
+                  });
+                }
+              ),
+          
+              //name
+              Row(
+                children: [
+                  Text('Name'),
+                  SizedBox(width: 10,),
+                  Expanded(
+                    child: TextFormField(
+                      controller: name,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please fill out this field';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                ],
+              ),
+          
+              //date
+              Row(
+                children: [
+                  Text('Date'),
+                  SizedBox(width: 10,),
+                  Expanded(
+                    child: TextFormField(
+                      controller: date,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please fill out this field';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                ],
+              ),
+
+              //show e-signature
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Text('Signature '),
+                    Expanded(
+                      child: InkWell(
+                        onTap: signaturePopup,
+                        child: signatureBytes != null ? 
+                          Image.memory(
+                            signatureBytes!,
+                            height: 50,
+                            alignment: Alignment.centerLeft,
+                          ) 
+                        : Container(
+                            height: 50,
+                            decoration: const BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(color: Colors.black)
+                              )
+                            ),
+                          ),
+                      ),
+                    ),
+
+                    //e-signature popup
+                    IconButton(
+                      icon: Icon(Icons.edit),
+                      alignment: Alignment.centerRight,
+                      onPressed: signaturePopup
+                    )
+                  ],
+                ),
+              ),
+          
+              //finish consent form
+              ElevatedButton(
+                child: Text('Submit Form and Sign Up'),
+                onPressed: () async {
+                  if(!readForm || !askQuestions || !voluntary || !withdrawConsent || !consent) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please accept all terms of the consent form to use the app')),
+                    );
+                  } else if (signatureBytes == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please add an e-signature to use the app')),
+                    );
+                  } else if (formKey.currentState!.validate()){
+                    generatePdf();
+                    //send to main page
+                    Navigator.pushReplacement(
+                      context, 
+                      MaterialPageRoute(builder: (BuildContext context) => const MyHomePage(startingPageIndex: 0,) )
+                    );
+                  }
+                },
+              ),
+            ],
           ),
         ),
       ),
