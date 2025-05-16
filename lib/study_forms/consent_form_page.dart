@@ -12,6 +12,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:signature/signature.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:markdown/markdown.dart' as md;
 
 
 class ConsentFormPage extends StatefulWidget {
@@ -48,18 +49,23 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
   void generatePdf() async {
     final pdf = pw.Document();
 
+    
+    String fileText = await rootBundle.loadString('assets/consent_form.md');
+    final html = md.markdownToHtml(fileText);
+    final short = html.substring(0, 100);
+
     // final mainText = File('sample.pdf');
     // final pdf = pw.Document.load(PdfDocumentParserBase(mainText.readAsBytesSync()));
     
     // pdf.addPage()
 
     pdf.addPage(
-      pw.MultiPage(
+      pw.Page(
         build: (pw.Context context) {
-          // return [pw.Column(
-          //   crossAxisAlignment: pw.CrossAxisAlignment.start,
-          //   children: [
-              return [pw.Text(
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(
                 'Dynamic Scaffolding Gratitude Application Study',
                 style: pw.TextStyle(
                   fontSize: 20,
@@ -74,6 +80,7 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
                   fontWeight: pw.FontWeight.bold
                 ),
               ),
+              pw.Text(short),
 
               //yes/no selections
               readForm && askQuestions && voluntary && withdrawConsent && ageResidency && consent && interviewRecorded ?
@@ -99,7 +106,8 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
                   pw.Image(pw.MemoryImage(signatureBytes!))
                 ]
               )
-            ];
+            ]
+          );
         }
       )
     );

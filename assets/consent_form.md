@@ -2,7 +2,7 @@
 
 ## Who is conducting the study?
 
-You are invited to participate in this study, “Evaluation of a Mobile Gratitude Application”, that is being conducted by Charlotte Jacques, Dr. Sowmya Somanath, and Dr. Regan Mandryk. 
+You are invited to participate in this study, "Evaluation of a Mobile Gratitude Application", that is being conducted by Charlotte Jacques, Dr. Sowmya Somanath, and Dr. Regan Mandryk. 
 
 This study will be conducted by Charlotte Jacques, an undergraduate student in the Department of Computer Science at the University of Victoria.  
 
@@ -18,7 +18,7 @@ This study is important because it addresses common obstacles people face when t
  
 We are studying the effectiveness of this technique among North American adults. You must  meet these criteria to participate in this study.
 
-**It’s your choice whether or not you want to take part in this study. 
+**It's your choice whether or not you want to take part in this study. 
 Your participation is voluntary.**
 
 ## If I choose take part in this study, what will I do?
@@ -36,7 +36,7 @@ Study Task:
 
 Data will be gathered through the collection of your gratitude logs and reflections, as well as your questionnaire answers and statistics of your usage of the app in general.  
 
-Your interview with the researcher, if you choose to participate in one, will also be recorded using either the University of Victoria’s Zoom or Microsoft Teams platform. You may choose to turn your camera on or leave it off. The interview is recorded for the purpose of storing your answers only – the footage itself will not be analyzed.
+Your interview with the researcher, if you choose to participate in one, will also be recorded using either the University of Victoria's Zoom or Microsoft Teams platform. You may choose to turn your camera on or leave it off. The interview is recorded for the purpose of storing your answers only - the footage itself will not be analyzed.
 
 Please be advised that information about you that is gathered for this research study, including your email address, uses Firebase, an online service that stores data in the U.S. As such, there is a possibility that information about you may be accessed without your knowledge or consent by the US government in compliance with the US Freedom Act.
 
@@ -65,7 +65,7 @@ If you choose to participate in an interview, you will receive a $20 CAD Amazon 
 
 Information collected during this study will be stored and secured using services called Firebase Realtime Database and Firebase Cloud Storage. Firebase encrypts your data, and is certified under major privacy and security standards, including the ISO 27001 and SOC 1, SOC 2, and SOC3 evaluation processes.
 
-Your data is subject to Firebase’s terms and conditions , and may be accessible by Google, Firebase’s parent company, as necessary to perform their services.  Additionally, since Firebase is based in the US, your data may be accessed by the US government in compliance with the US Freedom Act, as discussed above. 
+Your data is subject to Firebase's terms and conditions , and may be accessible by Google, Firebase's parent company, as necessary to perform their services.  Additionally, since Firebase is based in the US, your data may be accessed by the US government in compliance with the US Freedom Act, as discussed above. 
 Apart from this, only the researchers will have access to your data.
 
 Your data will be collected under a randomly generated user ID. This user ID may be tied to your email address through the authentication portal, but the researcher will not use this identifier in their analysis. Your user ID will also be tied to a PDF of this consent form, which will contain your name and e-signature.
@@ -81,7 +81,7 @@ Findings from this study may be reported in journal articles and/or presented at
 
 You may end the interview at any time.  
 
-You may change your mind and withdraw from this study at any time.  There is no need to explain why you have changed your mind. If you would like to withdraw, you can do so through the app’s settings page. 
+You may change your mind and withdraw from this study at any time.  There is no need to explain why you have changed your mind. If you would like to withdraw, you can do so through the app's settings page. 
 
 If you withdraw from the study your contribution will not be used in the analysis or final report.
 
