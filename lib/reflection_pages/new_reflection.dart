@@ -25,7 +25,7 @@ class _NewReflectionPageState extends State<NewReflectionPage> {
   @override
   void initState() {
     super.initState();
-    dbRef.keepSynced(true);
+    dbRef.keepSynced(false);
 
     //reflect on challenges
     if (widget.type.compareTo('challenges') == 0) {

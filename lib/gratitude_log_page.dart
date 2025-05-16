@@ -10,6 +10,7 @@ import 'package:gratitude_app/widgets.dart';
 import 'package:hive/hive.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:timezone/timezone.dart';
 import 'guiding_pages/main_guiding_page.dart';
 import 'package:image_picker/image_picker.dart';
 enum ImageSourceType { gallery, camera }
@@ -40,7 +41,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
 
   //local image caching for no wifi
   final uploadsBox = Hive.box<UploadTaskData>('uploads');
-  List<File> localImages = [];
+  Map<String, File> localImages = {};
 
   //manage deletions of forms from the form widget
   void manageFormList(Key key) {
@@ -67,14 +68,15 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
     
     //get image from camera/gallery
     ImagePicker imagePicker = ImagePicker();
-    XFile? xfile = await imagePicker.pickImage(source: source);
-    File file;
+    XFile? file = await imagePicker.pickImage(source: source);
+    if (file == null) return;
+    // File file;
     
-    if (xfile != null) {
-      file = File(xfile.path);
-    } else {
-      return;
-    }
+    // if (xfile != null) {
+    //   file = File(xfile.path);
+    // } else {
+    //   return;
+    // }
 
     setState(() {
       numImages++;
@@ -84,20 +86,30 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
     //create unique filename with the datetime
     String filename = DateTime.now().toIso8601String();
 
-    //check internet
-    bool connected = await InternetConnection().hasInternetAccess;
+    //save locally
+    final dir = await getApplicationDocumentsDirectory();
+      final localPath = '${dir.path}/$filename';
+      final localFile = File(localPath);
+
+      await File(file.path).copy(localPath); //is this right?
+
+      setState(() {
+        localImages[filename] = localFile;
+      });
+      print('LOCAL IMAGES: $localImages');
+
 
     //connected - upload automatically to firebase
-    if (connected) {
+    // if (connected) {
 
-      try {
-        String url = await uploadToFirebase(file, filename);
-        setState(() {
-          imageUrls.add(url);
-        });
-      } catch(e) {
-        print('error storing images: $e');
-      }
+    //   try {
+    //     String url = await uploadToFirebase(file, filename);
+    //     setState(() {
+    //       imageUrls.add(url);
+    //     });
+    //   } catch(e) {
+    //     print('error storing images: $e');
+    //   }
 
       //create references of folders/files
       // Reference refRoot = FirebaseStorage.instance.ref();
@@ -116,24 +128,24 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
       // } catch(e) {
       //   print('error storing images: $e');
       // }
-    } 
+    // } 
 
-    //not connected - save locally 
-    else {
-      final dir = await getApplicationDocumentsDirectory();
-      final localPath = '${dir.path}/$filename';
-      final localFile = File(localPath);
+    //not connected - add upload task
+    // if(!connected) {
+      // final dir = await getApplicationDocumentsDirectory();
+      // final localPath = '${dir.path}/$filename';
+      // final localFile = File(localPath);
 
-      await File(file.path).copy(localPath); //is this right?
+      // await File(file.path).copy(localPath); //is this right?
 
-      setState(() {
-        localImages.add(localFile);
-      });
-      print('LOCAL IMAGES: $localImages');
+      // setState(() {
+      //   localImages.add(localFile);
+      // });
+      // print('LOCAL IMAGES: $localImages');
 
       await uploadsBox.add(UploadTaskData(localPath: localPath, fileName: filename));
       print('AFTER AWAIT');
-    }
+    // }
   }
 
   //reset "guided" variable
@@ -143,7 +155,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
     setState(() {
       guided = false;
       dynamicForms = [DynamicFormWidget(key: Key('1'), logController: TextEditingController(), manageFormList: manageFormList)];
-      dbRef.keepSynced(true);
+      dbRef.keepSynced(false);
     });
   }
 
@@ -216,7 +228,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                             else if (localImages.isNotEmpty && index < localImages.length) {
                               print('LOCAL IMAGES NOT EMPTY');
                               return Image.file(
-                                localImages[index],
+                                localImages.values.elementAt(index),
                                 height: 200,
                                 width: 200,
                               );
@@ -238,9 +250,12 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                       //remove image
                       Expanded(
                         child: IconButton(
-                          onPressed: () {
+                          onPressed: () async {
+                            String filename = localImages.keys.elementAt(index);
+                            deleteLocalImage(filename);
                             setState(() {
-                              imageUrls.removeAt(index);
+                              localImages.remove(filename);
+                              // imageUrls.removeAt(index);
                               numImages--;
                             });
                           }, 
@@ -370,22 +385,40 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                     }
                   }
 
-                  //send all image urls to database
-                  for (final url in imageUrls) {
-                    //map to a dictionary
-                    Map<String, String> gratitudeImages = {
-                      'gratitude_item': url,
-                      'date': DateTime.now().toIso8601String(),
-                      'type': 'image'
-                    };
-                    //send to database
-                    dbRef.push().set(gratitudeImages);
-                    //remove images from screen
-                    setState(() {
-                      imageUrls = [];
-                      numImages = 0;
-                    });
-                  }
+                  //send all images to database
+                  bool connected = await InternetConnection().hasInternetAccess; //first check internet
+                  final dir = await getApplicationDocumentsDirectory(); //get docs directory
+                  localImages.forEach((filename, file) async {
+                    nonEmptyLogs = true;
+                    if (connected) {
+                      //connected - send directly to db
+                      uploadToFirebase(file, filename); 
+                    } else {
+                      //not connected - add to upload tasks
+                      final localPath = '${dir.path}/$filename';
+                      await uploadsBox.add(UploadTaskData(localPath: localPath, fileName: filename));
+                    }
+                  });
+                  setState(() { //reset
+                    localImages = {};
+                    numImages = 0;
+                  });
+
+                  // for (final url in imageUrls) {
+                  //   //map to a dictionary
+                  //   Map<String, String> gratitudeImages = {
+                  //     'gratitude_item': url,
+                  //     'date': DateTime.now().toIso8601String(),
+                  //     'type': 'image'
+                  //   };
+                  //   //send to database
+                  //   dbRef.push().set(gratitudeImages);
+                  //   //remove images from screen
+                  //   setState(() {
+                  //     imageUrls = [];
+                  //     numImages = 0;
+                  //   });
+                  // }
                 } catch (e) {
                   print('error writing data: $e');
                 }
@@ -400,7 +433,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                     setState(() {
                       guided = false;
                       dynamicForms = [DynamicFormWidget(key: Key('1'), logController: TextEditingController(), manageFormList: manageFormList)];
-                      dbRef.keepSynced(true);
+                      dbRef.keepSynced(false);
                     });
                   });
                 }
@@ -452,120 +485,6 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
               )
             ),
           ),
-
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.center,
-          //   children: [
-          //     //guiding button
-          //     Expanded(
-          //       child: Padding(
-          //         padding: EdgeInsets.only(left: 8.0, right: 4.0),
-          //         child: Align(
-          //           alignment: Alignment.center,
-          //           child: ElevatedButton(
-          //             style: Theme.of(context).elevatedButtonTheme.style!.copyWith(
-          //                 backgroundColor: WidgetStatePropertyAll<Color>(Color.fromARGB(255, 209, 108, 103)),
-          //               ),
-          //             onPressed: () async {
-          //               final preloaded = await Navigator.push(
-          //                 context,
-          //                 MaterialPageRoute(builder: (context) => const GuidingPage())
-          //               );
-
-          //               if (preloaded != null) {
-          //                 setState(() {
-          //                   //if there is preloaded data from the inspiration page, set it
-          //                   if (preloaded.containsKey('type') && preloaded.containsKey('log')) {
-          //                     if (preloaded['type'].compareTo('text') == 0) {
-          //                       dynamicForms = [DynamicFormWidget(key: Key('1'), logController: TextEditingController(text: preloaded['log']), manageFormList: manageFormList)];
-          //                     } else if (preloaded['type'].compareTo('image') == 0) {
-          //                       imageUrls.add(preloaded['log']);
-          //                     }
-          //                   }
-
-          //                   //keep track of whether they worked through their emotions in that session
-          //                   if (preloaded.containsKey('guided')) {
-          //                     guided = preloaded['guided'];
-          //                   }
-          //                 });
-          //               }
-          //             },
-          //             child: Text("I can't think of anything",
-          //               textAlign: TextAlign.center,
-          //               style: TextStyle(
-          //                               color: Colors.white
-          //                             ),
-          //             ),
-          //           ),
-          //         ),
-          //       ),
-          //     ),
-
-          //     //button to send logs to the database
-          //     Expanded(
-          //       child: Padding(
-          //         padding: EdgeInsets.only(left: 4.0, right: 8.0),
-          //         child: ElevatedButton(
-          //           child: Text('Done'),
-          //           onPressed: () async {
-          //             try {
-          //               //send all text entries to database
-          //               for (final item in dynamicForms) {
-          //                 String log = item.logController.text;
-          //                 if (log.isNotEmpty) { //don't add empty entries
-          //                   //map to a dictionary
-          //                   Map<String, String> gratitudeLogs = {
-          //                     'gratitude_item': log,
-          //                     'date': DateTime.now().toIso8601String(),
-          //                     'type': 'text'
-          //                   };
-          //                   //push creates a unique key
-          //                   dbRef.push().set(gratitudeLogs);
-                    
-          //                   //clear text fields
-          //                   item.logController.text = '';
-          //                 }
-          //               }
-
-          //               //send all image urls to database
-          //               for (final url in imageUrls) {
-          //                 //map to a dictionary
-          //                 Map<String, String> gratitudeImages = {
-          //                   'gratitude_item': url,
-          //                   'date': DateTime.now().toIso8601String(),
-          //                   'type': 'image'
-          //                 };
-          //                 //send to database
-          //                 dbRef.push().set(gratitudeImages);
-          //                 //remove images from screen
-          //                 setState(() {
-          //                   imageUrls = [];
-          //                   numImages = 0;
-          //                 });
-          //               }
-          //             } catch (e) {
-          //               print('error writing data: $e');
-          //             }
-
-                      
-          //             //navigate to congrats page
-          //             Navigator.push(
-          //               context, 
-          //               MaterialPageRoute(builder: (context) => CongratsPage(reframed: guided,))
-          //             ).then((_) {
-          //               //update page
-          //               setState(() {
-          //                 guided = false;
-          //                 dynamicForms = [DynamicFormWidget(key: Key('1'), logController: TextEditingController(), manageFormList: manageFormList)];
-          //                 dbRef.keepSynced(true);
-          //               });
-          //             });
-          //           }, 
-          //         ),
-          //       ),
-          //     ),
-          //   ],
-          // ),
         ],
       ),
     );

@@ -33,7 +33,7 @@ class _ReflectionPageState extends State<ReflectionPage> {
   @override
   void initState() {
     super.initState();
-    dbRef.keepSynced(true);
+    dbRef.keepSynced(false);
 
     dbRef.onValue.listen((event) {
       //re-inialize past reflections to empty

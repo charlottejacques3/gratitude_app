@@ -30,11 +30,12 @@ class _PastLogsPageState extends State<PastLogsPage> {
   @override
   void initState() {
     super.initState();
-    dbRef.keepSynced(true);
+    dbRef.keepSynced(false);
     
     dbRef.onValue.listen((event) async {
       //re-initialize gratitudeLogs to empty
       gratitudeLogs = [];
+      // categorizedLogs = {};
 
       DataSnapshot dataSnapshot = event.snapshot;
       if (dataSnapshot.value != null) {
@@ -48,7 +49,6 @@ class _PastLogsPageState extends State<PastLogsPage> {
                 Map<dynamic, dynamic> entry = value;
                 entry['id'] = key;
                 gratitudeLogs.add(entry);
-                loading = false;
             });
             } catch (e) {
               print('error with setState $e');
@@ -58,6 +58,8 @@ class _PastLogsPageState extends State<PastLogsPage> {
 
         //sort by date 
         gratitudeLogs.sort((a, b) => a['date'].compareTo(b['date']));
+
+        // print('LOGS: $gratitudeLogs');
 
         //group by date
         for (final item in gratitudeLogs) {
@@ -88,8 +90,11 @@ class _PastLogsPageState extends State<PastLogsPage> {
             });
           // }
           }
-          
         }
+        setState(() {
+          loading = false;
+        });
+        print('CATEGORIZED LOGS: $categorizedLogs');
       }
     });
   }

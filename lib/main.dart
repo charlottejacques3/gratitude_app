@@ -10,6 +10,7 @@ import 'package:gratitude_app/utilities/firebase_storage.dart';
 import 'package:gratitude_app/utilities/upload_task.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -39,7 +40,7 @@ void main() async {
   );
 
   //cache data so available offline
-  FirebaseDatabase.instance.setPersistenceEnabled(true);
+  FirebaseDatabase.instance.setPersistenceEnabled(false);
 
   //init notifications
   await NotificationService.initNotifications();
@@ -132,12 +133,15 @@ class _MyHomePageState extends State<MyHomePage> {
     currentPageIndex = widget.startingPageIndex;
     scheduleNextAlarm();
 
+    uploadPendingImages();
+
     //trigger upload of queued images
-    Connectivity().onConnectivityChanged.listen((result) {
-      if (result != ConnectivityResult.none) {
-        uploadPendingImages();
-      }
-    });
+    // Connectivity().onConnectivityChanged.listen((result) {
+    //   print('connectivity: $ConnectivityResult');
+    //   if (result != ConnectivityResult.none) {
+    //     uploadPendingImages();
+    //   }
+    // });
   }
 
   void loadLocalImages() async {
@@ -149,30 +153,35 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void uploadPendingImages() async {
-    print('TRYING TO UPLOAD');
-    print('current list');
-    final pending = uploadsBox.values.toList();
-    for (var task in pending) {
-      final file = File(task.localPath);
-      if (await file.exists()) {
-        
-        Reference refRoot = FirebaseStorage.instance.ref();
+    //check internet
+    bool connected = await InternetConnection().hasInternetAccess;
+    print('internet connection: $connected');
+    if (connected) {
+      print('TRYING TO UPLOAD');
+      print('current list');
+      final pending = uploadsBox.values.toList();
+      for (var task in pending) {
+        final file = File(task.localPath);
+        if (await file.exists()) {
+          
+          // Reference refRoot = FirebaseStorage.instance.ref();
 
-        String uid = FirebaseAuth.instance.currentUser!.uid;
-        Reference refImageDir = refRoot.child('images').child(uid); //get reference to storage root and the user's folder
-        Reference refImage = refImageDir.child(task.fileName); //create a reference for the image to be stored
+          // String uid = FirebaseAuth.instance.currentUser!.uid;
+          // Reference refImageDir = refRoot.child('images').child(uid); //get reference to storage root and the user's folder
+          // Reference refImage = refImageDir.child(task.fileName); //create a reference for the image to be stored
 
-        //store file
-        // try {
-        try {
-          await refImage.putFile(File(file.path));
-          // uploadToFirebase(file, task.fileName);
-          // await FirebaseStorage.instance.ref('images/${task.fileName}').putFile(file);
-          await task.delete(); //remove task from the queue
-          print('Synced: ${task.fileName}');
-        } catch (e) {
-          print('Retry later: ${task.fileName}');
-          print('error: $e');
+          //store file
+          // try {
+          try {
+            // await refImage.putFile(File(file.path));
+            uploadToFirebase(file, task.fileName);
+            // await FirebaseStorage.instance.ref('images/${task.fileName}').putFile(file);
+            await task.delete(); //remove task from the queue
+            print('Synced: ${task.fileName}');
+          } catch (e) {
+            print('Retry later: ${task.fileName}');
+            print('error: $e');
+          }
         }
       }
     }
