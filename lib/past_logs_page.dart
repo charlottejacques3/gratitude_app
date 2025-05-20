@@ -48,7 +48,6 @@ class _PastLogsPageState extends State<PastLogsPage> {
                 Map<dynamic, dynamic> entry = value;
                 entry['id'] = key;
                 gratitudeLogs.add(entry);
-                loading = false;
             });
             } catch (e) {
               print('error with setState $e');
@@ -90,6 +89,7 @@ class _PastLogsPageState extends State<PastLogsPage> {
                 categorizedLogs[formatted] = [data];
               }
             });
+          }
           }
           }
           

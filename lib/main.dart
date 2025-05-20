@@ -1,6 +1,17 @@
+import 'dart:io';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gratitude_app/utilities/alarm_manager.dart';
+import 'package:gratitude_app/utilities/firebase_storage.dart';
+import 'package:gratitude_app/utilities/upload_task.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 //firebase imports
@@ -41,6 +52,11 @@ void main() async {
   //print last notif date
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   print('LAST NOTIF TIME: ${prefs.getString('scheduled_notif_date')}');
+
+  //for firebase storage saving to device when offline
+  await Hive.initFlutter();
+  Hive.registerAdapter(UploadTaskDataAdapter());
+  await Hive.openBox<UploadTaskData>('uploads');
 
   runApp(const MyApp());
 }
@@ -86,7 +102,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true, dialogTheme: DialogThemeData(backgroundColor: bg),
       ),
-      home: ParticipantGate(), 
+      home: AuthGate(),//ParticipantGate(), 
       debugShowCheckedModeBanner: false,
     );
   }
@@ -107,11 +123,68 @@ class _MyHomePageState extends State<MyHomePage> {
   bool pastLogsEditMode = false;
   String pageHeader = '';
 
+  //local image uploads
+  List<File> localImages = [];
+  final uploadsBox = Hive.box<UploadTaskData>('uploads');
+
   @override
   void initState() {
     super.initState();
     currentPageIndex = widget.startingPageIndex;
     scheduleNextAlarm();
+
+    uploadPendingImages();
+
+    //trigger upload of queued images
+    Connectivity().onConnectivityChanged.listen((result) {
+      print('connectivity: $ConnectivityResult');
+      if (result != ConnectivityResult.none) {
+        uploadPendingImages();
+      }
+    });
+  }
+
+  void loadLocalImages() async {
+    final dir = await getApplicationDocumentsDirectory();
+    final files = Directory(dir.path).listSync().whereType<File>();
+    setState(() {
+      localImages = files.toList();
+    });
+  }
+
+  void uploadPendingImages() async {
+    //check internet
+    // bool connected = await InternetConnection().hasInternetAccess;
+    // print('internet connection: $connected');
+    // if (connected) {
+      print('TRYING TO UPLOAD');
+      print('current list');
+      final pending = uploadsBox.values.toList();
+      for (var task in pending) {
+        final file = File(task.localPath);
+        if (await file.exists()) {
+          
+          // Reference refRoot = FirebaseStorage.instance.ref();
+
+          // String uid = FirebaseAuth.instance.currentUser!.uid;
+          // Reference refImageDir = refRoot.child('images').child(uid); //get reference to storage root and the user's folder
+          // Reference refImage = refImageDir.child(task.fileName); //create a reference for the image to be stored
+
+          //store file
+          // try {
+          try {
+            // await refImage.putFile(File(file.path));
+            uploadToFirebase(file, task.fileName);
+            // await FirebaseStorage.instance.ref('images/${task.fileName}').putFile(file);
+            await task.delete(); //remove task from the queue
+            print('Synced: ${task.fileName}');
+          } catch (e) {
+            print('Retry later: ${task.fileName}');
+            print('error: $e');
+          }
+        }
+      }
+    // }
   }
 
   //schedule next alarm
@@ -119,7 +192,8 @@ class _MyHomePageState extends State<MyHomePage> {
     //cancel past alarms to avoid backlog
     await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
 
-    //schedule the next alarm
+    //schedule the next alarm if one is not already set
+    // bool alarmSet = await AndroidAlarmManager.
     await AndroidAlarmManager.oneShot(
       const Duration(seconds: 5), //schedule 5 seconds later
       0, 

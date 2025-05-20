@@ -111,7 +111,7 @@ class _ReframingPageState extends State<ReframingPage> {
       </FEW_SHOT_EXAMPLES>
 
       <SAFEGUARDS>
-        DO NOT end the prompt with "instead this means _______" This can cause the user to spiral further, which we do NOT want.
+        DO NOT end the prompt with "instead this means _______" or "it just means _______". This can cause the user to spiral further, which we do NOT want.
       </SAFEGUARDS>
     ''');
     final model = FirebaseVertexAI.instance.generativeModel(model: 'gemini-2.0-flash', systemInstruction: instructions);

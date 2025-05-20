@@ -303,7 +303,7 @@ import 'view_consent_form.dart';
               ),
               InfoButton(
                 text: 'Tutorial Video', 
-                action: () {}
+                action: () => launchUrl(Uri.parse('https://youtube.com/shorts/Da3dlMjP1vg?feature=share'))
               ),
 
               //opt out of study
