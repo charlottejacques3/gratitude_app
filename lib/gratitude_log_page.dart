@@ -10,6 +10,7 @@ import 'package:gratitude_app/widgets.dart';
 import 'package:hive/hive.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart';
 import 'guiding_pages/main_guiding_page.dart';
 import 'package:image_picker/image_picker.dart';
@@ -155,7 +156,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
     setState(() {
       guided = false;
       dynamicForms = [DynamicFormWidget(key: Key('1'), logController: TextEditingController(), manageFormList: manageFormList)];
-      dbRef.keepSynced(false);
+      dbRef.keepSynced(true);
     });
   }
 
@@ -386,6 +387,10 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                   }
 
                   //send all images to database
+                  
+                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  prefs.setBool('uploaded_images', false);
+
                   bool connected = await InternetConnection().hasInternetAccess; //first check internet
                   final dir = await getApplicationDocumentsDirectory(); //get docs directory
                   localImages.forEach((filename, file) async {
@@ -399,6 +404,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                       await uploadsBox.add(UploadTaskData(localPath: localPath, fileName: filename));
                     }
                   });
+                  prefs.setBool('uploaded_images', true);
                   setState(() { //reset
                     localImages = {};
                     numImages = 0;
@@ -433,7 +439,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                     setState(() {
                       guided = false;
                       dynamicForms = [DynamicFormWidget(key: Key('1'), logController: TextEditingController(), manageFormList: manageFormList)];
-                      dbRef.keepSynced(false);
+                      dbRef.keepSynced(true);
                     });
                   });
                 }

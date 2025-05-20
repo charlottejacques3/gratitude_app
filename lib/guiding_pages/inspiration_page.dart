@@ -49,7 +49,7 @@ class _InspirationPageState extends State<InspirationPage> {
   @override
   void initState() {
     super.initState();
-    dbRef.keepSynced(false);
+    dbRef.keepSynced(true);
     pickType();
   }
 

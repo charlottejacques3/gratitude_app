@@ -89,7 +89,7 @@ Future<void> notificationScheduler() async {
       try {
         tz.initializeTimeZones();
         NotificationService.scheduledNotification(
-          title: "Gratitude App", 
+          title: "Gratitude Buddy", 
           body: "Time to log your gratitude!", 
           scheduledTime: notificationDate
         );

@@ -40,7 +40,7 @@ void main() async {
   );
 
   //cache data so available offline
-  FirebaseDatabase.instance.setPersistenceEnabled(false);
+  FirebaseDatabase.instance.setPersistenceEnabled(true);
 
   //init notifications
   await NotificationService.initNotifications();
@@ -102,7 +102,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true, dialogTheme: DialogThemeData(backgroundColor: bg),
       ),
-      home: ParticipantGate(), 
+      home: AuthGate(),//ParticipantGate(), 
       debugShowCheckedModeBanner: false,
     );
   }
@@ -136,12 +136,12 @@ class _MyHomePageState extends State<MyHomePage> {
     uploadPendingImages();
 
     //trigger upload of queued images
-    // Connectivity().onConnectivityChanged.listen((result) {
-    //   print('connectivity: $ConnectivityResult');
-    //   if (result != ConnectivityResult.none) {
-    //     uploadPendingImages();
-    //   }
-    // });
+    Connectivity().onConnectivityChanged.listen((result) {
+      print('connectivity: $ConnectivityResult');
+      if (result != ConnectivityResult.none) {
+        uploadPendingImages();
+      }
+    });
   }
 
   void loadLocalImages() async {
@@ -154,9 +154,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void uploadPendingImages() async {
     //check internet
-    bool connected = await InternetConnection().hasInternetAccess;
-    print('internet connection: $connected');
-    if (connected) {
+    // bool connected = await InternetConnection().hasInternetAccess;
+    // print('internet connection: $connected');
+    // if (connected) {
       print('TRYING TO UPLOAD');
       print('current list');
       final pending = uploadsBox.values.toList();
@@ -184,7 +184,7 @@ class _MyHomePageState extends State<MyHomePage> {
           }
         }
       }
-    }
+    // }
   }
 
   //schedule next alarm

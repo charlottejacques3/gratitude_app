@@ -26,7 +26,7 @@ class _GuidingPageState extends State<GuidingPage> {
   @override
   void initState() {
     super.initState();
-    dbRef.keepSynced(false);
+    dbRef.keepSynced(true);
 
     //choose a random piece of advice
     dbRef.onValue.listen((event) {

@@ -34,6 +34,7 @@ class AuthService {
       prefs.setInt('scheduled_minutes', 0);
       prefs.setBool('allow_ai', true);
       prefs.setBool('withdraw', false);
+      prefs.setBool('uploaded_images', true);
 
       //cancel past alarms to avoid backlog
       await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);

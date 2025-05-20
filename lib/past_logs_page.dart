@@ -1,8 +1,11 @@
+import 'dart:ffi';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:gratitude_app/main.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'utilities/date_functions.dart';
 
 class PastLogsPage extends StatefulWidget {
@@ -30,7 +33,7 @@ class _PastLogsPageState extends State<PastLogsPage> {
   @override
   void initState() {
     super.initState();
-    dbRef.keepSynced(false);
+    dbRef.keepSynced(true);
     
     dbRef.onValue.listen((event) async {
       //re-initialize gratitudeLogs to empty
@@ -73,30 +76,44 @@ class _PastLogsPageState extends State<PastLogsPage> {
           }
 
           //don't add images if no internet
-          // if (connection && item['type'].compareTo('image') != 0) {
+          if (connection || item['type'].compareTo('image') != 0) {
             Map<String, String> data = {
-            'log': item['gratitude_item'],
-            'type': item['type'],
-            'id': item['id']
-          };
+              'log': item['gratitude_item'],
+              'type': item['type'],
+              'id': item['id']
+            };
 
           if (mounted) {
             setState(() {
               if (categorizedLogs.containsKey(formatted)) {
-                categorizedLogs[formatted]!.add(data);
+                bool found = false;
+                for (final dat in categorizedLogs[formatted]!) {
+                  if (dat['id']!.compareTo(data['id']!) == 0) {
+                    found = true;
+                  }
+                }
+                if (!found) categorizedLogs[formatted]!.add(data);
               } else {
                 categorizedLogs[formatted] = [data];
               }
             });
-          // }
+          }
           }
         }
-        setState(() {
-          loading = false;
-        });
         print('CATEGORIZED LOGS: $categorizedLogs');
       }
     });
+    setLoading();
+  }
+
+  void setLoading() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool? uploaded = prefs.getBool('uploaded_images');
+    if (uploaded != null) {
+      setState(() {
+        loading = !(uploaded);
+      });
+    }
   }
 
   Future<bool> checkInternetConnection() async {
@@ -125,151 +142,168 @@ class _PastLogsPageState extends State<PastLogsPage> {
         ) :
         loading //display progress indicator while loading
           ? Center(child: CircularProgressIndicator())
-      : Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Stack(
-          children: [
-            CustomScrollView( //otherwise display the logs
-              slivers: [
-            
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, parentIndex) {
-                      List<Map<String, String>> lst = categorizedLogs.values.elementAt(categorizedLogs.length - 1 - parentIndex);
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: 10),
-                          //display date
-                          Text(categorizedLogs.keys.elementAt(categorizedLogs.length - 1 - parentIndex),
-                            style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold
-                            )
-                          ),
-                          SizedBox(height: 5,),
-                          ListView.builder(
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            itemCount: lst.length,
-                            itemBuilder: (context, childIndex) {
-                              return Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
-                                child: ListTile(
-                                  title: Builder(
-                                    builder: (context) {
-
-                                      //displaying text
-                                      if ('text'.compareTo(lst[childIndex]['type']!) == 0) { 
-                                        return Text(lst[childIndex]['log']!,
-                                          style: Theme.of(context).textTheme.bodyLarge!
-                                        );
-                                      } 
-                                      //displaying images
-                                      else if ('image'.compareTo(lst[childIndex]['type']!) == 0) {
-                                        //check internet connection
-                                        // bool connected = await InternetConnection().hasInternetAccess;
-                                        // if (!connected) {
-                                        //   return Text('No internet connection - please go online to view photo logs');
-                                        // }
-                                        try {
-                                          return ListTile(
-                                            title: Align(
-                                              alignment: Alignment.centerLeft,
-                                              child: Image.network(
-                                                lst[childIndex]['log']!,
-                                                height: 130,
-                                                loadingBuilder: (context, child, loadingProgress) {
-                                                  if (loadingProgress != null) {
-                                                    return Align(
-                                                      alignment: Alignment.centerLeft,
-                                                      child: Container(
-                                                        alignment: Alignment.center,
-                                                        height: 200,
-                                                        width: 200,
-                                                        child: CircularProgressIndicator()
-                                                      )
-                                                    );
-                                                  } else {
-                                                    return child;
-                                                  }
-                                                },
-                                              ),
-                                            ),
-                                          );
-                                        } catch (e) {
-                                          print('error displaying image: $e');
-                                          return Container();
-                                        }   
-                                      } else {
-                                        return Container();
-                                      }
-                                    }
-                                  ),
-                                  contentPadding: widget.editMode ? EdgeInsets.only(left:0) : EdgeInsets.only(left:10),
-                                  dense: true,
-                                  visualDensity: VisualDensity(horizontal:VisualDensity.minimumDensity, vertical: VisualDensity.minimumDensity),
-                                  horizontalTitleGap: 0,
-                                  minLeadingWidth: 0,
-
-                                  //add leading if in edit mode
-                                  leading: widget.editMode ? 
-                                    Checkbox(
-                                      shape: CircleBorder(),
-                                      value: idsToDelete.contains(lst[childIndex]['id']), 
-                                      onChanged: (isSelected) {
-                                        if (isSelected == true) {
-                                        setState(() {
-                                          idsToDelete.add(lst[childIndex]['id']); //if just selected, add to list
-                                        });
-                                      } else {
-                                        setState(() {
-                                          idsToDelete.remove(lst[childIndex]['id']); //if just unselected, remove from list
-                                        });
-                                      }
-                                      }
-                                    ) : Container(width: 0,)
-                                  ) 
-                              );
-                            },
-                          ),
-                        ],
-                      );
-                    },
-                    childCount: categorizedLogs.length, // number of parent items
-                  ),
+      // : FutureBuilder(
+      //   future: SharedPreferences.getInstance(),
+      //   builder: (context, snapshot) {
+      //     if (snapshot.connectionState == ConnectionState.done) {
+      //       if(snapshot.hasData) {
+      //         bool? imagesLoaded = snapshot.data!.getBool('uploaded_images');
+      //         if (imagesLoaded != null && imagesLoaded) {
+          : Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Stack(
+              children: [
+                CustomScrollView( //otherwise display the logs
+                  slivers: [
+                
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, parentIndex) {
+                          List<Map<String, String>> lst = categorizedLogs.values.elementAt(categorizedLogs.length - 1 - parentIndex);
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(height: 10),
+                              //display date
+                              Text(categorizedLogs.keys.elementAt(categorizedLogs.length - 1 - parentIndex),
+                                style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold
+                                )
+                              ),
+                              SizedBox(height: 5,),
+                              ListView.builder(
+                                shrinkWrap: true,
+                                physics: NeverScrollableScrollPhysics(),
+                                itemCount: lst.length,
+                                itemBuilder: (context, childIndex) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(left: 8.0),
+                                    child: ListTile(
+                                      title: Builder(
+                                        builder: (context) {
+          
+                                          //displaying text
+                                          if ('text'.compareTo(lst[childIndex]['type']!) == 0) { 
+                                            return Text(lst[childIndex]['log']!,
+                                              style: Theme.of(context).textTheme.bodyLarge!
+                                            );
+                                          } 
+                                          //displaying images
+                                          else if ('image'.compareTo(lst[childIndex]['type']!) == 0) {
+                                            //check internet connection
+                                            // bool connected = await InternetConnection().hasInternetAccess;
+                                            // if (!connected) {
+                                            //   return Text('No internet connection - please go online to view photo logs');
+                                            // }
+                                            try {
+                                              return ListTile(
+                                                title: Align(
+                                                  alignment: Alignment.centerLeft,
+                                                  child: Image.network(
+                                                    lst[childIndex]['log']!,
+                                                    height: 130,
+                                                    loadingBuilder: (context, child, loadingProgress) {
+                                                      if (loadingProgress != null) {
+                                                        return Align(
+                                                          alignment: Alignment.centerLeft,
+                                                          child: Container(
+                                                            alignment: Alignment.center,
+                                                            height: 200,
+                                                            width: 200,
+                                                            child: CircularProgressIndicator()
+                                                          )
+                                                        );
+                                                      } else {
+                                                        try {
+                                                          return child;
+                                                        } catch(e) {
+                                                          return Container();
+                                                        }
+                                                      }
+                                                    },
+                                                  ),
+                                                ),
+                                              );
+                                            } catch (e) {
+                                              print('error displaying image: $e');
+                                              return Container();
+                                            }   
+                                          } else {
+                                            return Container();
+                                          }
+                                        }
+                                      ),
+                                      contentPadding: widget.editMode ? EdgeInsets.only(left:0) : EdgeInsets.only(left:10),
+                                      dense: true,
+                                      visualDensity: VisualDensity(horizontal:VisualDensity.minimumDensity, vertical: VisualDensity.minimumDensity),
+                                      horizontalTitleGap: 0,
+                                      minLeadingWidth: 0,
+          
+                                      //add leading if in edit mode
+                                      leading: widget.editMode ? 
+                                        Checkbox(
+                                          shape: CircleBorder(),
+                                          value: idsToDelete.contains(lst[childIndex]['id']), 
+                                          onChanged: (isSelected) {
+                                            if (isSelected == true) {
+                                            setState(() {
+                                              idsToDelete.add(lst[childIndex]['id']); //if just selected, add to list
+                                            });
+                                          } else {
+                                            setState(() {
+                                              idsToDelete.remove(lst[childIndex]['id']); //if just unselected, remove from list
+                                            });
+                                          }
+                                          }
+                                        ) : Container(width: 0,)
+                                      ) 
+                                  );
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                        childCount: categorizedLogs.length, // number of parent items
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+          
+                //delete logs button
+                widget.editMode ?
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    left: 0,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        //loop through logs to delete
+                        for (var id in idsToDelete) {
+                          dbRef.child(id).remove();
+                          
+                        }
+                        setState(() {
+                          idsToDelete = [];
+                        });
+                        Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (BuildContext context) => MyHomePage(startingPageIndex: 1,)
+                          )
+                        );
+                      }, 
+                      child: Text('Delete All Selected Logs')
+                    )
+                  ) : Container()
+              ]
             ),
-
-            //delete logs button
-            widget.editMode ?
-              Positioned(
-                bottom: 0,
-                right: 0,
-                left: 0,
-                child: ElevatedButton(
-                  onPressed: () {
-                    //loop through logs to delete
-                    for (var id in idsToDelete) {
-                      dbRef.child(id).remove();
-                      
-                    }
-                    setState(() {
-                      idsToDelete = [];
-                    });
-                    Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (BuildContext context) => MyHomePage(startingPageIndex: 1,)
-                      )
-                    );
-                  }, 
-                  child: Text('Delete All Selected Logs')
-                )
-              ) : Container()
-          ]
-        ),
+          // )
+              // } else return CircularProgressIndicator();
+          // }
+          // }
+          // return CircularProgressIndicator();
+        // }
       ),
     );
   }
