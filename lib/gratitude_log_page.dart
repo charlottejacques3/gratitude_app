@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:gratitude_app/congrats_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gratitude_app/widgets.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'guiding_pages/main_guiding_page.dart';
 import 'package:image_picker/image_picker.dart';
 enum ImageSourceType { gallery, camera }
@@ -231,11 +232,43 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                     ),
                     builder: (BuildContext context, MenuController controller, Widget? child) {
                       return IconButton(
-                        onPressed: () {
-                          if (controller.isOpen) {
-                            controller.close();
+                        onPressed: () async {
+                          bool connection = await InternetConnection().hasInternetAccess;
+                          if (connection) {
+                            if (controller.isOpen) {
+                              controller.close();
+                            } else {
+                              controller.open();
+                            }
                           } else {
-                            controller.open();
+                            showDialog(
+                              context: context, 
+                              builder: (BuildContext context) => Dialog(
+                                child: Padding(
+                                  padding: EdgeInsets.all(15),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text('Please connect to the internet to add image logs.',
+                                        style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: ElevatedButton(
+                                          onPressed: () => Navigator.pop(context), 
+                                          child: Text('Okay', 
+                                            textAlign: TextAlign.center,
+                                          )
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              )
+                            );
                           }
                         }, 
                         icon: Icon(Icons.camera_alt),
@@ -385,120 +418,6 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
               )
             ),
           ),
-
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.center,
-          //   children: [
-          //     //guiding button
-          //     Expanded(
-          //       child: Padding(
-          //         padding: EdgeInsets.only(left: 8.0, right: 4.0),
-          //         child: Align(
-          //           alignment: Alignment.center,
-          //           child: ElevatedButton(
-          //             style: Theme.of(context).elevatedButtonTheme.style!.copyWith(
-          //                 backgroundColor: WidgetStatePropertyAll<Color>(Color.fromARGB(255, 209, 108, 103)),
-          //               ),
-          //             onPressed: () async {
-          //               final preloaded = await Navigator.push(
-          //                 context,
-          //                 MaterialPageRoute(builder: (context) => const GuidingPage())
-          //               );
-
-          //               if (preloaded != null) {
-          //                 setState(() {
-          //                   //if there is preloaded data from the inspiration page, set it
-          //                   if (preloaded.containsKey('type') && preloaded.containsKey('log')) {
-          //                     if (preloaded['type'].compareTo('text') == 0) {
-          //                       dynamicForms = [DynamicFormWidget(key: Key('1'), logController: TextEditingController(text: preloaded['log']), manageFormList: manageFormList)];
-          //                     } else if (preloaded['type'].compareTo('image') == 0) {
-          //                       imageUrls.add(preloaded['log']);
-          //                     }
-          //                   }
-
-          //                   //keep track of whether they worked through their emotions in that session
-          //                   if (preloaded.containsKey('guided')) {
-          //                     guided = preloaded['guided'];
-          //                   }
-          //                 });
-          //               }
-          //             },
-          //             child: Text("I can't think of anything",
-          //               textAlign: TextAlign.center,
-          //               style: TextStyle(
-          //                               color: Colors.white
-          //                             ),
-          //             ),
-          //           ),
-          //         ),
-          //       ),
-          //     ),
-
-          //     //button to send logs to the database
-          //     Expanded(
-          //       child: Padding(
-          //         padding: EdgeInsets.only(left: 4.0, right: 8.0),
-          //         child: ElevatedButton(
-          //           child: Text('Done'),
-          //           onPressed: () async {
-          //             try {
-          //               //send all text entries to database
-          //               for (final item in dynamicForms) {
-          //                 String log = item.logController.text;
-          //                 if (log.isNotEmpty) { //don't add empty entries
-          //                   //map to a dictionary
-          //                   Map<String, String> gratitudeLogs = {
-          //                     'gratitude_item': log,
-          //                     'date': DateTime.now().toIso8601String(),
-          //                     'type': 'text'
-          //                   };
-          //                   //push creates a unique key
-          //                   dbRef.push().set(gratitudeLogs);
-                    
-          //                   //clear text fields
-          //                   item.logController.text = '';
-          //                 }
-          //               }
-
-          //               //send all image urls to database
-          //               for (final url in imageUrls) {
-          //                 //map to a dictionary
-          //                 Map<String, String> gratitudeImages = {
-          //                   'gratitude_item': url,
-          //                   'date': DateTime.now().toIso8601String(),
-          //                   'type': 'image'
-          //                 };
-          //                 //send to database
-          //                 dbRef.push().set(gratitudeImages);
-          //                 //remove images from screen
-          //                 setState(() {
-          //                   imageUrls = [];
-          //                   numImages = 0;
-          //                 });
-          //               }
-          //             } catch (e) {
-          //               print('error writing data: $e');
-          //             }
-
-                      
-          //             //navigate to congrats page
-          //             Navigator.push(
-          //               context, 
-          //               MaterialPageRoute(builder: (context) => CongratsPage(reframed: guided,))
-          //             ).then((_) {
-          //               //update page
-          //               setState(() {
-          //                 guided = false;
-          //                 dynamicForms = [DynamicFormWidget(key: Key('1'), logController: TextEditingController(), manageFormList: manageFormList)];
-          //                 dbRef.keepSynced(true);
-          //               });
-          //             });
-          //           }, 
-          //         ),
-          //       ),
-          //     ),
-          //   ],
-          // ),
         ],
       ),
     );

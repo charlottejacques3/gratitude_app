@@ -24,8 +24,8 @@ class _PastLogsPageState extends State<PastLogsPage> {
   Map<String, List<Map<String, String>>> categorizedLogs = {};
   bool loading = true;
   List<dynamic> idsToDelete = [];
-  bool connected = false;
-  bool checkingInternet = true;
+  bool connected = true;
+  bool containsImages = false;
 
   @override
   void initState() {
@@ -64,14 +64,18 @@ class _PastLogsPageState extends State<PastLogsPage> {
           String formatted = formatDate(item['date']);
           item['date'] = formatted;
 
-          //so it will give the no internet notice
+          //so it will update if there's no internet
           bool connection = true;
-          if (item['type'].compareTo('image') == 0) {
-            connection = await checkInternetConnection();
+          if (item['type'].compareTo('image') == 0 && connected) {
+            connection = await InternetConnection().hasInternetAccess;//await checkInternetConnection();
+            setState(() {
+              containsImages = true;
+              connected = connection;
+            });
           }
 
           //don't add images if no internet
-          // if (connection && item['type'].compareTo('image') != 0) {
+          if (connected || item['type'].compareTo('image') != 0) {
             Map<String, String> data = {
             'log': item['gratitude_item'],
             'type': item['type'],
@@ -86,21 +90,27 @@ class _PastLogsPageState extends State<PastLogsPage> {
                 categorizedLogs[formatted] = [data];
               }
             });
-          // }
+          }
           }
           
         }
+      }
+
+      if (!connected && containsImages) {
+        ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please connect to the internet to view image logs')),
+      );
       }
     });
   }
 
   Future<bool> checkInternetConnection() async {
     bool conn = await InternetConnection().hasInternetAccess;
-    if (!conn) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please connect to the internet to view image logs')),
-      );
-    }
+    // if (!conn) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(content: Text('Please connect to the internet to view image logs')),
+    //   );
+    // }
     return conn;
   }
 
