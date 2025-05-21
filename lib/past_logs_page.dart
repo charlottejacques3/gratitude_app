@@ -100,8 +100,8 @@ class _PastLogsPageState extends State<PastLogsPage> {
 
       if (!connected && containsImages) {
         ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please connect to the internet to view image logs')),
-      );
+          const SnackBar(content: Text('Please connect to the internet to view image logs')),
+        );
       }
     });
   }

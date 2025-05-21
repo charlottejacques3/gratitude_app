@@ -26,7 +26,8 @@ class _InspirationPageState extends State<InspirationPage> {
                                                           .child(FirebaseAuth.instance.currentUser!.uid)
                                                           .child('GratitudeLogs');
   String inspoType = 'Random Past Log';
-  List<String> selectedInspoTypes = ['Random Past Log', 'Random Photo', 'Gratitude Prompt'];
+  List<String> selectedInspoTypes = ['Gratitude Prompt'];
+  List<String> possibleInspoTypes = ['Gratitude Prompt'];
 
   String selectedPastLog = '';
   String selectedLogRelativeDate = '';
@@ -45,16 +46,54 @@ class _InspirationPageState extends State<InspirationPage> {
                           'What everyday object are you grateful for?',
                           'What opportunities are you grateful for?'];
   int selectedPromptIndex = 0;
+  bool photoPermission = false;
 
   @override
   void initState() {
     super.initState();
     dbRef.keepSynced(true);
+    initialChecks();
     pickType();
+  }
+
+  //check whether there are logs/permissions for photos
+  void initialChecks() async {
+
+    //check for random photo
+    final PermissionState ps = await PhotoManager.requestPermissionExtend();
+    if (ps.isAuth) {
+      setState(() {
+        photoPermission = true;
+        possibleInspoTypes.add('Random Photo');
+        selectedInspoTypes.add('Random Photo');
+      });
+    }
+
+    //check if there are logs
+    dbRef.onValue.listen((event) {
+      DataSnapshot dataSnapshot = event.snapshot;
+      if (dataSnapshot.value != null) {
+        Map<dynamic, dynamic> values =  dataSnapshot.value as Map<dynamic, dynamic>;
+        if (values.isNotEmpty) {
+          setState(() {
+            possibleInspoTypes.add('Random Past Log');
+            selectedInspoTypes.add('Random Past Log');
+          });
+        }
+      }
+    });
   }
 
   //pick a category of inspiration
   void pickType() {
+    //check for 0 length
+    if (selectedInspoTypes.isEmpty) {
+      setState(() {
+        inspoType = 'none';
+      });
+      return;
+    }
+
     setState(() {
       inspoType = selectedInspoTypes[Random().nextInt(selectedInspoTypes.length)]; //pick a random type
     });
@@ -75,6 +114,68 @@ class _InspirationPageState extends State<InspirationPage> {
     }
   }
 
+  //dialog if the random log/photo don't work
+  void dialog(String text, Function() actionButton, String actionButtonText) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => Dialog(
+        child: Padding(
+          padding: EdgeInsets.all(15),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(text,
+                style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context), 
+                        child: Text('Cancel', 
+                          textAlign: TextAlign.center,
+                        )
+                      ),
+                    ),
+                  ),
+
+                  //confirm opt out
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton(
+                        onPressed: () => actionButton(),
+                        child: Text(actionButtonText,
+                          textAlign: TextAlign.center,
+                        )
+                      ),
+                    ),
+                  )
+                ],
+              )
+            ],
+          ),
+        )
+      )
+    );
+  }
+
+  void openSettings() {
+    PhotoManager.openSetting();
+  }
+
+  void backToLogs() {
+    print('BACK');
+    Navigator.pop(context);
+    Navigator.pop(context);
+    Navigator.pop(context);
+  }
+
   //randomly generate a past log from the database
   void generatePastLogs() {
     dbRef.onValue.listen((event) {
@@ -83,6 +184,10 @@ class _InspirationPageState extends State<InspirationPage> {
       DataSnapshot dataSnapshot = event.snapshot;
       if (dataSnapshot.value != null) {
         Map<dynamic, dynamic> values = dataSnapshot.value as Map<dynamic, dynamic>;
+        //choose a different one if it's empty, if possible
+        // if (values.isEmpty && selectedInspoTypes.length >) {
+
+        // }
         List<dynamic> keys = values.keys.toList();
 
         //pick random key
@@ -114,7 +219,7 @@ class _InspirationPageState extends State<InspirationPage> {
     final PermissionState ps = await PhotoManager.requestPermissionExtend();
 
     // permission granted, get the photos
-    if (ps.isAuth || ps == PermissionState.limited) {
+    if (ps.isAuth) { //|| ps == PermissionState.limited) {
       List<AssetEntity> photos = [];
       
       final List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
@@ -260,6 +365,17 @@ class _InspirationPageState extends State<InspirationPage> {
                     textAlign: TextAlign.center,
                     );
                 }
+
+                //nothing selected
+                else if(inspoType.compareTo('none') == 0) {
+                  return Text(
+                    'Please choose an inspiration type',
+                    style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold
+                    ),
+                  );
+                }
                 
                 else {
                   print('error: invalid inspo type: $inspoType');
@@ -334,27 +450,66 @@ class _InspirationPageState extends State<InspirationPage> {
                               }, 
                             );
                           },
-                          menuChildren: ['Random Past Log', 'Random Photo', 'Gratitude Prompt'].map((e) {
+                          menuChildren: ['Gratitude Prompt', 'Random Past Log', 'Random Photo'].map((e) {
                             return MenuItemButton(
                               child: Row(
                                 children: [
                                   Checkbox(
-                                    value: selectedInspoTypes.contains(e), 
+                                    value: selectedInspoTypes.contains(e) && possibleInspoTypes.contains(e), 
+                                    side: selectedInspoTypes.contains(e) && !possibleInspoTypes.contains(e) 
+                                      ? WidgetStateBorderSide.resolveWith(
+                                        (states) => BorderSide(width: 1.5, color: Colors.grey),
+                                      )
+                                      : WidgetStateBorderSide.resolveWith(
+                                        (states) => BorderSide(width: 1.5, color: Colors.black)
+                                      ),
                                     onChanged: (isSelected) {
-                                      if (isSelected == true) {
-                                        setState(() {
-                                          selectedInspoTypes.add(e); //if just selected, add to list
-                                        });
-                                      } else {
-                                        setState(() {
-                                          selectedInspoTypes.remove(e); //if just unselected, remove from list
-                                        });
+                                      //check if possible
+                                      if (possibleInspoTypes.contains(e)) {
+                                        if (isSelected == true) {
+                                          setState(() {
+                                            selectedInspoTypes.add(e); //if just selected, add to list
+                                          });
+                                        } else {
+                                          setState(() {
+                                            selectedInspoTypes.remove(e); //if just unselected, remove from list
+                                          });
+                                        }
+                                      }
+
+                                      //if not, show dialog
+                                      else {
+                                        // String msg = '';
+                                        if (e.compareTo('Random Photo') == 0) {
+                                          dialog(
+                                            'Please allow complete access to the camera roll to use this feature',
+                                            () {
+                                              PhotoManager.openSetting();
+                                            },
+                                            'Open Settings'
+                                          );
+                                        } else if (e.compareTo('Random Past Log') == 0) {
+                                            dialog(
+                                              'Please add a log to use this feature',
+                                              () {
+                                                Navigator.pop(context);
+                                                Navigator.pop(context);
+                                                Navigator.pop(context);
+                                              },
+                                              'Add a Log'
+                                            );
+                                        } else {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('Error: this feature is not currently available')),
+                                          );
+                                        }
+                                        
                                       }
                                     }
                                   ),
                                   Text(e,
                                     style: TextStyle(
-                                      color: Colors.black
+                                      color: possibleInspoTypes.contains(e) ? Colors.black : Colors.grey
                                     )
                                   ),
                                 ],
