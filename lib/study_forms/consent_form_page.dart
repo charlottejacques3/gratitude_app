@@ -1,15 +1,13 @@
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/main.dart';
-import 'package:markdown_widget/config/toc.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 import 'package:markdown_widget/widget/all.dart';
-import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:signature/signature.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:markdown/markdown.dart' as md;
@@ -208,8 +206,14 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        // leading: IconButton(
+        //   onPressed: () {
+        //     Navigator.pop(context);
+        //   }, 
+        //   icon: Icon(Icons.arrow_back)
+        // ),
         centerTitle: true,
-        automaticallyImplyLeading: false,
+        // automaticallyImplyLeading: false,
         title: Text('Study Consent Form',
           style: Theme.of(context).textTheme.titleLarge!.copyWith(
             color: Theme.of(context).colorScheme.primary,
@@ -396,6 +400,9 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
                     );
                   } else if (formKey.currentState!.validate()){
                     generatePdf();
+                    //update sharedpreferences
+                    SharedPreferences prefs = await SharedPreferences.getInstance();
+                    prefs.setBool('consent_complete', true);
                     //send to main page
                     Navigator.pushReplacement(
                       context, 

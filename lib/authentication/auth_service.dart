@@ -2,7 +2,6 @@ import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/study_forms/consent_form_page.dart';
-import 'package:gratitude_app/authentication/login_page.dart';
 import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/utilities/alarm_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -34,7 +33,7 @@ class AuthService {
       prefs.setInt('scheduled_minutes', 0);
       prefs.setBool('allow_ai', true);
       prefs.setBool('withdraw', false);
-      prefs.setBool('uploaded_images', true);
+      prefs.setBool('consent_complete', false);
 
       //cancel past alarms to avoid backlog
       await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);

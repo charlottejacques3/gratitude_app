@@ -1,17 +1,6 @@
-import 'dart:io';
-
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gratitude_app/utilities/alarm_manager.dart';
-import 'package:gratitude_app/utilities/firebase_storage.dart';
-import 'package:gratitude_app/utilities/upload_task.dart';
-import 'package:hive/hive.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 //firebase imports
@@ -52,11 +41,6 @@ void main() async {
   //print last notif date
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   print('LAST NOTIF TIME: ${prefs.getString('scheduled_notif_date')}');
-
-  //for firebase storage saving to device when offline
-  await Hive.initFlutter();
-  Hive.registerAdapter(UploadTaskDataAdapter());
-  await Hive.openBox<UploadTaskData>('uploads');
 
   runApp(const MyApp());
 }
@@ -101,7 +85,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true, dialogTheme: DialogThemeData(backgroundColor: bg),
       ),
-      home: AuthGate(),//ParticipantGate(), 
+      home: ParticipantGate(), 
       debugShowCheckedModeBanner: false,
     );
   }

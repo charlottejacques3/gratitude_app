@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gratitude_app/authentication/login_page.dart';
 import 'package:gratitude_app/main.dart';
+import 'package:gratitude_app/study_forms/consent_form_page.dart';
 import 'package:gratitude_app/withdraw_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -14,11 +15,6 @@ class ParticipantGate extends StatefulWidget {
 }
 
 class _ParticipantGateState extends State<ParticipantGate> {
-
-  Future<SharedPreferences> getPrefs() {
-    return SharedPreferences.getInstance();
-  }
-  // final Future<bool> withdraw = await SharedPreferences.getInstance().then((value) => value.getBool('withdraw'));
 
   @override
   Widget build(BuildContext context) {
@@ -37,9 +33,19 @@ class _ParticipantGateState extends State<ParticipantGate> {
 
               //future has complete, got data
             } else if (snapshot.hasData) {
+
+              //check if withdrawn from study
               bool? withdraw = snapshot.data!.getBool('withdraw');
               if (withdraw == null || !withdraw) {
-                return AuthGate();
+
+                //check if completed consent form
+                bool? consent = snapshot.data!.getBool('consent_complete');
+                print('CONSENT: $consent');
+                if (consent == null || !consent) {
+                  return ConsentFormPage();
+                } else {
+                  return AuthGate();
+                }
               } else {
                 return WithdrawPage();
               }
@@ -47,7 +53,7 @@ class _ParticipantGateState extends State<ParticipantGate> {
           } 
           return CircularProgressIndicator();
         },
-        future: getPrefs()
+        future: SharedPreferences.getInstance()
       )
     );
   }

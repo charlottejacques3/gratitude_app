@@ -16,7 +16,7 @@ class _LoginPageState extends State<LoginPage> {
 
   TextEditingController emailController = TextEditingController();
   TextEditingController pwController = TextEditingController();
-  bool hasAccount = true;
+  bool hasAccount = false;
   bool agreeToTerms = false;
 
   void switchPage() {
