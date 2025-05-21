@@ -14,7 +14,7 @@ class NotificationService {
   static Future<void> initNotifications() async {
 
     //prepare android init settings (would have to do more for ios)
-    const initSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher'); //default flutter icon, can change
+    const initSettingsAndroid = AndroidInitializationSettings('@mipmap/launcher_icon'); 
 
     //init settings
     const initSettings = InitializationSettings(

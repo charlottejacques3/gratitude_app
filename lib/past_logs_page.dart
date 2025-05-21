@@ -66,7 +66,7 @@ class _PastLogsPageState extends State<PastLogsPage> {
           //so it will update if there's no internet
           bool connection = true;
           if (item['type'].compareTo('image') == 0 && connected) {
-            connection = await InternetConnection().hasInternetAccess;//await checkInternetConnection();
+            connection = await InternetConnection().hasInternetAccess;
             setState(() {
               containsImages = true;
               connected = connection;
@@ -79,22 +79,24 @@ class _PastLogsPageState extends State<PastLogsPage> {
             'log': item['gratitude_item'],
             'type': item['type'],
             'id': item['id']
-          };
+            };
 
-          if (mounted) {
-            setState(() {
-              if (categorizedLogs.containsKey(formatted)) {
-                categorizedLogs[formatted]!.add(data);
-              } else {
-                categorizedLogs[formatted] = [data];
-              }
-            });
+            if (mounted) {
+              setState(() {
+                if (categorizedLogs.containsKey(formatted)) {
+                  categorizedLogs[formatted]!.add(data);
+                } else {
+                  categorizedLogs[formatted] = [data];
+                }
+              });
+            }
           }
-          }
-          }
-          
         }
       }
+
+      setState(() {
+        loading = false;
+      });
 
       if (!connected && containsImages) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -102,16 +104,6 @@ class _PastLogsPageState extends State<PastLogsPage> {
       );
       }
     });
-  }
-
-  Future<bool> checkInternetConnection() async {
-    bool conn = await InternetConnection().hasInternetAccess;
-    // if (!conn) {
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     const SnackBar(content: Text('Please connect to the internet to view image logs')),
-    //   );
-    // }
-    return conn;
   }
 
   @override

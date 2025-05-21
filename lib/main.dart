@@ -70,7 +70,6 @@ class MyApp extends StatelessWidget {
 
     //set styles for the app
     Color bg = Color.fromARGB(255, 250, 240, 230);
-    Color prim = Theme.of(context).colorScheme.primary;
     return MaterialApp(
       title: 'Gratitude App',
       theme: ThemeData(
@@ -123,68 +122,11 @@ class _MyHomePageState extends State<MyHomePage> {
   bool pastLogsEditMode = false;
   String pageHeader = '';
 
-  //local image uploads
-  List<File> localImages = [];
-  final uploadsBox = Hive.box<UploadTaskData>('uploads');
-
   @override
   void initState() {
     super.initState();
     currentPageIndex = widget.startingPageIndex;
-    scheduleNextAlarm();
-
-    uploadPendingImages();
-
-    //trigger upload of queued images
-    Connectivity().onConnectivityChanged.listen((result) {
-      print('connectivity: $ConnectivityResult');
-      if (result != ConnectivityResult.none) {
-        uploadPendingImages();
-      }
-    });
-  }
-
-  void loadLocalImages() async {
-    final dir = await getApplicationDocumentsDirectory();
-    final files = Directory(dir.path).listSync().whereType<File>();
-    setState(() {
-      localImages = files.toList();
-    });
-  }
-
-  void uploadPendingImages() async {
-    //check internet
-    // bool connected = await InternetConnection().hasInternetAccess;
-    // print('internet connection: $connected');
-    // if (connected) {
-      print('TRYING TO UPLOAD');
-      print('current list');
-      final pending = uploadsBox.values.toList();
-      for (var task in pending) {
-        final file = File(task.localPath);
-        if (await file.exists()) {
-          
-          // Reference refRoot = FirebaseStorage.instance.ref();
-
-          // String uid = FirebaseAuth.instance.currentUser!.uid;
-          // Reference refImageDir = refRoot.child('images').child(uid); //get reference to storage root and the user's folder
-          // Reference refImage = refImageDir.child(task.fileName); //create a reference for the image to be stored
-
-          //store file
-          // try {
-          try {
-            // await refImage.putFile(File(file.path));
-            uploadToFirebase(file, task.fileName);
-            // await FirebaseStorage.instance.ref('images/${task.fileName}').putFile(file);
-            await task.delete(); //remove task from the queue
-            print('Synced: ${task.fileName}');
-          } catch (e) {
-            print('Retry later: ${task.fileName}');
-            print('error: $e');
-          }
-        }
-      }
-    // }
+    // scheduleNextAlarm();
   }
 
   //schedule next alarm

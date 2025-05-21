@@ -61,11 +61,11 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
     ImagePicker imagePicker = ImagePicker();
     XFile? file = await imagePicker.pickImage(source: source);
 
+    if (file == null) return;
+
     setState(() {
       numImages++;
     });
-
-    if (file == null) return;
 
     //create unique filename with the datetime
     String filename = DateTime.now().toIso8601String();
