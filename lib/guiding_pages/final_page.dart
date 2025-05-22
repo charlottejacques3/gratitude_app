@@ -46,7 +46,7 @@ class _FinalPageState extends State<FinalPage> {
                 for(var i = 0; i < 4; i++) {
                   Navigator.pop(context);
                 }
-                Navigator.pop(context, {'guided':true});
+                Navigator.pop(context, {'guided':true, 'guiding_stage':'strategies'});
               }, 
               child: Text("Let's do it!"))
           ],

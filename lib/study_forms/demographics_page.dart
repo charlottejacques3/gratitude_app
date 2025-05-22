@@ -3,6 +3,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/widgets.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class DemographicsPage extends StatefulWidget {
@@ -87,6 +88,10 @@ class _DemographicsPageState extends State<DemographicsPage> {
     //save to db
     DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users').child(FirebaseAuth.instance.currentUser!.uid);
     await dbRef.set({'Demographics': demographics});
+
+    //update demographics complete
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool('demographics_complete', true);
 
     Navigator.pushReplacement(
       context, MaterialPageRoute(builder: (BuildContext context) => MyHomePage(startingPageIndex: 0))

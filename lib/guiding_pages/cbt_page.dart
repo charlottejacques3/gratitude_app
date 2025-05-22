@@ -189,7 +189,7 @@ class _CBTPageState extends State<CBTPage> {
                           for(var i = 0; i < 2; i++) {
                             Navigator.pop(context);
                           }
-                          Navigator.pop(context, {'guided':true});
+                          Navigator.pop(context, {'guided':true, 'guiding_stage':'thought_traps'});
                         }, 
                         child: Text("I've thought of something to log!",
                           textAlign: TextAlign.center,

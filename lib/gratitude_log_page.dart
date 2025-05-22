@@ -12,7 +12,7 @@ enum ImageSourceType { gallery, camera }
 
 
 class GratitudeLogPage extends StatefulWidget {
-  const GratitudeLogPage({super.key, });
+  const GratitudeLogPage({super.key});
 
   @override
   State<GratitudeLogPage> createState() => _GratitudeLogPageState();
@@ -24,11 +24,12 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
   List<DynamicFormWidget> dynamicForms = [];
   int nextKey = 2;
   String uid = FirebaseAuth.instance.currentUser!.uid;
-  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
-                                                          .child(FirebaseAuth.instance.currentUser!.uid)
-                                                          .child('GratitudeLogs');
+  DatabaseReference dbUserRef = FirebaseDatabase.instance.ref().child('users')
+                                                          .child(FirebaseAuth.instance.currentUser!.uid);
 
   bool guided = false; //keeps track of whether they worked through emotions in this session
+  String guidedStage = '';
+  String inspirationUsed = ''; //keeps track of the type of inspiration used, if applicable
 
   //images
   List<String> imageUrls = [];
@@ -96,7 +97,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
     setState(() {
       guided = false;
       dynamicForms = [DynamicFormWidget(key: Key('1'), logController: TextEditingController(), manageFormList: manageFormList)];
-      dbRef.keepSynced(true);
+      dbUserRef.keepSynced(true);
     });
   }
 
@@ -295,19 +296,6 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
               ],
             ),
           ),
-
-          //new buttons style
-          // ElevatedButton(
-          //   child: Text('Save'),
-          //   onPressed: (){},
-          // ),
-          // Align(
-          //   child: ElevatedButton(
-          //     child: Text("Help, I can't think of anything!"),
-          //     onPressed: (){},
-          //   ),
-          //   alignment: Alignment.bottomCenter,
-          // ),
           SizedBox(height: 16),
 
           //button to send logs to the database
@@ -315,6 +303,8 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: SwitchedColourButton (
               onClick: () async {
+                DatabaseReference dbRef = dbUserRef.child('GratitudeLogs');
+                int numLogs = 0; //keep track of number of logs
                 bool nonEmptyLogs = false;
                 try {
                   //send all text entries to database
@@ -322,6 +312,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                     String log = item.logController.text;
                     if (log.isNotEmpty) { //don't add empty entries
                       nonEmptyLogs = true;
+                      numLogs++;
                       //map to a dictionary
                       Map<String, String> gratitudeLogs = {
                         'gratitude_item': log,
@@ -338,6 +329,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
 
                   //send all image urls to database
                   for (final url in imageUrls) {
+                    numLogs++;
                     //map to a dictionary
                     Map<String, String> gratitudeImages = {
                       'gratitude_item': url,
@@ -354,6 +346,83 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                   }
                 } catch (e) {
                   print('error writing data: $e');
+                }
+
+                //update stats
+                DatabaseReference statsRef = dbUserRef.child('Stats');
+                final snapshot = await statsRef.get();
+                if (snapshot.exists) {
+                  final data = snapshot.value as Map<dynamic, dynamic>;
+
+                  //update num logs
+                  int initial = 0;
+                  if (data['num_logs'] != null) {
+                    initial = data['num_logs'];
+                  }
+                  statsRef.update({
+                    'num_logs': initial + numLogs,
+                  });
+                  
+                  //check if today is in dates list
+                  if (data['days_used'] != null) {
+                    bool todayAdded = false;
+                    for (final date in data['days_used']) {
+                      DateTime dt = DateTime.parse(date);
+                      if (dt.day == DateTime.now().day) {
+                        todayAdded = true;
+                        break;
+                      }
+                    }
+                    if (!todayAdded) {
+                      statsRef.update({
+                        'days_used': data['days_used'].add(DateTime.now().toIso8601String())
+                      });
+                    }
+                  } else {
+                    statsRef.update({
+                      'days_used': [DateTime.now().toIso8601String()]
+                    });
+                  }
+
+                  //set inspiration used, if applicable
+                  if (inspirationUsed.isNotEmpty) {
+                    if (data['inspo_to_log'] != null) {
+                      statsRef.child('inspo_to_log').update({
+                        inspirationUsed: data['inspo_to_log'][inspirationUsed] + 1
+                      });
+                    } else {
+                      Map<String, int> record = {'Gratitude Prompt': 0, 'Random Photo': 0, 'Random Past Log': 0};
+                      record[inspirationUsed] = 1;
+                      statsRef.update({
+                        'inspo_to_log': record
+                      });
+                    }
+                  }
+
+                  //set guiding used, if applicable
+                  if (guided && guidedStage.isNotEmpty) {
+                    if (data['guiding_to_log'] != null) {
+                      statsRef.child('guiding_to_log').update({
+                        guidedStage: data['guiding_to_log'][guidedStage] + 1
+                      });
+                    } else {
+                      Map<String, int> record = {'log_emotions': 0, 'thought_traps': 0, 'strategies': 0};
+                      record[guidedStage] = 1;
+                      statsRef.update({
+                        'guiding_to_log': record
+                      });
+                    }
+                  }
+                } 
+                //set for the first time
+                else {
+                  Map<String, int> guidingRecord = {'log_emotions': 0, 'thought_traps': 0, 'strategies': 0};
+                  guidingRecord[guidedStage] = 1;
+                  statsRef.set({
+                    'num_logs': numLogs,
+                    'days_used': [DateTime.now().toIso8601String()],
+                    'guiding_to_log': guidingRecord
+                  });
                 }
                 
                 //navigate to congrats page
@@ -374,10 +443,6 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
               text: "Save",
             ),
           ),
-          // SwitchedColourButton (
-          //   onClick: () {}, 
-          //   text: "Help, I can't think of anything!",
-          // ),
           
           //button to send to inspiration page
           Padding(
@@ -403,9 +468,17 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                       }
                     }
 
+                    //save the inspo type that was used
+                    if(preloaded.containsKey('inspo')) {
+                      inspirationUsed = preloaded['inspo'];
+                    }
+
                     //keep track of whether they worked through their emotions in that session
                     if (preloaded.containsKey('guided')) {
                       guided = preloaded['guided'];
+                    }
+                    if (preloaded.containsKey('guiding_stage')) {
+                      guidedStage = preloaded['guiding_stage'];
                     }
                   });
                 }

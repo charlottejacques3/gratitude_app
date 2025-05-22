@@ -22,9 +22,8 @@ class InspirationPage extends StatefulWidget {
 class _InspirationPageState extends State<InspirationPage> {
 
   final TextEditingController logController = TextEditingController();
-   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
-                                                          .child(FirebaseAuth.instance.currentUser!.uid)
-                                                          .child('GratitudeLogs');
+   DatabaseReference dbUserRef = FirebaseDatabase.instance.ref().child('users')
+                                                          .child(FirebaseAuth.instance.currentUser!.uid);
   String inspoType = 'Random Past Log';
   List<String> selectedInspoTypes = ['Gratitude Prompt'];
   List<String> possibleInspoTypes = ['Gratitude Prompt'];
@@ -48,12 +47,38 @@ class _InspirationPageState extends State<InspirationPage> {
   int selectedPromptIndex = 0;
   bool photoPermission = false;
 
+  Map<String, int> inspoStats = {'Gratitude Prompt': 0, 'Random Photo': 0, 'Random Past Log': 0};
+
   @override
   void initState() {
     super.initState();
-    dbRef.keepSynced(true);
+    dbUserRef.keepSynced(true);
     initialChecks();
     pickType();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    sendStats();
+  }
+
+  //update number of times used
+  void sendStats() async {
+    DatabaseReference statsRef = dbUserRef.child('Stats');
+    final snapshot = await statsRef.child('inspo_used').get();
+
+    //update inspoUsed if data already exists
+    if (snapshot.exists) {
+      final data = snapshot.value as Map<dynamic, dynamic>;
+      inspoStats.forEach((type, timesUsed) {
+        inspoStats[type] = data[type] + timesUsed;
+      });
+    } 
+    //send to db
+    statsRef.update({
+      'inspo_used': inspoStats
+    });
   }
 
   //check whether there are logs/permissions for photos
@@ -70,7 +95,7 @@ class _InspirationPageState extends State<InspirationPage> {
     }
 
     //check if there are logs
-    dbRef.onValue.listen((event) {
+    dbUserRef.child('GratitudeLogs').onValue.listen((event) {
       DataSnapshot dataSnapshot = event.snapshot;
       if (dataSnapshot.value != null) {
         Map<dynamic, dynamic> values =  dataSnapshot.value as Map<dynamic, dynamic>;
@@ -101,11 +126,14 @@ class _InspirationPageState extends State<InspirationPage> {
     switch (inspoType) {
       case 'Random Past Log':
         generatePastLogs();
+        inspoStats['Random Past Log'] = inspoStats['Random Past Log']! + 1;
         break;
       case 'Random Photo':
         getRandomPhoto();
+        inspoStats['Random Photo'] = inspoStats['Random Photo']! + 1;
         break;
       case 'Gratitude Prompt':
+        inspoStats['Gratitude Prompt'] = inspoStats['Gratitude Prompt']! + 1;
         //pick random number for prompt
         setState(() {
           selectedPromptIndex = Random().nextInt(prompts.length);
@@ -165,20 +193,9 @@ class _InspirationPageState extends State<InspirationPage> {
     );
   }
 
-  void openSettings() {
-    PhotoManager.openSetting();
-  }
-
-  void backToLogs() {
-    print('BACK');
-    Navigator.pop(context);
-    Navigator.pop(context);
-    Navigator.pop(context);
-  }
-
   //randomly generate a past log from the database
   void generatePastLogs() {
-    dbRef.onValue.listen((event) {
+    dbUserRef.child('GratitudeLogs').onValue.listen((event) {
 
       //get list of keys
       DataSnapshot dataSnapshot = event.snapshot;
@@ -397,14 +414,14 @@ class _InspirationPageState extends State<InspirationPage> {
                     Navigator.pop(context);
                     if (inspoType.compareTo('Random Past Log') == 0) {
                       //send past log data back to main page
-                      Map<String, String> logData = {'type': selectedPastLogType, 'log': selectedPastLog};
+                      Map<String, String> logData = {'type': selectedPastLogType, 'log': selectedPastLog, 'inspo': inspoType};
                       Navigator.pop(context, logData);
-                    } else if (inspoType.compareTo('Past Photo') == 0) {
+                    // } else if (inspoType.compareTo('Past Photo') == 0) {
                       //send random photo back to main log page
                       // Map<String, String> logData = {'type': 'image', 'log': selectedPhoto};
                       // Navigator.pop(context, logData);
                     } else {
-                      Navigator.pop(context);
+                      Navigator.pop(context, {'inspo': inspoType});
                     }
                   }
                 ),
