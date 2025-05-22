@@ -2,7 +2,7 @@ import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:gratitude_app/main.dart';
+import 'package:gratitude_app/study_forms/demographics_page.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 import 'package:markdown_widget/widget/all.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:signature/signature.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:markdown/markdown.dart' as md;
+import 'package:gratitude_app/widgets.dart';
 
 
 class ConsentFormPage extends StatefulWidget {
@@ -403,10 +404,10 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
                     //update sharedpreferences
                     SharedPreferences prefs = await SharedPreferences.getInstance();
                     prefs.setBool('consent_complete', true);
-                    //send to main page
+                    //send to demographics page
                     Navigator.pushReplacement(
                       context, 
-                      MaterialPageRoute(builder: (BuildContext context) => const MyHomePage(startingPageIndex: 0,) )
+                      MaterialPageRoute(builder: (BuildContext context) => const DemographicsPage() )
                     );
                   }
                 },
@@ -415,93 +416,6 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
           ),
         ),
       ),
-    );
-  }
-}
-
-
-class LabeledRadio extends StatelessWidget {
-  const LabeledRadio({
-    super.key,
-    required this.label,
-    required this.groupValue,
-    required this.value,
-    required this.onChanged,
-  });
-
-  final String label;
-  final bool groupValue;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        if (value != groupValue) {
-          onChanged(value);
-        }
-      },
-      child: Row(
-        children: <Widget>[
-          Radio<bool>(
-            groupValue: groupValue,
-            value: value,
-            onChanged: (bool? newValue) {
-              onChanged(newValue!);
-            },
-          ),
-          Text(label),
-        ],
-      ),
-    );
-  }
-}
-
-class YesNoRadio extends StatelessWidget {
-  const YesNoRadio({
-    super.key,
-    required this.label,
-    required this.radioSelected,
-    required this.onChanged
-  });
-
-  final String label;
-  final bool radioSelected;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(height: 30,),
-        Text(label),
-        Row(
-          children: [
-            Expanded(
-              child: LabeledRadio(
-                label: 'Yes', 
-                groupValue: radioSelected, 
-                value: true, 
-                onChanged: (bool? newValue) {
-                  onChanged(newValue!);
-                }
-              ),
-            ),
-            Expanded(
-              child: LabeledRadio(
-                label: 'No', 
-                groupValue: radioSelected, 
-                value: false, 
-                onChanged: (bool? newValue) {
-                  onChanged(newValue!);
-                }
-              ),
-            ),
-          ],
-        ),
-      ],
     );
   }
 }
