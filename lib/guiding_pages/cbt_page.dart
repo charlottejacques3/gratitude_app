@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/guiding_pages/reframing_page.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:gratitude_app/guiding_pages/strategies_page.dart';
 
 
 class CBTPage extends StatefulWidget {
@@ -18,7 +19,7 @@ class CBTPage extends StatefulWidget {
 class _CBTPageState extends State<CBTPage> {
 
   //thought traps selection
-  List<String> thoughtTraps = ['Catastrophizing', 'All-or-nothing thinking', 'Emotional reasoning', 'Mind reading', 'Overgeneralization', 'Personalization', 'Labeling'];
+  List<String> thoughtTraps = ['Magnification and Minimization', 'All-or-Nothing t]Thinking', 'Emotional Reasoning', 'Mind Reading', 'Overgeneralization', 'Blame', 'Labeling', 'Should Statements', 'Fortune Telling', 'Discounting the Positive', 'Mental Filter'];
   Map<String, String> thoughtTrapsDetails = {
     'Catastrophizing': 'Catastrophizing is when we predict that the absolute worst-case scenario will happen. For example, after a bad grade on a test, we might start thinking that we will be kicked out of school and will never find a job, even though the chances of this happening are very slim.',
     'All-or-nothing thinking': 'All-or-nothing thinking is when we look at situations as being strictly good or bad, and are unable to see any nuance. This is a common thought trap to fall into after experiencing a small setback in a goal - we might believe that one mistake means we have failed, when in reality this is not the case.',
@@ -210,7 +211,7 @@ class _CBTPageState extends State<CBTPage> {
                           //navigate to next page
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => ReframingPage(initialReframingLogs: reframingLogs))
+                            MaterialPageRoute(builder: (context) => StrategiesPage(initialReframingLogs: reframingLogs))
                           );
                         }, 
                         style: ElevatedButton.styleFrom(

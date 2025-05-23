@@ -50,9 +50,9 @@ class _ParticipantGateState extends State<ParticipantGate> {
                 if (demographics == null || !demographics) {
                   return DemographicsPage();
                 }
-                else if (questionnaire_1 == null || !questionnaire_1) {
-                  return QuestionnairePage();
-                }
+                // else if (questionnaire_1 == null || !questionnaire_1) {
+                //   return QuestionnairePage();
+                // }
                 else {
                   return AuthGate();
                 }
