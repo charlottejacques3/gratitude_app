@@ -4,6 +4,7 @@ import 'package:gratitude_app/authentication/login_page.dart';
 import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/study_forms/consent_form_page.dart';
 import 'package:gratitude_app/study_forms/demographics_page.dart';
+import 'package:gratitude_app/study_forms/questionnaire_page.dart';
 import 'package:gratitude_app/withdraw_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -42,11 +43,15 @@ class _ParticipantGateState extends State<ParticipantGate> {
                 //check if completed consent form, demographics, questionnaires - CONSENT ONLY FOR IN THE WILD!
                 // bool? consent = snapshot.data!.getBool('consent_complete');
                 bool ? demographics = snapshot.data!.getBool('demographics_complete');
+                bool ? questionnaire_1 = snapshot.data!.getBool('initial_questionnaires_complete');
                 // if (consent == null || !consent) {
                 //   return ConsentFormPage();
                 // } 
                 if (demographics == null || !demographics) {
                   return DemographicsPage();
+                }
+                else if (questionnaire_1 == null || !questionnaire_1) {
+                  return QuestionnairePage();
                 }
                 else {
                   return AuthGate();

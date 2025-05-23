@@ -36,6 +36,7 @@ class AuthService {
       prefs.setBool('withdraw', false);
       prefs.setBool('consent_complete', false);
       prefs.setBool('demographics_complete', false);
+      prefs.setBool('initial_questionnaires_complete', false);
 
       //cancel past alarms to avoid backlog
       await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);

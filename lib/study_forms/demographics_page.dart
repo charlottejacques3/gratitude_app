@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/main.dart';
+import 'package:gratitude_app/study_forms/questionnaire_page.dart';
 import 'package:gratitude_app/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -94,7 +95,7 @@ class _DemographicsPageState extends State<DemographicsPage> {
     prefs.setBool('demographics_complete', true);
 
     Navigator.pushReplacement(
-      context, MaterialPageRoute(builder: (BuildContext context) => MyHomePage(startingPageIndex: 0))
+      context, MaterialPageRoute(builder: (BuildContext context) => QuestionnairePage())
     );
   }
 
@@ -118,7 +119,7 @@ class _DemographicsPageState extends State<DemographicsPage> {
         child: ListView(
           children: [
             Text(
-              'Thank you for agreeing to participate in the study! Please begin by filling out this short demographic questionnaire.',
+              'Thank you for agreeing to participate in the study! Please begin by filling out this short demographic questionnaire. You do not have to answer any questions that make you uncomfortable.',
               style: Theme.of(context).textTheme.bodyLarge!,
               textAlign: TextAlign.center,
             ),
