@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 
 class PromptWidget extends StatelessWidget {
 
-  const PromptWidget({super.key, required this.title, this.subtitle='', required this.controllers, required this.prompt, required this.refresh}); 
+  const PromptWidget({super.key, required this.title, required this.controllers, required this.prompt, required this.refresh}); 
 
   final String title;
-  final String subtitle;
   final List<TextEditingController> controllers;
   final List<String> prompt;
   final Function refresh;
@@ -23,10 +22,7 @@ class PromptWidget extends StatelessWidget {
           ),
           textAlign: TextAlign.center,
         ),
-        subtitle.isNotEmpty ? Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Text(subtitle),
-        ) : SizedBox(height: 10,),
+        SizedBox(height: 10,),
         ListView.builder(
           shrinkWrap: true,
           physics: NeverScrollableScrollPhysics(),

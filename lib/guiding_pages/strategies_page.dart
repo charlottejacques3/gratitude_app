@@ -1,6 +1,9 @@
 import 'dart:math';
 
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:gratitude_app/guiding_pages/final_page.dart';
 
 import 'strategy_widgets.dart';
 
@@ -16,6 +19,10 @@ class StrategiesPage extends StatefulWidget {
 
 class _StrategiesPageState extends State<StrategiesPage> {
 
+  
+  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
+                                                          .child(FirebaseAuth.instance.currentUser!.uid)
+                                                          .child('ReframingStrategies');
   Map<String, dynamic> reframingLogs = {};
   Map<String, List<String>> strategies = {
     'Substitution': ['Is there a more positive way to look at this situation?', 'For each negative thought, try to substitute a more positive and realistic thought below.'],
@@ -23,6 +30,7 @@ class _StrategiesPageState extends State<StrategiesPage> {
     'Examine the Evidence': ['What is the evidence against this belief?', 'How can you weigh this evidence against the evidence for this belief?', 'Develop a more rational thought'],
     'Survey Technique': ['If I asked a close friend how they felt about my situation, would they agree with my thoughts?', 'What would they say instead? If you feel comfortable, you can ask someone.'],
     'Reattribution': ['Is there concrete evidence that I am solely to blame for this problem?', 'What are some other factors that contributed to the situation turning out the way it did?'],
+    'Cost-Benefit Analysis': ['Are there any benefits to thinking in this way?', 'What are the costs of thinking in this way?', 'How do the costs and benefits measure up?']
   };
 
   List<PromptWidget> promptWidgets = [];
@@ -48,10 +56,10 @@ class _StrategiesPageState extends State<StrategiesPage> {
     setState(() {
       reframingLogs = widget.initialReframingLogs;
     });
-    pickStrategy();
+    addStrategy();
   }
 
-  void pickStrategy() {
+  PromptWidget pickStrategy(int index) {
     print('TOP');
 
     //pick a random trap
@@ -78,23 +86,31 @@ class _StrategiesPageState extends State<StrategiesPage> {
       newControllers.add(TextEditingController());
     }
 
-    //create new prompt widget
-    setState(() {
-      promptWidgets.add(PromptWidget(
-        title: strategyOptions[strategyNum],
-        controllers: newControllers, 
-        prompt: selectedStrategyPrompts,
-        refresh: () {},
-      ));
-    });
+    //return new prompt widget
+    return PromptWidget(
+      title: strategyOptions[strategyNum],
+      controllers: newControllers, 
+      prompt: selectedStrategyPrompts,
+      refresh: () {
+        print('refresh button: $index');
+        replaceStrategy(index);
+      }
+    );
   }
 
   void addStrategy() {
-
+    int index = promptWidgets.length;
+    setState(() {
+      promptWidgets.add(pickStrategy(index));
+    });
   }
 
-  void replaceStrategy() {
-
+  void replaceStrategy(int index) {
+    print('hello, index: $index');
+    PromptWidget newStrategy = pickStrategy(index);
+    setState(() {
+      promptWidgets[index] = newStrategy;
+    });
   }
 
   @override
@@ -150,21 +166,73 @@ class _StrategiesPageState extends State<StrategiesPage> {
               },
             ),
 
-            //add another activity
-            ElevatedButton(
-              onPressed: () => pickStrategy(),
-              child: Text('New Activity'),
-            ),
+            //buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                      
+                //add another actiivity
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 8.0, right: 4.0),
+                    child: ElevatedButton(
+                      onPressed: () => addStrategy(),
+                      child: Text("New Activity",
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ),
+                      
+                //next button
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8.0, right: 4.0),
+                    child: ElevatedButton(
+                      child: Text("Next",
+                        textAlign: TextAlign.center,
+                      ),
+                      onPressed: () {
+                        List<String> logs = [];
+                        for (final log in promptWidgets) { //go through all logs
+                          
+                          //get full text including prompt text
+                          String wholeLog = '';
+                          bool emptyLogs = true; 
+                          for (var i = 0; i < log.prompt.length; i++) {
+                            wholeLog += log.prompt[i];
+                            if (i < log.controllers.length) {
+                              if (log.controllers[i].text != '') {
+                              wholeLog += ' ${log.controllers[i].text} ';
+                              emptyLogs = false; 
+                              }
+                            }
+                          }
+                          //add to list if not empty
+                          if (!emptyLogs) {
+                            logs.add(wholeLog);
+                          }
+                        }
+                        
+                        //send info to the database
+                        reframingLogs['reframed_thoughts'] = logs;
+                        try {
+                          dbRef.push().set(reframingLogs); 
+                        } catch(e) {
+                          print('error writing data: $e');
+                        }
 
-            //bring back to main page
-            ElevatedButton(
-              onPressed: () {
-                for(var i = 0; i < 4; i++) {
-                  Navigator.pop(context);
-                }
-                Navigator.pop(context, {'guided':true});
-              }, 
-              child: Text("Let's do it!"))
+                        //go to next page
+                        Navigator.push(
+                          context, 
+                          MaterialPageRoute(builder: (context) => FinalPage())
+                        );
+                      }, 
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       )
