@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:gratitude_app/main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class QuestionnairePage extends StatefulWidget {
@@ -37,6 +39,19 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     {'question': "Some people are generally not very happy. Although they are not depressed, they never seem as happy as they might be. To what extend does this characterization describe you?", 'controller': TextEditingController()},
   ];
 
+  List<Map<String, dynamic>> panasQuestions = [
+    {'question': "Upset", 'controller': TextEditingController()},
+    {'question': "Hostile", 'controller': TextEditingController()},
+    {'question': "Alert", 'controller': TextEditingController()},
+    {'question': "Ashamed", 'controller': TextEditingController()},
+    {'question': "Inspired", 'controller': TextEditingController()},
+    {'question': "Nervous", 'controller': TextEditingController()},
+    {'question': "Determined", 'controller': TextEditingController()},
+    {'question': "Attentive", 'controller': TextEditingController()},
+    {'question': "Afraid", 'controller': TextEditingController()},
+    {'question': "Active", 'controller': TextEditingController()},
+  ];
+
   List<DropdownMenuEntry<dynamic>> likert = [
     DropdownMenuEntry(value: "Strongly disagree", label: "Strongly disagree"), 
     DropdownMenuEntry(value: "Disagree", label: "Disagree"), 
@@ -45,6 +60,14 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     DropdownMenuEntry(value: "Slightly agree", label: "Slightly agree"), 
     DropdownMenuEntry(value: "Agree", label: "Agree"), 
     DropdownMenuEntry(value: "Strongly agree", label: "Strongly agree"), 
+  ];
+
+  List<DropdownMenuEntry<dynamic>> frequencies = [
+    DropdownMenuEntry(value: 1, label: "1 - Very slightly or not at all"), 
+    DropdownMenuEntry(value: 2, label: "2 - A little"), 
+    DropdownMenuEntry(value: 3, label: "3 - Moderately"), 
+    DropdownMenuEntry(value: 4, label: "4 - Quite a bit"), 
+    DropdownMenuEntry(value: 5, label: "5 - Extremely"), 
   ];
 
   List<DropdownMenuEntry<dynamic>> customOptions(String start, String end) {
@@ -80,54 +103,85 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     return responses;
   }
 
+  int likertScore(String? response) {
+    if (response == null) return 0;
+    switch (response) {
+      case 'Strongly disagree':
+        return 1;
+      case 'Disagree':
+        return 2;
+      case 'Slightly disagree':
+        return 3;
+      case 'Neutral':
+        return 4;
+      case 'Slightly agree':
+        return 5;
+      case 'Agree':
+        return 6;
+      case 'Strongly agree':
+        return 7;
+      default:
+        return 0;
+    }
+  }
+
   int calculateGratitudeScore(List<Map<String, String>> responses) {
     int score = 0;
     for (var i = 0; i < responses.length; i++) {
-      int inc = 0;
-      switch (responses[i]['response']) {
-        case 'Strongly disagree':
-          inc = 1;
-          break;
-        case 'Disagree':
-          inc = 2;
-          break;
-        case 'Slightly disagree':
-          inc = 3;
-          break;
-        case 'Neutral':
-          inc = 4;
-          break;
-        case 'Slightly agree':
-          inc = 5;
-          break;
-        case 'Agree':
-          inc = 6;
-          break;
-        case 'Strongly agree':
-          inc = 7;
-          break;
-      }
-      if (i == 2 || i == 5) inc = 8-inc;
+      int inc = likertScore(responses[i]['response']);
+      if ((i == 2 || i == 5) && inc != 0) inc = 8-inc;
       score += inc;
     }
     return score;
   }
 
+  int calculateSatisfactionScore(List<Map<String, String>> responses) {
+    int score = 0;
+    for (final r in responses) {
+      score += likertScore(r['response']);
+    }
+    return score;
+  }
+
+  int calculateHappinessScore(List<Map> responses) {
+    int score = 0;
+    for (final r in responses) {
+      if (r['response'] != null && r['response'].isNotEmpty) {
+        String num = r['response'].substring(0,1);
+        score += int.parse(num);
+      }
+    }
+    return score;
+  }
 
   void submitForm() async {
     List<Map<String, String>> gratitudeResponses = getResponseText(gratitudeQuestions);
     List<Map<String, String>> satisfactionResponses = getResponseText(satisfactionQuestions);
     List<Map<String, String>> happinessResponses = getResponseText(happinessQuestions);
+    List<Map<String, String>> panasResponses = getResponseText(panasQuestions);
 
     //map to dictionary
     Map<String, dynamic> data = {
       'gratitude_responses': gratitudeResponses,
       'gratitude_score': calculateGratitudeScore(gratitudeResponses),
+      'satisfaction_responses': satisfactionResponses,
+      'satisfaction_score': calculateSatisfactionScore(satisfactionResponses),
+      'happiness_responses': happinessResponses,
+      'happiness_score': calculateHappinessScore(happinessResponses),
+      'panas_responses': panasResponses
     };
 
     //save to db
     DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users').child(FirebaseAuth.instance.currentUser!.uid);
     await dbRef.set({'HappinessQuestionnaires': data});
+
+    //update demographics complete
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool('initial_questionnaires_complete', true);
+
+    Navigator.pushReplacement(
+      context, MaterialPageRoute(builder: (BuildContext context) => MyHomePage(startingPageIndex: 0,))
+    );
   }
 
   @override
@@ -239,6 +293,32 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
             ),
             SizedBox(height: 30,),
 
+            //panas questionnaire
+            Text("Positive and Negative Affect Schedule",
+              style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                fontWeight: FontWeight.bold
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 5,),
+            Text('Thinking about yourself and how you normally feel, to what extend do you generally feel the following emotions on a scale of 1 to 5 (where 1 is very slightly or not at all and 5 is extremely)?',
+              style: Theme.of(context).textTheme.bodyLarge!,
+              textAlign: TextAlign.center,
+            ),
+            ListView.builder(
+              physics: NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              itemCount: panasQuestions.length,
+              itemBuilder: (context, index) {
+                return Selector(
+                  text: panasQuestions[index]['question'],
+                  dropdownController: panasQuestions[index]['controller'],
+                  dropdownOptions: frequencies,
+                );
+              },
+            ),
+            SizedBox(height: 30,),
+
             //submit
             ElevatedButton(
               onPressed: () {
@@ -247,6 +327,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
                 emptyFields.addAll(findEmpty(gratitudeQuestions));
                 emptyFields.addAll(findEmpty(satisfactionQuestions));
                 emptyFields.addAll(findEmpty(happinessQuestions));
+                emptyFields.addAll(findEmpty(panasQuestions));
                 if (emptyFields.isNotEmpty) {
                   showDialog(
                     context: context, 
@@ -254,12 +335,13 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
                       child: Padding(
                         padding: EdgeInsets.all(15),
                         child: ListView(
-                          // mainAxisSize: MainAxisSize.min,
-                          // crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
                               'The following questions are unanswered:',
-                              style: Theme.of(context).textTheme.bodyLarge!
+                              style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                                fontWeight: FontWeight.bold
+                              ),
+                              textAlign: TextAlign.center,
                             ),
                             ListView.builder(
                               physics: NeverScrollableScrollPhysics(),
