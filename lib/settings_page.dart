@@ -4,6 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
   import 'package:flutter/material.dart';
   import 'package:flutter/services.dart';
 import 'package:gratitude_app/authentication/login_page.dart';
+import 'package:gratitude_app/study_forms/questionnaire_page.dart';
 import 'package:gratitude_app/withdraw_page.dart';
   import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -304,6 +305,62 @@ import 'view_consent_form.dart';
               InfoButton(
                 text: 'Tutorial Video', 
                 action: () => launchUrl(Uri.parse('https://youtube.com/shorts/Da3dlMjP1vg?feature=share'))
+              ),
+
+              //final questionnaire
+              InfoButton(
+                text: 'Fill Out Final Happiness Questionnaires',
+                action: () => showDialog(
+                  context: context, 
+                  builder: (BuildContext context) => Dialog(
+                    child: Padding(
+                      padding: EdgeInsets.all(15),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('Is the study period over?',
+                            style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 10,),
+                          Text('Please only fill out these questionnaires once the study period has concluded!',
+                            textAlign: TextAlign.center,
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: ElevatedButton(
+                                    onPressed: () => Navigator.pop(context), 
+                                    child: Text('No, go back', 
+                                      textAlign: TextAlign.center,
+                                    )
+                                  ),
+                                ),
+                              ),
+
+                              //confirm study is over
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: ElevatedButton(
+                                    onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => QuestionnairePage(number: 2,))),
+                                    child: Text('Yes, continue',
+                                      textAlign: TextAlign.center,
+                                    )
+                                  ),
+                                ),
+                              )
+                            ],
+                          )
+                        ],
+                      ),
+                    )
+                  )
+                )
               ),
 
               //opt out of study

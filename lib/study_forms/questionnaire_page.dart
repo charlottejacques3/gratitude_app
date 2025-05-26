@@ -1,14 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:gratitude_app/main.dart';
+import 'package:gratitude_app/study_complete_page.dart';
 import 'package:gratitude_app/utilities/alarm_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
 
 class QuestionnairePage extends StatefulWidget {
-  const QuestionnairePage({super.key});
+  final int number;
+  const QuestionnairePage({super.key, required this.number});
 
   @override
   State<QuestionnairePage> createState() => _QuestionnairePageState();
@@ -175,29 +178,53 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
 
     //save to db
     DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users').child(FirebaseAuth.instance.currentUser!.uid);
-    await dbRef.set({'HappinessQuestionnaires': data});
+    if (widget.number == 1) {
+      await dbRef.update({'HappinessQuestionnairesInitial': data});
+    } else if (widget.number == 2) {
+      await dbRef.update({'HappinessQuestionnairesFinal': data});
+    }
+    
+    //study beginning
+    if (widget.number == 1) {
+      //update demographics complete
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setBool('initial_questionnaires_complete', true);
 
-    //update demographics complete
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool('initial_questionnaires_complete', true);
+      //cancel past alarms to avoid backlog
+      await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
 
-    //cancel past alarms to avoid backlog
-    await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
+      //schedule the next alarm
+      await AndroidAlarmManager.oneShot(
+        const Duration(seconds: 5), //schedule 5 seconds later
+        0, 
+        notificationScheduler,
+        rescheduleOnReboot: true,
+        allowWhileIdle: true,
+        exact: true,
+        wakeup: true
+      );
 
-    //schedule the next alarm
-    await AndroidAlarmManager.oneShot(
-      const Duration(seconds: 5), //schedule 5 seconds later
-      0, 
-      notificationScheduler,
-      rescheduleOnReboot: true,
-      allowWhileIdle: true,
-      exact: true,
-      wakeup: true
-    );
+      //send to home page
+      Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (BuildContext context) => MyHomePage(startingPageIndex: 0,))
+      );
+    } 
+    
+    //study concluded
+    else if (widget.number == 2) {
+      //cancel all alarms and notifications
+      await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
+      final FlutterLocalNotificationsPlugin notificationsPlugin = FlutterLocalNotificationsPlugin();
+      await notificationsPlugin.cancelAll();
 
-    Navigator.pushReplacement(
-      context, MaterialPageRoute(builder: (BuildContext context) => MyHomePage(startingPageIndex: 0,))
-    );
+      //update study complete
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setBool('study_complete', true);
+
+      Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (BuildContext context) => StudyCompletePage())
+      );
+    }
   }
 
   @override
@@ -205,13 +232,13 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: 
-          Text('Happiness Questionnaires',
-            style: Theme.of(context).textTheme.titleLarge!.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.bold
-            ),
+        title: Text('Happiness Questionnaires',
+          style: Theme.of(context).textTheme.titleLarge!.copyWith(
+            color: Theme.of(context).colorScheme.primary,
+            fontWeight: FontWeight.bold
           ),
+        ),
+        automaticallyImplyLeading: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

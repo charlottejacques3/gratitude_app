@@ -87,14 +87,14 @@ class _DemographicsPageState extends State<DemographicsPage> {
 
     //save to db
     DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users').child(FirebaseAuth.instance.currentUser!.uid);
-    await dbRef.set({'Demographics': demographics});
+    await dbRef.update({'Demographics': demographics});
 
     //update demographics complete
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+    SharedPreferences prefs = await SharedPreferences.getInstance(); 
     prefs.setBool('demographics_complete', true);
 
     Navigator.pushReplacement(
-      context, MaterialPageRoute(builder: (BuildContext context) => QuestionnairePage())
+      context, MaterialPageRoute(builder: (BuildContext context) => QuestionnairePage(number: 1,))
     );
   }
 

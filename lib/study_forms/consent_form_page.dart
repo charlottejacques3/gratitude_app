@@ -131,7 +131,7 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
 
         //store to database
         DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users').child(FirebaseAuth.instance.currentUser!.uid);
-        await dbRef.set({'consent_form': url});
+        await dbRef.update({'consent_form': url});
 
       } catch(e) {
         print('upload failed: $e');

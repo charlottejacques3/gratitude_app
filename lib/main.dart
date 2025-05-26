@@ -110,25 +110,6 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     currentPageIndex = widget.startingPageIndex;
-    // scheduleNextAlarm();
-  }
-
-  //schedule next alarm
-  void scheduleNextAlarm() async {
-    //cancel past alarms to avoid backlog
-    await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
-
-    //schedule the next alarm if one is not already set
-    // bool alarmSet = await AndroidAlarmManager.
-    await AndroidAlarmManager.oneShot(
-      const Duration(seconds: 5), //schedule 5 seconds later
-      0, 
-      notificationScheduler,
-      rescheduleOnReboot: true,
-      allowWhileIdle: true,
-      exact: true,
-      wakeup: true
-    );
   }
 
   @override
