@@ -34,6 +34,8 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
   bool ageResidency = false;
   bool consent = false;
   bool interviewRecorded = false;
+  bool dataAnalysis = false;
+  bool dissemination = false;
   TextEditingController name = TextEditingController();
   TextEditingController date = TextEditingController();
   SignatureController signatureController = SignatureController(); 
@@ -82,7 +84,7 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
               pw.Text(short),
 
               //yes/no selections
-              readForm && askQuestions && voluntary && withdrawConsent && ageResidency && consent && interviewRecorded ?
+              readForm && askQuestions && voluntary && withdrawConsent && ageResidency && consent && interviewRecorded && dataAnalysis && dissemination ?
                 pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
@@ -92,7 +94,9 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
                     pw.Paragraph(text: 'I understand that I can withdraw my consent at any time - Yes'),
                     pw.Paragraph(text: 'I certify that I reside in North America and am over the age of 18 - Yes'),
                     pw.Paragraph(text: 'I agree to take part in the study - Yes'),
-                    pw.Paragraph(text: 'I agree to have my interview recorded, if I choose to take part in one - Yes')
+                    pw.Paragraph(text: 'I agree to have my interview recorded, if I choose to take part in one - Yes'),
+                    pw.Paragraph(text: 'I agree to have data I enter on the app to be used for data analysis purposes - Yes'),
+                    pw.Paragraph(text: 'I agree to have data I enter on the app to be used for research results dissemination purposes - Yes')
                   ]
                 ) : pw.Container(),
               
@@ -308,6 +312,28 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
                 onChanged: (bool newValue) {
                   setState(() {
                     interviewRecorded = newValue;
+                  });
+                }
+              ),
+
+              //data used for analysis
+              YesNoRadio(
+                label: 'I agree to have data I enter on the app to be used for data analysis purposes',
+                radioSelected: dataAnalysis, 
+                onChanged: (bool newValue) {
+                  setState(() {
+                    dataAnalysis = newValue;
+                  });
+                }
+              ),
+
+              //data used for dissemination
+              YesNoRadio(
+                label: 'I agree to have data I enter on the app to be used for research results dissemination purposes',
+                radioSelected: dissemination, 
+                onChanged: (bool newValue) {
+                  setState(() {
+                    dissemination = newValue;
                   });
                 }
               ),

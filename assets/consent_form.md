@@ -30,8 +30,8 @@ If you take part in this study, you will:
 
 Study Task:
 - Over a period of 1 month, you will be able to use the application to log gratitude, through the form of text or image-based logs. The application will send one reminder per day, at either a random or scheduled time, depending on your preference. Specific time windows can also be set.
+- The intention of the application is to be used on a daily basis. However, the goal of this study is to observe how users naturally interact with the system, and thus there are no minimum usage requirements.
 - The application also contains features providing increased support, as well as a gratitude reflection feature. You are encouraged to use these features if you find yourself in a situation where it may be difficult to think of things to be grateful for.
-- You are encouraged to use the application on a daily basis. However, the goal of this study is to observe how users naturally interact with the system, and thus there are no minimum usage requirements.
 - A tutorial video showing how to use the application can be found [here](https://youtube.com/shorts/Da3dlMjP1vg?feature=share). This tutorial is also available through a link in the app after sign-up.
 
 Data will be gathered through the collection of your gratitude logs and reflections, as well as your questionnaire answers and statistics of your usage of the app in general.  
@@ -68,7 +68,7 @@ Information collected during this study will be stored and secured using service
 Your data is subject to Firebase's terms and conditions , and may be accessible by Google, Firebase's parent company, as necessary to perform their services.  Additionally, since Firebase is based in the US, your data may be accessed by the US government in compliance with the US Freedom Act, as discussed above. 
 Apart from this, only the researchers will have access to your data.
 
-Your data will be collected under a randomly generated user ID. This user ID may be tied to your email address through the authentication portal, but the researcher will not use this identifier in their analysis. Your user ID will also be tied to a PDF of this consent form, which will contain your name and e-signature.
+Your data will be collected under a randomly generated user ID, which will be linked to identifiers such as your name, email address, and other information you provide on the demographics questionnaire.
 
 After the conclusion of the study, you will be given the option to continue using the application for your own personal benefit. If you choose to do so, your data will be kept indefinitely or until you choose to delete your account. However, any data added after the study period will not be examined by the researcher. 
 If you choose not to continue using the app, data will be stored on the database for up to a 5 year period. At the end of this time, all database records and interview recordings will be deleted.
