@@ -40,6 +40,21 @@ class _DemographicsPageState extends State<DemographicsPage> {
 
   TextEditingController gratitudeNoAppController = TextEditingController();
 
+  @override
+  void dispose() {
+    super.dispose();
+    textQuestions.forEach((key, value) => value.dispose());
+    gratitudeApps.forEach((key, value) {
+      key.dispose();
+      value.dispose();
+    });
+    otherApps.forEach((key, value) {
+      key.dispose();
+      value.dispose();
+    });
+    gratitudeNoAppController.dispose();
+  }
+
   void deleteApp(index, appList) {
     setState(() {
       appList.remove(appList.keys.elementAt(index));

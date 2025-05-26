@@ -102,6 +102,14 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    for (final entry in dynamicForms) {
+      entry.logController.dispose();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: ListView(
@@ -386,43 +394,57 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
 
                   //set inspiration used, if applicable
                   if (inspirationUsed.isNotEmpty) {
-                    if (data['inspo_to_log'] != null) {
-                      statsRef.child('inspo_to_log').update({
-                        inspirationUsed: data['inspo_to_log'][inspirationUsed] + 1
-                      });
-                    } else {
-                      Map<String, int> record = {'Gratitude Prompt': 0, 'Random Photo': 0, 'Random Past Log': 0};
-                      record[inspirationUsed] = 1;
-                      statsRef.update({
-                        'inspo_to_log': record
-                      });
+                    try {
+                      if (data['inspo_to_log'] != null) {
+                        statsRef.child('inspo_to_log').update({
+                          inspirationUsed: data['inspo_to_log'][inspirationUsed] + 1
+                        });
+                      } else {
+                        Map<String, int> record = {'Gratitude Prompt': 0, 'Random Photo': 0, 'Random Past Log': 0};
+                        record[inspirationUsed] = 1;
+                        statsRef.update({
+                          'inspo_to_log': record
+                        });
+                      }
+                    } on Exception catch (e) {
+                      print('INSPIRATION EXCEPTION: $e');
                     }
                   }
 
                   //set guiding used, if applicable
                   if (guided && guidedStage.isNotEmpty) {
-                    if (data['guiding_to_log'] != null) {
-                      statsRef.child('guiding_to_log').update({
-                        guidedStage: data['guiding_to_log'][guidedStage] + 1
-                      });
-                    } else {
-                      Map<String, int> record = {'log_emotions': 0, 'thought_traps': 0, 'strategies': 0};
-                      record[guidedStage] = 1;
-                      statsRef.update({
-                        'guiding_to_log': record
-                      });
+                    try {
+                      if (data['guiding_to_log'] != null) {
+                        statsRef.child('guiding_to_log').update({
+                          guidedStage: data['guiding_to_log'][guidedStage] + 1
+                        });
+                      } else {
+                        Map<String, int> record = {'log_emotions': 0, 'thought_traps': 0, 'strategies': 0};
+                        record[guidedStage] = 1;
+                        statsRef.update({
+                          'guiding_to_log': record
+                        });
+                      }
+                    } on Exception catch (e) {
+                      print('GUIDING TO LOG EXCEPTION: $e');
                     }
                   }
                 } 
                 //set for the first time
                 else {
-                  Map<String, int> guidingRecord = {'log_emotions': 0, 'thought_traps': 0, 'strategies': 0};
-                  guidingRecord[guidedStage] = 1;
-                  statsRef.set({
-                    'num_logs': numLogs,
-                    'days_used': [DateTime.now().toIso8601String()],
-                    'guiding_to_log': guidingRecord
-                  });
+                  try {
+                    Map<String, int> guidingRecord = {'log_emotions': 0, 'thought_traps': 0, 'strategies': 0};
+                    if (guidedStage.isNotEmpty) {
+                      guidingRecord[guidedStage] = 1;
+                    }
+                    statsRef.set({
+                      'num_logs': numLogs,
+                      'days_used': [DateTime.now().toIso8601String()],
+                      'guiding_to_log': guidingRecord
+                    });
+                  } on Exception catch (e) {
+                    print('FIRST TIME EXCEPTION: $e');
+                  }
                 }
                 
                 //navigate to congrats page

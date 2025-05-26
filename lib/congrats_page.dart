@@ -21,6 +21,12 @@ class _CongratsPageState extends State<CongratsPage> {
                                                           .child('Advice');
 
   @override
+  void dispose() {
+    super.dispose();
+    adviceController.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(

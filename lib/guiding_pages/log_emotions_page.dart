@@ -20,6 +20,12 @@ class _LogEmotionsPageState extends State<LogEmotionsPage> {
                                                           .child('NegativeEmotionLogs');
 
   @override
+  void dispose() {
+    super.dispose();
+    logController.dispose();
+  }
+  
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(

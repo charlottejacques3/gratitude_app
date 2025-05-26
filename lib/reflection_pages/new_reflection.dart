@@ -95,6 +95,14 @@ class _NewReflectionPageState extends State<NewReflectionPage> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    for (final prompt in prompts) {
+      prompt.logController.dispose();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(

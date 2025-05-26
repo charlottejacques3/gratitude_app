@@ -146,6 +146,14 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
     setText();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    name.dispose();
+    date.dispose();
+    signatureController.dispose();
+  }
+
   //get text from markdown file
   void setText() async {
     String fileText = await rootBundle.loadString('assets/consent_form.md');

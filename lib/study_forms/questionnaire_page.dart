@@ -228,6 +228,23 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    for (final q in gratitudeQuestions) {
+      q['controller'].dispose();
+    }
+    for (final q in satisfactionQuestions) {
+      q['controller'].dispose();
+    }
+    for (final q in happinessQuestions) {
+      q['controller'].dispose();
+    }
+    for (final q in panasQuestions) {
+      q['controller'].dispose();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(

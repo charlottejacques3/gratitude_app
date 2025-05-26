@@ -21,7 +21,6 @@ class InspirationPage extends StatefulWidget {
 
 class _InspirationPageState extends State<InspirationPage> {
 
-  final TextEditingController logController = TextEditingController();
    DatabaseReference dbUserRef = FirebaseDatabase.instance.ref().child('users')
                                                           .child(FirebaseAuth.instance.currentUser!.uid);
   String inspoType = 'Random Past Log';

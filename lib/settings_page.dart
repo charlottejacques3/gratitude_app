@@ -26,7 +26,7 @@ import 'view_consent_form.dart';
 
     bool randomNotifications = true;
     final _formKey = GlobalKey<FormState>();
-    bool allowAI = true;
+    // bool allowAI = true;
 
     //controllers
     TextEditingController randomStartTimeController= TextEditingController();
@@ -42,9 +42,20 @@ import 'view_consent_form.dart';
       getSharedPrefs();
     }
 
+    @override
+    void dispose() {
+      super.dispose();
+      randomStartTimeController.dispose();
+      randomStartAMPMController.dispose();
+      randomEndTimeController.dispose();
+      randomEndAMPMController.dispose();
+      scheduledTimeController.dispose();
+      scheduledAMPMController.dispose();
+    }
+
     void getSharedPrefs() async {
       final SharedPreferences prefs = await SharedPreferences.getInstance();
-      bool? ai = prefs.getBool('allow_ai');
+      // bool? ai = prefs.getBool('allow_ai');
       bool ? rand = prefs.getBool('random_notifications');
 
       //set the defaults for the controllers
@@ -63,7 +74,7 @@ import 'view_consent_form.dart';
 
       //set state
       setState(() {
-        if (ai != null ) allowAI = ai;
+        // if (ai != null ) allowAI = ai;
         if (rand != null ) randomNotifications = rand;
         randomStartTimeController = TextEditingController(text: startTime['hrs_mins']);
         randomStartAMPMController = TextEditingController(text: startTime['am_pm']);
@@ -248,35 +259,35 @@ import 'view_consent_form.dart';
               ),
 
               //allow ai
-              SizedBox(height: 50,),
-              Text('Guiding Settings',
-                style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold
-                ),
-              ),
-              SizedBox(height: 10,),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text('AI-generated reframing prompts',
-                      style: Theme.of(context).textTheme.bodyLarge!
-                    ),
-                  ),
-                  Switch(
-                    value: allowAI,
-                    onChanged: (bool value) async {
-                      setState(() {
-                        allowAI = value;
-                      });
-                      //set preferences
-                      final SharedPreferences prefs = await SharedPreferences.getInstance();
-                      await prefs.setBool('allow_ai', allowAI);
-                    }
-                  )
-                ],
-              ),
-              Text('AI helps generate more effective reframing prompts that are tailored to your situation and the negative emotions you are currently experiencing.'),
+              // SizedBox(height: 50,),
+              // Text('Guiding Settings',
+              //   style: Theme.of(context).textTheme.titleMedium!.copyWith(
+              //     fontSize: 20,
+              //     fontWeight: FontWeight.bold
+              //   ),
+              // ),
+              // SizedBox(height: 10,),
+              // Row(
+              //   children: [
+              //     Expanded(
+              //       child: Text('AI-generated reframing prompts',
+              //         style: Theme.of(context).textTheme.bodyLarge!
+              //       ),
+              //     ),
+              //     Switch(
+              //       value: allowAI,
+              //       onChanged: (bool value) async {
+              //         setState(() {
+              //           allowAI = value;
+              //         });
+              //         //set preferences
+              //         final SharedPreferences prefs = await SharedPreferences.getInstance();
+              //         await prefs.setBool('allow_ai', allowAI);
+              //       }
+              //     )
+              //   ],
+              // ),
+              // Text('AI helps generate more effective reframing prompts that are tailored to your situation and the negative emotions you are currently experiencing.'),
 
               //study information
               SizedBox(height: 50,),

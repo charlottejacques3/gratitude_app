@@ -41,7 +41,6 @@ class _StrategiesPageState extends State<StrategiesPage> {
 
   List<PromptWidget> promptWidgets = [];
   
-  //haven't got to thinking in shades of grey
   Map<String, List<String>> strategiesPerDistortion = {
     'All-or-Nothing Thinking': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Thinking in Shades of Grey', 'Semantic Method', 'Cost-Benefit Analysis'],
     'Overgeneralization': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Survey Technique', 'Cost-Benefit Analysis'],
@@ -63,6 +62,16 @@ class _StrategiesPageState extends State<StrategiesPage> {
       reframingLogs = widget.initialReframingLogs;
     });
     addStrategy();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    for (final activity in promptWidgets) {
+      for (final controller in activity.controllers) {
+        controller.dispose();
+      }
+    }
   }
 
   PromptWidget pickStrategy(int index) {
