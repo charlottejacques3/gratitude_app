@@ -236,6 +236,9 @@ class _PastLogsPageState extends State<PastLogsPage> {
                     childCount: categorizedLogs.length, // number of parent items
                   ),
                 ),
+                SliverToBoxAdapter(
+                  child: widget.editMode ? SizedBox(height: 60,) : Container()
+                )
               ],
             ),
 

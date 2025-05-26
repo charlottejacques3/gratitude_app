@@ -337,6 +337,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
 
                   //send all image urls to database
                   for (final url in imageUrls) {
+                    nonEmptyLogs = true;
                     numLogs++;
                     //map to a dictionary
                     Map<String, String> gratitudeImages = {
@@ -484,9 +485,10 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                     //if there is preloaded data from the inspiration page, set it
                     if (preloaded.containsKey('type') && preloaded.containsKey('log')) {
                       if (preloaded['type'].compareTo('text') == 0) {
-                        dynamicForms = [DynamicFormWidget(key: Key('1'), logController: TextEditingController(text: preloaded['log']), manageFormList: manageFormList)];
+                        dynamicForms.add(DynamicFormWidget(key: Key('1'), logController: TextEditingController(text: preloaded['log']), manageFormList: manageFormList));
                       } else if (preloaded['type'].compareTo('image') == 0) {
                         imageUrls.add(preloaded['log']);
+                        numImages++;
                       }
                     }
 

@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import '../utilities/date_functions.dart';
@@ -259,6 +261,36 @@ class _InspirationPageState extends State<InspirationPage> {
     }
   }
 
+  //for saving to firebase
+  Future<String> saveImageToFirebase() async {
+    // selectedPhoto.file
+    String filename = DateTime.now().toIso8601String(); //filename with datetime
+    
+    try {
+    //save selected photo to storage
+    // final byteData = await rootBundle.load('assets/$filename');
+    // final file = File('${(await getTemporaryDirectory()).path}/$filename');
+    // await file.create(recursive: true);
+    // await file.writeAsBytes(byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
+
+    //create references of folders/files
+      if (selectedPhoto == null) throw Error();
+      File? file = await selectedPhoto!.file;
+      Reference refRoot = FirebaseStorage.instance.ref();
+
+      Reference refImageDir = refRoot.child('images').child(FirebaseAuth.instance.currentUser!.uid); 
+      Reference refImage = refImageDir.child(filename); //create a reference for the image to be stored
+
+    //store file
+      if (file == null) throw Error();
+      await refImage.putFile(file);
+      return await refImage.getDownloadURL(); //return download url
+    } catch(e) {
+      print('error storing images: $e');
+      throw Error();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -411,17 +443,30 @@ class _InspirationPageState extends State<InspirationPage> {
                   //back to logs button
                   ElevatedButton(
                     child: Text('Log this!'),
-                    onPressed: () {
-                      Navigator.pop(context);
+                    onPressed: () async {
+                      // Navigator.pop(context);
                       if (inspoType.compareTo('Random Past Log') == 0) {
                         //send past log data back to main page
                         Map<String, String> logData = {'type': selectedPastLogType, 'log': selectedPastLog, 'inspo': inspoType};
+                        Navigator.pop(context);
                         Navigator.pop(context, logData);
-                      // } else if (inspoType.compareTo('Past Photo') == 0) {
-                        //send random photo back to main log page
-                        // Map<String, String> logData = {'type': 'image', 'log': selectedPhoto};
-                        // Navigator.pop(context, logData);
+                      } else if (inspoType.compareTo('Random Photo') == 0) {
+                        //send image to firebase
+                        try {
+                          String url = await saveImageToFirebase();
+                          Map<String, String> logData = {'type': 'image', 'log': url, 'inspo': inspoType};
+                          Navigator.pop(context);
+                          Navigator.pop(context, logData);
+                        } catch(e) {
+                          print('Error saving to Firebase');
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Error saving image')),
+                          );
+                          Navigator.pop(context);
+                        Navigator.pop(context);
+                        }
                       } else {
+                        Navigator.pop(context);
                         Navigator.pop(context, {'inspo': inspoType});
                       }
                     }
