@@ -2,7 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/main.dart';
+import 'package:gratitude_app/utilities/alarm_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
 
 class QuestionnairePage extends StatefulWidget {
@@ -178,6 +180,20 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     //update demographics complete
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool('initial_questionnaires_complete', true);
+
+    //cancel past alarms to avoid backlog
+    await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
+
+    //schedule the next alarm
+    await AndroidAlarmManager.oneShot(
+      const Duration(seconds: 5), //schedule 5 seconds later
+      0, 
+      notificationScheduler,
+      rescheduleOnReboot: true,
+      allowWhileIdle: true,
+      exact: true,
+      wakeup: true
+    );
 
     Navigator.pushReplacement(
       context, MaterialPageRoute(builder: (BuildContext context) => MyHomePage(startingPageIndex: 0,))

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gratitude_app/authentication/login_page.dart';
 import 'package:gratitude_app/main.dart';
-import 'package:gratitude_app/study_forms/consent_form_page.dart';
 import 'package:gratitude_app/study_forms/demographics_page.dart';
 import 'package:gratitude_app/study_forms/questionnaire_page.dart';
 import 'package:gratitude_app/withdraw_page.dart';

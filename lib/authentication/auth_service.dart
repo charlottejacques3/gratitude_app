@@ -1,7 +1,6 @@
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:gratitude_app/study_forms/consent_form_page.dart';
 import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/study_forms/demographics_page.dart';
 import 'package:gratitude_app/utilities/alarm_manager.dart';
@@ -37,20 +36,6 @@ class AuthService {
       prefs.setBool('consent_complete', false);
       prefs.setBool('demographics_complete', false);
       prefs.setBool('initial_questionnaires_complete', false);
-
-      //cancel past alarms to avoid backlog
-      await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
-
-      //schedule the next alarm
-      await AndroidAlarmManager.oneShot(
-        const Duration(seconds: 5), //schedule 5 seconds later
-        0, 
-        notificationScheduler,
-        rescheduleOnReboot: true,
-        allowWhileIdle: true,
-        exact: true,
-        wakeup: true
-      );
     } 
     
     //catch signup errors

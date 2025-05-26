@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/authentication/auth_service.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 
 class LoginPage extends StatefulWidget {
