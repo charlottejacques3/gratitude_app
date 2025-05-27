@@ -72,164 +72,161 @@ class _CBTPageState extends State<CBTPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.only(bottom: 8.0, left: 8, right: 8),
-        child: SingleChildScrollView(
-          physics: ScrollPhysics(),
-          child: Column(
-            children: [
-          
-              //prompting text
-              SizedBox(height: 30),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Text("Good job getting that off your chest.",
-                  style: Theme.of(context).textTheme.bodyLarge!,
-                  textAlign: TextAlign.center,
-                ),
+        child: ListView(
+          children: [
+        
+            //prompting text
+            SizedBox(height: 30),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Text("Good job getting that off your chest.",
+                style: Theme.of(context).textTheme.bodyLarge!,
+                textAlign: TextAlign.center,
               ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Text("Often, our thinking can fall into cognitive distortions called thought traps.",
-                  style: Theme.of(context).textTheme.bodyLarge!,
-                  textAlign: TextAlign.center,
-                ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Text("Often, our thinking can fall into cognitive distortions called thought traps.",
+                style: Theme.of(context).textTheme.bodyLarge!,
+                textAlign: TextAlign.center,
               ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 24.0),
-                child: Text("Reflecting on the negative thoughts you just logged, can you identify any of these thought traps?",
-                  style: Theme.of(context).textTheme.bodyLarge!,
-                  textAlign: TextAlign.center,
-                ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 24.0),
+              child: Text("Reflecting on the negative thoughts you just logged, can you identify any of these thought traps?",
+                style: Theme.of(context).textTheme.bodyLarge!,
+                textAlign: TextAlign.center,
               ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 24),
-                child: Text("Tap the icon to learn what these thought traps mean.",
-                  style: Theme.of(context).textTheme.bodySmall!,
-                  textAlign: TextAlign.center,
-                ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 24),
+              child: Text("Tap the icon to learn what these thought traps mean.",
+                style: Theme.of(context).textTheme.bodySmall!,
+                textAlign: TextAlign.center,
               ),
-          
-              //multi-select thought traps
-              ListView.builder(
-                physics: NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: thoughtTraps.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                    child: ListTile(
-                      title: Text(thoughtTraps[index]),
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(color: Colors.grey, width: 0.5),
-                        borderRadius: BorderRadius.circular(5),
-                      ), 
-                    
-                      //info button
-                      trailing: GestureDetector(
-                        onTap: () => showDialog(
-                          context: context, 
-                          builder: (BuildContext context) => Dialog(
-                            backgroundColor: Color.fromARGB(255, 250, 240, 230),
-                            child: Padding(
-                              padding: EdgeInsets.all(15.0),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(thoughtTraps[index],
-                                    style: Theme.of(context).textTheme.headlineSmall!
-                                  ),
-                                  SizedBox(height: 15),
-                                  Text(thoughtTrapsDetails[thoughtTraps[index]]!, 
-                                    textAlign: TextAlign.center
-                                  ),
-                                  SizedBox(height: 20,),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    }, 
-                                    child: Text('Close')
-                                  )
-                                ],
-                              ),
+            ),
+        
+            //multi-select thought traps
+            ListView.builder(
+              physics: NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              itemCount: thoughtTraps.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                  child: ListTile(
+                    title: Text(thoughtTraps[index]),
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(color: Colors.grey, width: 0.5),
+                      borderRadius: BorderRadius.circular(5),
+                    ), 
+                  
+                    //info button
+                    trailing: GestureDetector(
+                      onTap: () => showDialog(
+                        context: context, 
+                        builder: (BuildContext context) => Dialog(
+                          backgroundColor: Color.fromARGB(255, 250, 240, 230),
+                          child: Padding(
+                            padding: EdgeInsets.all(15.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(thoughtTraps[index],
+                                  style: Theme.of(context).textTheme.headlineSmall!
+                                ),
+                                SizedBox(height: 15),
+                                Text(thoughtTrapsDetails[thoughtTraps[index]]!, 
+                                  textAlign: TextAlign.center
+                                ),
+                                SizedBox(height: 20,),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  }, 
+                                  child: Text('Close')
+                                )
+                              ],
                             ),
-                          )
-                        ),
-                        child: Icon(Icons.info)
-                      ),
-                    
-                      //select it
-                      onTap: () {
-                        setState(() {
-                          if (selectedIndexes.contains(index)) {
-                            selectedIndexes.remove(index);
-                          } else {
-                            selectedIndexes.add(index);
-                          }
-                        });
-                      },
-                      selected: selectedIndexes.contains(index),
-                      selectedTileColor: Color.fromARGB(153, 236, 183, 234),
-                    ),
-                  );
-                },
-              ),
-          
-              //buttons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-
-                  //go back to logs + save negative emotion logs to database
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          //save to database
-                          dataToMap();
-                          dbRef.push().set(reframingLogs);
-                    
-                          //go back to log page
-                          for(var i = 0; i < 2; i++) {
-                            Navigator.pop(context);
-                          }
-                          Navigator.pop(context, {'guided':true, 'guiding_stage':'thought_traps'});
-                        }, 
-                        child: Text("I've thought of something to log!",
-                          textAlign: TextAlign.center,
+                          ),
                         )
                       ),
+                      child: Icon(Icons.info)
+                    ),
+                  
+                    //select it
+                    onTap: () {
+                      setState(() {
+                        if (selectedIndexes.contains(index)) {
+                          selectedIndexes.remove(index);
+                        } else {
+                          selectedIndexes.add(index);
+                        }
+                      });
+                    },
+                    selected: selectedIndexes.contains(index),
+                    selectedTileColor: Color.fromARGB(153, 236, 183, 234),
+                  ),
+                );
+              },
+            ),
+        
+            //buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+        
+                //go back to logs + save negative emotion logs to database
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        //save to database
+                        dataToMap();
+                        dbRef.push().set(reframingLogs);
+                  
+                        //go back to log page
+                        for(var i = 0; i < 2; i++) {
+                          Navigator.pop(context);
+                        }
+                        Navigator.pop(context, {'guided':true, 'guiding_stage':'thought_traps'});
+                      }, 
+                      child: Text("I've thought of something to log!",
+                        textAlign: TextAlign.center,
+                      )
                     ),
                   ),
-
-                  //go to next page
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          //add data to reframingLogs map
-                          dataToMap();
-                    
-                          //navigate to next page
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => StrategiesPage(initialReframingLogs: reframingLogs))
-                          );
-                        }, 
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: Size(80, 40)
-                        ),
-                        child: Text("Next",
-                          textAlign: TextAlign.center,
-                        ),
+                ),
+        
+                //go to next page
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        //add data to reframingLogs map
+                        dataToMap();
+                  
+                        //navigate to next page
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => StrategiesPage(initialReframingLogs: reframingLogs))
+                        );
+                      }, 
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: Size(80, 40)
+                      ),
+                      child: Text("Next",
+                        textAlign: TextAlign.center,
                       ),
                     ),
                   ),
-                ],
-              ),
-            ]
-          ),
+                ),
+              ],
+            ),
+          ]
         ),
       )
     );

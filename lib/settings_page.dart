@@ -1,17 +1,17 @@
-  import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-  import 'package:flutter/material.dart';
-  import 'package:flutter/services.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gratitude_app/authentication/login_page.dart';
 import 'package:gratitude_app/study_forms/questionnaire_page.dart';
 import 'package:gratitude_app/withdraw_page.dart';
-  import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-  import 'utilities/date_functions.dart';
-  import 'utilities/alarm_manager.dart';
-  import 'authentication/auth_service.dart';
-import 'view_consent_form.dart';
+import 'utilities/date_functions.dart';
+import 'utilities/alarm_manager.dart';
+import 'authentication/auth_service.dart';
+// import 'view_consent_form.dart';
 
 
   class SettingsPage extends StatefulWidget {
@@ -297,22 +297,22 @@ import 'view_consent_form.dart';
                   fontWeight: FontWeight.bold
                 ),
               ),
-              InfoButton(
-                text: 'View My Consent Form', 
-                action: () async {
-                  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users').child(FirebaseAuth.instance.currentUser!.uid);
-                  final snapshot = await dbRef.child('consent_form').get();
-                  if (snapshot.exists) {
-                    Uri url = Uri.parse(snapshot.value as String);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => ViewConsentForm(uri: url))
-                    );
-                  } else {
-                    print('No consent form available.');
-                  }
-                }
-              ),
+              // InfoButton(
+              //   text: 'View My Consent Form', 
+              //   action: () async {
+              //     DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users').child(FirebaseAuth.instance.currentUser!.uid);
+              //     final snapshot = await dbRef.child('consent_form').get();
+              //     if (snapshot.exists) {
+              //       Uri url = Uri.parse(snapshot.value as String);
+              //       Navigator.push(
+              //         context,
+              //         MaterialPageRoute(builder: (context) => ViewConsentForm(uri: url))
+              //       );
+              //     } else {
+              //       print('No consent form available.');
+              //     }
+              //   }
+              // ),
               InfoButton(
                 text: 'Tutorial Video', 
                 action: () => launchUrl(Uri.parse('https://youtube.com/shorts/Da3dlMjP1vg?feature=share'))

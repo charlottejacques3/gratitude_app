@@ -87,6 +87,7 @@ class _InspirationPageState extends State<InspirationPage> {
 
     //check for random photo
     final PermissionState ps = await PhotoManager.requestPermissionExtend();
+    print('photos: $ps');
     if (ps.isAuth) {
       setState(() {
         photoPermission = true;
