@@ -3,10 +3,12 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/widgets.dart';
 
+
 class NewReflectionPage extends StatefulWidget {
-  const NewReflectionPage({super.key, required this.type});
+  const NewReflectionPage({super.key, required this.type, this.preloadedResponses});
 
   final String type;
+  final Map<dynamic, dynamic>? preloadedResponses;
 
   @override
   State<NewReflectionPage> createState() => _NewReflectionPageState();
@@ -20,76 +22,85 @@ class _NewReflectionPageState extends State<NewReflectionPage> {
                                                           .child('Reflections');
   List<PromptWidget> prompts = [];
   String reflectionTitle = '';
+  List<String> preloaded = [];
 
   //initialize list of prompts based on the reflection type
   @override
   void initState() {
     super.initState();
     dbRef.keepSynced(true);
+    setState(() {
+      reflectionTitle = widget.type;
+    });
+
+    //add preloaded responses
+    if (widget.preloadedResponses != null) {
+      for(final resp in widget.preloadedResponses!['responses']) {
+        setState(() {
+          preloaded.add(resp['answer']);
+        });
+      }
+    }
 
     //reflect on challenges
-    if (widget.type.compareTo('challenges') == 0) {
-      reflectionTitle = 'Reflect on Challenges';
+    if (widget.type.compareTo('Reflect on Challenges') == 0) {
       prompts = [
           PromptWidget(
             promptText: 'What is a challenge in your life that you have overcome?', 
-            logController: TextEditingController()
+            logController: TextEditingController(text: preloaded.isNotEmpty ? preloaded[0] : '')
           ),
           PromptWidget(
             promptText: 'Retrospectively, can you now see any positive consequences of this challenge? Have you learned something from it, or has it made you grow as a person?', 
-            logController: TextEditingController()
+            logController: TextEditingController(text: preloaded.isNotEmpty ? preloaded[1] : '')
           ),
           PromptWidget(
             promptText: 'How can you be grateful for this challenging experiences?', 
-            logController: TextEditingController()
+            logController: TextEditingController(text: preloaded.isNotEmpty ? preloaded[2] : '')
           ),
         ];
     }
 
     //gratitude letter
-    else if (widget.type.compareTo('letter') == 0) {
-      reflectionTitle = 'Gratitude Letter';
+    else if (widget.type.compareTo('Gratitude Letter') == 0) {
       prompts = [
           PromptWidget(
             promptText: 'Who is a person in your life who means a lot to you?', 
-            logController: TextEditingController()
+            logController: TextEditingController(text: preloaded.isNotEmpty ? preloaded[0] : '')
           ),
           PromptWidget(
             promptText: 'Why are you grateful for this person? How do they improve your life?', 
-            logController: TextEditingController()
+            logController: TextEditingController(text: preloaded.isNotEmpty ? preloaded[1] : '')
           ),
           PromptWidget(
             promptText: 'Write a gratitude letter to this person, thanking them for being in your life.', 
-            logController: TextEditingController()
+            logController: TextEditingController(text: preloaded.isNotEmpty ? preloaded[2] : '')
           ),
         ];
     }
     
     //reflect on the little things
-    else if (widget.type.compareTo('little_things') == 0) {
-      reflectionTitle = 'Reflect on the Little Things';
+    else if (widget.type.compareTo('Reflect on the Little Things') == 0) {
       prompts = [
           PromptWidget(
             promptText: 'What is something small in your everyday life that you tend to take for granted?', 
-            logController: TextEditingController()
+            logController: TextEditingController(text: preloaded.isNotEmpty ? preloaded[0] : '')
           ),
           PromptWidget(
             promptText: 'How has this positively affected your life?', 
-            logController: TextEditingController()
+            logController: TextEditingController(text: preloaded.isNotEmpty ? preloaded[1] : '')
           ),
           PromptWidget(
             promptText: 'How can you be more grateful for this in your day-to-day life?', 
-            logController: TextEditingController()
+            logController: TextEditingController(text: preloaded.isNotEmpty ? preloaded[2] : '')
           ),
         ];
     }
     
     //independent reflection
-    else if (widget.type.compareTo('independent') == 0) {
-      reflectionTitle = 'Independent Reflection';
+    else if (widget.type.compareTo('Independent Reflection') == 0) {
       prompts = [PromptWidget(
         promptText: 'Reflect on anything in your life that brings you gratitude.', 
-        logController: TextEditingController()
+        logController: TextEditingController(text: preloaded.isNotEmpty ? preloaded[0] : '')
       )];
     }
   }
@@ -149,12 +160,22 @@ class _NewReflectionPageState extends State<NewReflectionPage> {
                   responses.add(response);
                 }
                 reflectionLog['responses'] = responses;
-                //send to database
-                try {
-                  print("trying to send");
-                  dbRef.push().set(reflectionLog);
-                } catch (e) {
-                  print('error writing data: $e');
+
+                //update in database
+                if (widget.preloadedResponses != null) {
+                  dbRef.update({
+                    widget.preloadedResponses!['id']: reflectionLog
+                  });
+                  Navigator.pop(context);
+                }
+
+                //create new log
+                else {
+                  try {
+                    dbRef.push().set(reflectionLog);
+                  } catch (e) {
+                    print('error writing data: $e');
+                  }
                 }
 
                 Navigator.pop(context);

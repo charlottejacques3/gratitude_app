@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gratitude_app/reflection_pages/new_reflection.dart';
 
 class ReflectionDetailPage extends StatefulWidget {
   const ReflectionDetailPage({super.key, required this.details});
@@ -23,6 +24,20 @@ class _ReflectionDetailPageState extends State<ReflectionDetailPage> {
             fontWeight: FontWeight.bold
           ),
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => NewReflectionPage(type: widget.details['type'], preloadedResponses: widget.details))
+                );
+              }, 
+              icon: Icon(Icons.edit)
+            ),
+          )
+        ],
       ),
 
       body: Padding(

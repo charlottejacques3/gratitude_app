@@ -244,30 +244,29 @@ class _PastLogsPageState extends State<PastLogsPage> {
 
             //delete logs button
             widget.editMode ?
-              Positioned(
-                bottom: 0,
-                right: 0,
-                left: 0,
-                child: ElevatedButton(
-                  onPressed: () {
-                    //loop through logs to delete
-                    for (var id in idsToDelete) {
-                      dbRef.child(id).remove();
-                      
-                    }
-                    setState(() {
-                      idsToDelete = [];
-                    });
-                    Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (BuildContext context) => MyHomePage(startingPageIndex: 1,)
-                      )
-                    );
-                  }, 
-                  child: Text('Delete All Selected Logs')
-                )
-              ) : Container()
+            Positioned(
+              bottom: 0,
+              right: 0,
+              left: 0,
+              child: ElevatedButton(
+                onPressed: () {
+                  //loop through logs to delete
+                  for (var id in idsToDelete) {
+                    dbRef.child(id).remove();
+                  }
+                  setState(() {
+                    idsToDelete = [];
+                  });
+                  Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (BuildContext context) => MyHomePage(startingPageIndex: 1,)
+                    )
+                  );
+                }, 
+                child: Text('Delete All Selected Logs')
+              )
+            ) : Container()
           ]
         ),
       ),

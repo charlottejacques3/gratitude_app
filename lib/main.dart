@@ -103,6 +103,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   var currentPageIndex = 0;
   bool pastLogsEditMode = false;
+  bool reflectionEditMode = false;
   String pageHeader = '';
 
   @override
@@ -124,7 +125,7 @@ class _MyHomePageState extends State<MyHomePage> {
         page = PastLogsPage(editMode: pastLogsEditMode);
         pageHeader = 'Past Logs';
       case 2:
-        page = ReflectionPage();
+        page = ReflectionPage(editMode: reflectionEditMode);
         pageHeader = 'Reflection';
       default:
         throw UnimplementedError('no widget for $currentPageIndex');
@@ -154,8 +155,21 @@ class _MyHomePageState extends State<MyHomePage> {
                 )
               ),
             )
-            :
-            Spacer(),
+            : //add edit button for reflection page
+            currentPageIndex == 2 ?
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(
+                  onPressed: () {
+                    setState(() {
+                      reflectionEditMode = !reflectionEditMode;
+                    });
+                  },
+                  child: reflectionEditMode ? Text('Cancel') : Text('Edit'),
+                )
+              ),
+            ) : Spacer(),
             Text(pageHeader, 
               style: Theme.of(context).textTheme.titleLarge!.copyWith(
                 color: Theme.of(context).colorScheme.primary,
