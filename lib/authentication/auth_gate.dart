@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gratitude_app/authentication/login_page.dart';
 import 'package:gratitude_app/main.dart';
-import 'package:gratitude_app/study_complete_page.dart';
-import 'package:gratitude_app/study_forms/demographics_page.dart';
-import 'package:gratitude_app/study_forms/questionnaire_page.dart';
-import 'package:gratitude_app/withdraw_page.dart';
+import 'package:gratitude_app/study_pages/study_complete_page.dart';
+import 'package:gratitude_app/study_pages/demographics_page.dart';
+import 'package:gratitude_app/study_pages/questionnaire_page.dart';
+import 'package:gratitude_app/study_pages/withdraw_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 

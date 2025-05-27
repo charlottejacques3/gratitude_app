@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:gratitude_app/logs_model.dart';
+import 'package:provider/provider.dart';
 
 class SwitchedColourButton extends StatelessWidget {
   const SwitchedColourButton({super.key, required this.text, required this.onClick});
@@ -22,6 +24,7 @@ class SwitchedColourButton extends StatelessWidget {
     );
   }
 }
+
 
 class LabeledRadio extends StatelessWidget {
   const LabeledRadio({
@@ -110,6 +113,46 @@ class YesNoRadio extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+class DynamicFormWidget extends StatelessWidget {
+
+  const DynamicFormWidget({super.key, required this.logController});
+
+  final TextEditingController logController; 
+  // final dynamic manageFormList;
+
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        children: [
+      
+          //form entries
+          Expanded(
+            flex: 7,
+            child: TextFormField(
+              controller: logController,
+              keyboardType: TextInputType.multiline,
+              minLines: 1,
+              maxLines: 3,
+            ),
+          ),
+      
+          //delete log button
+          Expanded(
+              child: IconButton(
+                icon: Icon(Icons.delete),
+                onPressed: () => Provider.of<LogsModel>(context, listen: false).removeTextLog(key) //manageFormList(key)
+              ),
+          )
+        ],
+      ),
     );
   }
 }

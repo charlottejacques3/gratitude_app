@@ -4,8 +4,10 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:gratitude_app/congrats_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:gratitude_app/logs_model.dart';
 import 'package:gratitude_app/widgets.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:provider/provider.dart';
 import 'guiding_pages/main_guiding_page.dart';
 import 'package:image_picker/image_picker.dart';
 enum ImageSourceType { gallery, camera }
@@ -21,7 +23,6 @@ class GratitudeLogPage extends StatefulWidget {
 
 class _GratitudeLogPageState extends State<GratitudeLogPage> {
   
-  List<DynamicFormWidget> dynamicForms = [];
   int nextKey = 2;
   String uid = FirebaseAuth.instance.currentUser!.uid;
   DatabaseReference dbUserRef = FirebaseDatabase.instance.ref().child('users')
@@ -30,30 +31,6 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
   bool guided = false; //keeps track of whether they worked through emotions in this session
   String guidedStage = '';
   String inspirationUsed = ''; //keeps track of the type of inspiration used, if applicable
-
-  //images
-  List<String> imageUrls = [];
-  int numImages = 0;
-
-  //manage deletions of forms from the form widget
-  void manageFormList(Key key) {
-
-    //if was the last one, just clear it
-    if (dynamicForms.length == 1) {
-      dynamicForms[0].logController.clear();
-    }
-
-    //otherwise, find right one to delete
-    else {
-      for (var formWidget in dynamicForms) {
-        if (formWidget.key == key) {
-          setState(() {
-            dynamicForms.remove(formWidget);
-          });
-        }
-      }
-    }
-  }
 
   //get images
   void handleImageUpload(var source) async {
@@ -64,9 +41,10 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
 
     if (file == null) return;
 
-    setState(() {
-      numImages++;
-    });
+    // setState(() {
+    //   numImages++;
+    // });
+    Provider.of<LogsModel>(context, listen: false).incNumImages();
 
     //create unique filename with the datetime
     String filename = DateTime.now().toIso8601String();
@@ -82,9 +60,10 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
       await refImage.putFile(File(file.path));
       //get download url
       String url = await refImage.getDownloadURL();
-      setState(() {
-        imageUrls.add(url);
-      });
+      // setState(() {
+      //   imageUrls.add(url);
+      // });
+      Provider.of<LogsModel>(context, listen:false).addImageUrl(url);
     } catch(e) {
       print('error storing images: $e');
     }
@@ -96,17 +75,8 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
     super.initState();
     setState(() {
       guided = false;
-      dynamicForms = [DynamicFormWidget(key: Key('1'), logController: TextEditingController(), manageFormList: manageFormList)];
       dbUserRef.keepSynced(true);
     });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    for (final entry in dynamicForms) {
-      entry.logController.dispose();
-    }
   }
 
   @override
@@ -124,79 +94,87 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
           ),
 
           //display form fields
-          ListView.builder(
-            physics: NeverScrollableScrollPhysics(),
-            itemCount: dynamicForms.length,
-            prototypeItem: dynamicForms.first,
-            scrollDirection: Axis.vertical,
-            shrinkWrap: true,
-            itemBuilder: (context, index) {
-              return dynamicForms[index];
-            },
+          Consumer<LogsModel>(
+            builder: (context, logs, child) {
+              return ListView.builder(
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: logs.textLogs.length,
+                scrollDirection: Axis.vertical,
+                shrinkWrap: true,
+                itemBuilder: (context, index) {
+                  return logs.textLogs[index];
+                },
+              );
+            }
           ),
 
           // display images
-          ListView.builder(
-            physics: NeverScrollableScrollPhysics(),
-            itemCount: numImages, //imageUrls.length,
-            scrollDirection: Axis.vertical,
-            shrinkWrap: true,
-            itemBuilder: (context, index) {
-              try {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        flex: 7,
-                        child: 
-                        //display image if added to list
-                        index < imageUrls.length ? Image.network(
-                          imageUrls[index],
-                          height: 200,
-                          width: 200,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress != null) {
-                              return Container(
-                                alignment: Alignment.center,
-                                height: 200,
-                                width: 200,
-                                child: CircularProgressIndicator()
-                              );
-                            } else {
-                              return child;
-                            }
-                          },
-                        )
-                        //otherwise display circular progress indicator
-                        : Container(
-                          alignment: Alignment.center,
-                          height: 200,
-                          width: 200,
-                          child: CircularProgressIndicator()
-                        )
+          Consumer<LogsModel>(
+            builder: (context, logs, child) {
+              return ListView.builder(
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: logs.numImages, //imageUrls.length,
+                scrollDirection: Axis.vertical,
+                shrinkWrap: true,
+                itemBuilder: (context, index) {
+                  try {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            flex: 7,
+                            child: 
+                            //display image if added to list
+                            index < logs.imageUrls.length ? Image.network(
+                              logs.imageUrls[index],
+                              height: 200,
+                              width: 200,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress != null) {
+                                  return Container(
+                                    alignment: Alignment.center,
+                                    height: 200,
+                                    width: 200,
+                                    child: CircularProgressIndicator()
+                                  );
+                                } else {
+                                  return child;
+                                }
+                              },
+                            )
+                            //otherwise display circular progress indicator
+                            : Container(
+                              alignment: Alignment.center,
+                              height: 200,
+                              width: 200,
+                              child: CircularProgressIndicator()
+                            )
+                          ),
+                      
+                          //remove image
+                          Expanded(
+                            child: IconButton(
+                              onPressed: () {
+                                // setState(() {
+                                //   imageUrls.removeAt(index);
+                                //   numImages--;
+                                // });
+                                Provider.of<LogsModel>(context, listen: false).removeImageUrl(index);
+                              }, 
+                              icon: Icon(Icons.delete)
+                            ),
+                          )
+                        ],
                       ),
-                  
-                      //remove image
-                      Expanded(
-                        child: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              imageUrls.removeAt(index);
-                              numImages--;
-                            });
-                          }, 
-                          icon: Icon(Icons.delete)
-                        ),
-                      )
-                    ],
-                  ),
-                );
-              } catch (e) {
-                print('error displaying image: $e');
-                return Container();
-              }
+                    );
+                  } catch (e) {
+                    print('error displaying image: $e');
+                    return Container();
+                  }
+                }
+              );
             }
           ),
 
@@ -213,7 +191,8 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                   child: ElevatedButton(
                     onPressed: () {
                       setState(() {
-                        dynamicForms.add(DynamicFormWidget(key: Key(nextKey.toString()), logController: TextEditingController(), manageFormList: manageFormList));
+                        Provider.of<LogsModel>(context, listen:false).addTextLog(DynamicFormWidget(key: Key(nextKey.toString()), logController: TextEditingController()));
+                        // dynamicForms.add(DynamicFormWidget(key: Key(nextKey.toString()), logController: TextEditingController(), manageFormList: manageFormList));
                         nextKey++;
                       });
 
@@ -316,7 +295,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                 bool nonEmptyLogs = false;
                 try {
                   //send all text entries to database
-                  for (final item in dynamicForms) {
+                  for (final item in Provider.of<LogsModel>(context, listen:false).textLogs) {
                     String log = item.logController.text;
                     if (log.isNotEmpty) { //don't add empty entries
                       nonEmptyLogs = true;
@@ -336,7 +315,8 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                   }
 
                   //send all image urls to database
-                  for (final url in imageUrls) {
+                  print('IMAGES: ${Provider.of<LogsModel>(context, listen:false).imageUrls}');
+                  for (final url in Provider.of<LogsModel>(context, listen:false).imageUrls) {
                     nonEmptyLogs = true;
                     numLogs++;
                     //map to a dictionary
@@ -348,10 +328,11 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                     //send to database
                     dbRef.push().set(gratitudeImages);
                     //remove images from screen
-                    setState(() {
-                      imageUrls = [];
-                      numImages = 0;
-                    });
+                    // setState(() {
+                    //   imageUrls = [];
+                    //   numImages = 0;
+                    // });
+                    Provider.of<LogsModel>(context, listen:false).removeAllImageUrls();
                   }
                 } catch (e) {
                   print('error writing data: $e');
@@ -457,7 +438,8 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                     //update page
                     setState(() {
                       guided = false;
-                      dynamicForms = [DynamicFormWidget(key: Key('1'), logController: TextEditingController(), manageFormList: manageFormList)];
+                      Provider.of<LogsModel>(context, listen:false).resetTextLogs();
+                      // dynamicForms = [DynamicFormWidget(key: Key('1'), logController: TextEditingController())];
                       dbRef.keepSynced(true);
                     });
                   });
@@ -484,11 +466,15 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                   setState(() {
                     //if there is preloaded data from the inspiration page, set it
                     if (preloaded.containsKey('type') && preloaded.containsKey('log')) {
+                      final prov = Provider.of<LogsModel>(context, listen:false);
                       if (preloaded['type'].compareTo('text') == 0) {
-                        dynamicForms.add(DynamicFormWidget(key: Key('1'), logController: TextEditingController(text: preloaded['log']), manageFormList: manageFormList));
+                        prov.addTextLog(DynamicFormWidget(key: Key('1'), logController: TextEditingController(text: preloaded['log'])));
+                        // dynamicForms.add(DynamicFormWidget(key: Key('1'), logController: TextEditingController(text: preloaded['log'])));
                       } else if (preloaded['type'].compareTo('image') == 0) {
-                        imageUrls.add(preloaded['log']);
-                        numImages++;
+                        // imageUrls.add(preloaded['log']);
+                        // numImages++;
+                        prov.addImageUrl(preloaded['url']);
+                        prov.incNumImages();
                       }
                     }
 
@@ -515,48 +501,6 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
               )
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-
-
-class DynamicFormWidget extends StatelessWidget {
-
-  const DynamicFormWidget({super.key, required this.logController, required this.manageFormList});
-
-  final TextEditingController logController; 
-  final dynamic manageFormList;
-
-
-  @override
-  Widget build(BuildContext context) {
-
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        children: [
-      
-          //form entries
-          Expanded(
-            flex: 7,
-            child: TextFormField(
-              controller: logController,
-              keyboardType: TextInputType.multiline,
-              minLines: 1,
-              maxLines: 3,
-            ),
-          ),
-      
-          //delete log button
-          Expanded(
-              child: IconButton(
-                icon: Icon(Icons.delete),
-                onPressed: () => manageFormList(key)
-              ),
-          )
         ],
       ),
     );

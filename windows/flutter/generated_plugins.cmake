@@ -9,7 +9,6 @@ list(APPEND FLUTTER_PLUGIN_LIST
   firebase_core
   firebase_storage
   permission_handler_windows
-  scroll_screenshot
   url_launcher_windows
 )
 

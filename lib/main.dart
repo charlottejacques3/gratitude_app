@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:gratitude_app/logs_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 
 //firebase imports
 import 'package:firebase_core/firebase_core.dart';
@@ -41,7 +43,12 @@ void main() async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   print('LAST NOTIF TIME: ${prefs.getString('scheduled_notif_date')}');
 
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => LogsModel(),
+      child: const MyApp()
+    )
+  );
 }
 
 class MyApp extends StatelessWidget {
