@@ -2,8 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/study_complete_page.dart';
+import 'package:gratitude_app/tutorial_page.dart';
 import 'package:gratitude_app/utilities/alarm_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
@@ -204,9 +204,9 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
         wakeup: true
       );
 
-      //send to home page
+      //send to tutorial page
       Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (BuildContext context) => MyHomePage(startingPageIndex: 0,))
+        context, MaterialPageRoute(builder: (BuildContext context) => const TutorialPage())
       );
     } 
     
