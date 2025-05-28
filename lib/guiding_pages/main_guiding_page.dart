@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +23,7 @@ class _GuidingPageState extends State<GuidingPage> {
   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
                                                           .child(FirebaseAuth.instance.currentUser!.uid)
                                                           .child('Advice');
+  StreamSubscription<DatabaseEvent>? listener;
   String selectedAdvice = '';
 
   @override
@@ -29,7 +32,7 @@ class _GuidingPageState extends State<GuidingPage> {
     dbRef.keepSynced(true);
 
     //choose a random piece of advice
-    dbRef.onValue.listen((event) {
+    listener = dbRef.onValue.listen((event) {
 
       //get list of keys
       DataSnapshot dataSnapshot = event.snapshot;
@@ -49,6 +52,14 @@ class _GuidingPageState extends State<GuidingPage> {
         }
       }
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    if (listener != null) {
+      listener!.cancel();
+    }
   }
 
   @override

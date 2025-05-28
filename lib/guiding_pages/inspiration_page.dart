@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
@@ -25,6 +26,8 @@ class _InspirationPageState extends State<InspirationPage> {
 
    DatabaseReference dbUserRef = FirebaseDatabase.instance.ref().child('users')
                                                           .child(FirebaseAuth.instance.currentUser!.uid);
+  StreamSubscription<DatabaseEvent>? listener1;
+  StreamSubscription<DatabaseEvent>? listener2;
   String inspoType = 'Random Past Log';
   List<String> selectedInspoTypes = ['Gratitude Prompt'];
   List<String> possibleInspoTypes = ['Gratitude Prompt'];
@@ -56,7 +59,7 @@ class _InspirationPageState extends State<InspirationPage> {
                           'What is the best gift you have ever received?',
                           'What made you laugh recently?',
                           'What is something that makes you feel better when you are sad?',
-                          'What are you excited about?'
+                          'What are you excited about?',
                           'What is something you are proud of yourself for?',
                           'What is one good thing that has happened today?',
                           'What place makes you feel calm and happy?',
@@ -88,8 +91,17 @@ class _InspirationPageState extends State<InspirationPage> {
   }
 
   @override
-  void dispose() {
+  void dispose() async{
     super.dispose();
+    // print('LISTENER VALUE: $listener');
+    if (listener1 != null) {
+      print('HELLO CANCELLING LISTENER');
+      await listener1!.cancel();
+    }
+    if (listener2 != null) {
+      print('HELLO CANCELLING LISTENER');
+      await listener2!.cancel();
+    }
     sendStats();
   }
 
@@ -126,7 +138,7 @@ class _InspirationPageState extends State<InspirationPage> {
     }
 
     //check if there are logs
-    dbUserRef.child('GratitudeLogs').onValue.listen((event) {
+    listener1 = dbUserRef.child('GratitudeLogs').onValue.listen((event) {
       DataSnapshot dataSnapshot = event.snapshot;
       if (dataSnapshot.value != null) {
         Map<dynamic, dynamic> values =  dataSnapshot.value as Map<dynamic, dynamic>;
@@ -226,7 +238,7 @@ class _InspirationPageState extends State<InspirationPage> {
 
   //randomly generate a past log from the database
   void generatePastLogs() {
-    dbUserRef.child('GratitudeLogs').onValue.listen((event) {
+    listener2 = dbUserRef.child('GratitudeLogs').onValue.listen((event) {
 
       //get list of keys
       DataSnapshot dataSnapshot = event.snapshot;

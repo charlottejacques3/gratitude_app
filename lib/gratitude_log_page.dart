@@ -191,7 +191,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                   child: ElevatedButton(
                     onPressed: () {
                       setState(() {
-                        Provider.of<LogsModel>(context, listen:false).addTextLog(DynamicFormWidget(key: Key(nextKey.toString()), logController: TextEditingController()));
+                        Provider.of<LogsModel>(context, listen:false).addTextLog(DynamicFormWidget(key: Key(nextKey.toString()), logController: TextEditingController()), false);
                         // dynamicForms.add(DynamicFormWidget(key: Key(nextKey.toString()), logController: TextEditingController(), manageFormList: manageFormList));
                         nextKey++;
                       });
@@ -354,25 +354,32 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                   });
                   
                   //check if today is in dates list
-                  if (data['days_used'] != null) {
-                    bool todayAdded = false;
-                    for (final date in data['days_used']) {
-                      DateTime dt = DateTime.parse(date);
-                      if (dt.day == DateTime.now().day) {
-                        todayAdded = true;
-                        break;
-                      }
-                    }
-                    if (!todayAdded) {
-                      statsRef.update({
-                        'days_used': data['days_used'].add(DateTime.now().toIso8601String())
-                      });
-                    }
-                  } else {
-                    statsRef.update({
-                      'days_used': [DateTime.now().toIso8601String()]
-                    });
-                  }
+                  // if (data['days_used'] != null) {
+                  //   bool todayAdded = false;
+                  //   List<dynamic> dates = [];
+                  //   for (final date in data['days_used']) {
+                  //     DateTime dt = DateTime.parse(date);
+                  //     if (dt.day == DateTime.now().day) {
+                  //       todayAdded = true;
+                  //       dates.add(date);
+                  //     }
+                  //   }
+                  //   print('INITIAL: $dates');
+                  //   if (!todayAdded) {
+                  //     dates.add(DateTime.now().toIso8601String());
+                  //     print('AFTER: $dates');
+                  //     // print(data['days_used'].runtimeType);
+                  //     // List<dynamic> prevDays = data['days_used'];
+                  //     // prevDays.add(DateTime.now().toIso8601String());
+                  //     statsRef.update({
+                  //       'days_used': dates//data['days_used'].add(DateTime.now().toIso8601String())
+                  //     });
+                  //   }
+                  // } else {
+                  //   statsRef.update({
+                  //     'days_used': [DateTime.now().toIso8601String()]
+                  //   });
+                  // }
 
                   //set inspiration used, if applicable
                   if (inspirationUsed.isNotEmpty) {
@@ -421,7 +428,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                     }
                     statsRef.set({
                       'num_logs': numLogs,
-                      'days_used': [DateTime.now().toIso8601String()],
+                      // 'days_used': [DateTime.now().toIso8601String()],
                       'guiding_to_log': guidingRecord
                     });
                   } on Exception catch (e) {
@@ -468,7 +475,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                     if (preloaded.containsKey('type') && preloaded.containsKey('log')) {
                       final prov = Provider.of<LogsModel>(context, listen:false);
                       if (preloaded['type'].compareTo('text') == 0) {
-                        prov.addTextLog(DynamicFormWidget(key: Key('1'), logController: TextEditingController(text: preloaded['log'])));
+                        prov.addTextLog(DynamicFormWidget(key: Key('1'), logController: TextEditingController(text: preloaded['log'])), true);
                         // dynamicForms.add(DynamicFormWidget(key: Key('1'), logController: TextEditingController(text: preloaded['log'])));
                       } else if (preloaded['type'].compareTo('image') == 0) {
                         // imageUrls.add(preloaded['log']);

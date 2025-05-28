@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -18,10 +20,14 @@ class PastLogsPage extends StatefulWidget {
 class _PastLogsPageState extends State<PastLogsPage> {
 
   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
-                                                          .child(FirebaseAuth.instance.currentUser!.uid)
-                                                          .child('GratitudeLogs');
+                                                          .child(FirebaseAuth.instance.currentUser!.uid);
+                                                          // .child('GratitudeLogs');
+  StreamSubscription<DatabaseEvent>? listener;
   List<Map<dynamic, dynamic>> gratitudeLogs = [];
   Map<String, List<Map<String, String>>> categorizedLogs = {};
+  Map<String, int> moodsByDate = {};
+  List<IconData> moods = [Icons.sentiment_very_dissatisfied, Icons.sentiment_dissatisfied, Icons.sentiment_neutral, Icons.sentiment_satisfied_alt, Icons.sentiment_very_satisfied_rounded];
+  List<Color> colours = [Color.fromARGB(255, 250, 100, 100), Color.fromARGB(255, 250, 142, 100), Color.fromARGB(255, 214, 185, 87), Color.fromARGB(255, 152, 201, 97), Color.fromARGB(255, 105, 182, 159)];
   bool loading = true;
   List<dynamic> idsToDelete = [];
   bool connected = true;
@@ -32,65 +38,86 @@ class _PastLogsPageState extends State<PastLogsPage> {
     super.initState();
     dbRef.keepSynced(true);
     
-    dbRef.onValue.listen((event) async {
+    listener = dbRef.onValue.listen((event) async {
       //re-initialize gratitudeLogs to empty
       gratitudeLogs = [];
 
       DataSnapshot dataSnapshot = event.snapshot;
       if (dataSnapshot.value != null) {
         Map<dynamic, dynamic> values = dataSnapshot.value as Map<dynamic, dynamic>;
-        values.forEach((key, value) {
-          
-          // add to gratitude logs + sort
-          if (mounted) {
-            try {
+
+        //look through logs
+        if (values['GratitudeLogs'] != null) {
+          Map<dynamic, dynamic> logs = values['GratitudeLogs'];
+          logs.forEach((key, value) {
+            if (mounted) {
+              try {
+                setState(() {
+                  Map<dynamic, dynamic> entry = value;
+                  entry['id'] = key;
+                  gratitudeLogs.add(entry);
+              });
+              } catch (e) {
+                print('error with setState $e');
+              }
+            }
+          });
+
+          //sort by date 
+          gratitudeLogs.sort((a, b) => a['date'].compareTo(b['date']));
+
+          //group by date
+          for (final item in gratitudeLogs) {
+            String formatted = formatDate(item['date']);
+            item['date'] = formatted;
+
+            //so it will update if there's no internet
+            bool connection = true;
+            if (item['type'].compareTo('image') == 0 && connected) {
+              connection = await InternetConnection().hasInternetAccess;
               setState(() {
-                Map<dynamic, dynamic> entry = value;
-                entry['id'] = key;
-                gratitudeLogs.add(entry);
-            });
-            } catch (e) {
-              print('error with setState $e');
+                containsImages = true;
+                connected = connection;
+              });
+            }
+
+            //don't add images if no internet
+            if (connected || item['type'].compareTo('image') != 0) {
+              Map<String, String> data = {
+              'log': item['gratitude_item'],
+              'type': item['type'],
+              'id': item['id']
+              };
+
+              if (mounted) {
+                setState(() {
+                  if (categorizedLogs.containsKey(formatted)) {
+                    categorizedLogs[formatted]!.add(data);
+                  } else {
+                    categorizedLogs[formatted] = [data];
+                  }
+                });
+              }
             }
           }
-        });
+        }
 
-        //sort by date 
-        gratitudeLogs.sort((a, b) => a['date'].compareTo(b['date']));
-
-        //group by date
-        for (final item in gratitudeLogs) {
-          String formatted = formatDate(item['date']);
-          item['date'] = formatted;
-
-          //so it will update if there's no internet
-          bool connection = true;
-          if (item['type'].compareTo('image') == 0 && connected) {
-            connection = await InternetConnection().hasInternetAccess;
-            setState(() {
-              containsImages = true;
-              connected = connection;
-            });
-          }
-
-          //don't add images if no internet
-          if (connected || item['type'].compareTo('image') != 0) {
-            Map<String, String> data = {
-            'log': item['gratitude_item'],
-            'type': item['type'],
-            'id': item['id']
-            };
-
+        //look through moods and group by date
+        if (values['Moods'] != null) {
+          Map<dynamic, dynamic> moods = values['Moods'];
+          moods.forEach((key, value) {
             if (mounted) {
+              String formatted = formatDate(value['date']);
               setState(() {
-                if (categorizedLogs.containsKey(formatted)) {
-                  categorizedLogs[formatted]!.add(data);
-                } else {
-                  categorizedLogs[formatted] = [data];
+                try {
+                  moodsByDate[formatted] = value['mood'];
+                } on Exception catch (e) {
+                  // TODO
+                  print('error: $e');
                 }
               });
             }
-          }
+          });
         }
       }
 
@@ -104,6 +131,14 @@ class _PastLogsPageState extends State<PastLogsPage> {
         );
       }
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    if (listener != null) {
+      listener!.cancel();
+    }
   }
 
   @override
@@ -138,13 +173,44 @@ class _PastLogsPageState extends State<PastLogsPage> {
                         children: [
                           SizedBox(height: 10),
                           //display date
-                          Text(categorizedLogs.keys.elementAt(categorizedLogs.length - 1 - parentIndex),
-                            style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold
-                            )
+                          Wrap(
+                            children: [
+                              Text(categorizedLogs.keys.elementAt(categorizedLogs.length - 1 - parentIndex),
+                                style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold
+                                )
+                              ),
+                              SizedBox(width: 15,),
+                              //display mood if available
+                              moodsByDate.containsKey(categorizedLogs.keys.elementAt(categorizedLogs.length - 1 - parentIndex))
+                              ? Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.all(Radius.circular(5)),
+                                  border: Border.all(
+                                    width: 0.5,
+                                    color: Colors.black
+                                  ),
+                                  color: colours[moodsByDate[categorizedLogs.keys.elementAt(categorizedLogs.length - 1 - parentIndex)]! - 1],
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text('Mood of the day: ',
+                                        style: Theme.of(context).textTheme.bodyLarge!
+                                      ),
+                                      Icon(moods[moodsByDate[categorizedLogs.keys.elementAt(categorizedLogs.length - 1 - parentIndex)]! - 1],
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ) : Container(),
+                            ],
                           ),
                           SizedBox(height: 5,),
+                          
                           ListView.builder(
                             shrinkWrap: true,
                             physics: NeverScrollableScrollPhysics(),

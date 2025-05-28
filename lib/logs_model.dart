@@ -12,8 +12,12 @@ class LogsModel extends ChangeNotifier {
   int get numImages => _numImages;
 
 
-  void addTextLog(DynamicFormWidget log) {
-    _textLogs.add(log);
+  void addTextLog(DynamicFormWidget log, bool preloaded) {
+    if (preloaded && _textLogs.length == 1 && _textLogs[0].logController.text.isEmpty) {
+      _textLogs = [log];
+    } else {
+      _textLogs.add(log);
+    }
     notifyListeners();
   }
 

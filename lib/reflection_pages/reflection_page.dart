@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +24,7 @@ class _ReflectionPageState extends State<ReflectionPage> {
   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
                                                           .child(FirebaseAuth.instance.currentUser!.uid)
                                                           .child('Reflections');
+  StreamSubscription<DatabaseEvent>? listener;
   List<Map<dynamic, dynamic>> pastReflections = [];
   bool loading = true;
   List<dynamic> idsToDelete = [];
@@ -39,7 +42,7 @@ class _ReflectionPageState extends State<ReflectionPage> {
     super.initState();
     dbRef.keepSynced(true);
 
-    dbRef.onValue.listen((event) {
+    listener = dbRef.onValue.listen((event) {
       //re-inialize past reflections to empty
       pastReflections = [];
 
@@ -70,6 +73,14 @@ class _ReflectionPageState extends State<ReflectionPage> {
     setState(() {
       loading = false;
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    if (listener != null) {
+      listener!.cancel();
+    }
   }
 
   @override
