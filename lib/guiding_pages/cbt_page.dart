@@ -30,7 +30,7 @@ class _CBTPageState extends State<CBTPage> {
     'Should Statements': '"Should" statements come from the belief that we, our other people or things, should be a certain way, and may also contain words such as "must" or "have to". In many cases, they represent unrealistic expectations we impose on ourselves, such as "I should be productive every day". However, "should" statements are unhelpful in actually achieving our goals, and often leave us feeling anxious and guilty.',
     'Fortune Telling': 'Fortune telling is when we imagine that bad things are going to happen, despite having no evidence to support this prediction.',
     'Discounting the Positive': 'Discounting the positive is when we ignore or dismiss positive information or events. For example, if we do well on a project at work, we might tell ourselves, "But that was easy, anybody could have done it".',
-    'Mental Filter': "A mental filter is when we focus exclusively on a single (typically negative) detail, and ignore the big picture. For example, if we posted a picture on social media and received many positive comments but one negative comment, we might focus exclusively on the negative."
+    'Mental Filter': "A mental filter is when we focus exclusively on a single (typically negative) detail, and ignore the big picture. For example, if we post a picture on social media and receive many positive comments but one negative comment, we might focus exclusively on the negative one."
   };
   Set<int> selectedIndexes = {};
   Map<String, dynamic> reframingLogs = {};
@@ -134,7 +134,8 @@ class _CBTPageState extends State<CBTPage> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(thoughtTraps[index],
-                                  style: Theme.of(context).textTheme.headlineSmall!
+                                  style: Theme.of(context).textTheme.headlineSmall!,
+                                  textAlign: TextAlign.center,
                                 ),
                                 SizedBox(height: 15),
                                 Text(thoughtTrapsDetails[thoughtTraps[index]]!, 

@@ -48,7 +48,7 @@ class _TutorialPageState extends State<TutorialPage> {
               children: [
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: IconButton(
+                  child: OutlinedButton(
                     onPressed: () {
                       if (curPage > 1) {
                         setState(() {
@@ -59,10 +59,9 @@ class _TutorialPageState extends State<TutorialPage> {
                     style: ButtonStyle(
                       backgroundColor: WidgetStatePropertyAll<Color>(Color.fromARGB(255, 250, 240, 230)),
                     ),
-                    icon: Icon(
+                    child: Icon(
                       Icons.arrow_back,
                       color: curPage > 1 ? Colors.black : Colors.grey,
-                      // weight: 20,
                     )
                   ),
                 ),
@@ -70,7 +69,7 @@ class _TutorialPageState extends State<TutorialPage> {
                 
                 Align(
                   alignment: Alignment.centerRight,
-                  child: IconButton(
+                  child: OutlinedButton(
                     onPressed: () {
                       if (curPage < numPages) {
                         setState(() {
@@ -83,7 +82,7 @@ class _TutorialPageState extends State<TutorialPage> {
                     style: ButtonStyle(
                       backgroundColor: WidgetStatePropertyAll<Color>(Color.fromARGB(255, 250, 240, 230)),
                     ),
-                    icon: Icon(Icons.arrow_forward)
+                    child: Icon(Icons.arrow_forward, color:Colors.black)
                   ),
                 ),
               ],

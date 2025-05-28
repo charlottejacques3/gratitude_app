@@ -5,6 +5,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:gratitude_app/study_pages/study_complete_page.dart';
 import 'package:gratitude_app/study_pages/tutorial_page.dart';
 import 'package:gratitude_app/utilities/alarm_manager.dart';
+import 'package:gratitude_app/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
@@ -44,7 +45,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     {'question': "Some people are generally not very happy. Although they are not depressed, they never seem as happy as they might be. To what extend does this characterization describe you?", 'controller': TextEditingController()},
   ];
 
-  List<Map<String, dynamic>> panasQuestions = [
+  List<Map<String, dynamic>> affectQuestions = [
     {'question': "Upset", 'controller': TextEditingController()},
     {'question': "Hostile", 'controller': TextEditingController()},
     {'question': "Alert", 'controller': TextEditingController()},
@@ -150,10 +151,29 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
 
   int calculateHappinessScore(List<Map> responses) {
     int score = 0;
+    for (var i = 0; i < responses.length; i++) {
+      final r = responses[i];
+      if (r['response'] != null && r['response'].isNotEmpty) {
+        String num = r['response'].substring(0,1);
+        if (i == 3) {
+          score += 8-int.parse(num);
+        } else {
+          score += int.parse(num);
+        }
+      }
+    }
+    return score;
+  }
+
+  int calculateAffectScore(List<Map> responses, bool positive) {
+    int score = 0;
     for (final r in responses) {
       if (r['response'] != null && r['response'].isNotEmpty) {
         String num = r['response'].substring(0,1);
-        score += int.parse(num);
+        if ((positive && ['Alert', 'Inspired', 'Determined', 'Attentive', 'Active'].contains(r['question']))
+        || (!positive && ['Upset', 'Hostile', 'Ashamed', 'Nervous', 'Afraid'].contains(r['question']))) {
+          score += int.parse(num);
+        }
       }
     }
     return score;
@@ -163,7 +183,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     List<Map<String, String>> gratitudeResponses = getResponseText(gratitudeQuestions);
     List<Map<String, String>> satisfactionResponses = getResponseText(satisfactionQuestions);
     List<Map<String, String>> happinessResponses = getResponseText(happinessQuestions);
-    List<Map<String, String>> panasResponses = getResponseText(panasQuestions);
+    List<Map<String, String>> affectResponses = getResponseText(affectQuestions);
 
     //map to dictionary
     Map<String, dynamic> data = {
@@ -173,7 +193,9 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
       'satisfaction_score': calculateSatisfactionScore(satisfactionResponses),
       'happiness_responses': happinessResponses,
       'happiness_score': calculateHappinessScore(happinessResponses),
-      'panas_responses': panasResponses
+      'affect_responses': affectResponses,
+      'positive_affect_score': calculateAffectScore(affectResponses, true),
+      'negative_affect_score': calculateAffectScore(affectResponses, false)
     };
 
     //save to db
@@ -239,7 +261,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     for (final q in happinessQuestions) {
       q['controller'].dispose();
     }
-    for (final q in panasQuestions) {
+    for (final q in affectQuestions) {
       q['controller'].dispose();
     }
   }
@@ -353,7 +375,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
             ),
             SizedBox(height: 30,),
 
-            //panas questionnaire
+            //affect questionnaire
             Text("Positive and Negative Affect Schedule",
               style: Theme.of(context).textTheme.titleMedium!.copyWith(
                 fontWeight: FontWeight.bold
@@ -368,11 +390,11 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
             ListView.builder(
               physics: NeverScrollableScrollPhysics(),
               shrinkWrap: true,
-              itemCount: panasQuestions.length,
+              itemCount: affectQuestions.length,
               itemBuilder: (context, index) {
                 return Selector(
-                  text: panasQuestions[index]['question'],
-                  dropdownController: panasQuestions[index]['controller'],
+                  text: affectQuestions[index]['question'],
+                  dropdownController: affectQuestions[index]['controller'],
                   dropdownOptions: frequencies,
                 );
               },
@@ -380,14 +402,14 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
             SizedBox(height: 30,),
 
             //submit
-            ElevatedButton(
-              onPressed: () {
+            SwitchedColourButton(
+              onClick: () {
                 //check all questions are submitted
                 List<String> emptyFields = [];
                 emptyFields.addAll(findEmpty(gratitudeQuestions));
                 emptyFields.addAll(findEmpty(satisfactionQuestions));
                 emptyFields.addAll(findEmpty(happinessQuestions));
-                emptyFields.addAll(findEmpty(panasQuestions));
+                emptyFields.addAll(findEmpty(affectQuestions));
                 if (emptyFields.isNotEmpty) {
                   showDialog(
                     context: context, 
@@ -458,7 +480,8 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
                   submitForm();
                 }
               }, 
-              child: Text("Submit"))
+              text: 'Submit'
+            ),
           ],
         ),
       )

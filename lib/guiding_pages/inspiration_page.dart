@@ -44,7 +44,36 @@ class _InspirationPageState extends State<InspirationPage> {
                           'What activities do you enjoy?',
                           'What is something delicious you ate recently?',
                           'What everyday object are you grateful for?',
-                          'What opportunities are you grateful for?'];
+                          'What opportunities are you grateful for?',
+                          'Has there been nice weather lately?',
+                          'What good things have brought you to the place you are today?',
+                          'What has someone said to you recently that you are grateful for?',
+                          'What enjoyable activities have you done recently?',
+                          'What do you enjoy about your career?',
+                          'What is a sensation that you have seen/heard/smelled/tasted/felt recently that you are grateful for?',
+                          'Who, or what, inspires you?',
+                          'Think of a person, whether they are currently in your life or not, who has positively affected you.',
+                          'What is the best gift you have ever received?',
+                          'What made you laugh recently?',
+                          'What is something that makes you feel better when you are sad?',
+                          'What are you excited about?'
+                          'What is something you are proud of yourself for?',
+                          'What is one good thing that has happened today?',
+                          'What place makes you feel calm and happy?',
+                          'What is a song/movie/TV show that you are grateful for?',
+                          'What impportant life lesson have you learned that you are grateful for?',
+                          'Think of a recent memory that you are grateful for.',
+                          'Can you think of a teacher or mentor who you are grateful for?',
+                          'What is your favourite holiday or tradition?',
+                          'What life experiences are you grateful for?',
+                          'What do you appreciate about nature?',
+                          'What is your favourite part of your daily routine?',
+                          'What is something that makes you feel lucky?',
+                          'What is a childhood experience that you are grateful for?',
+                          'Think about a time when things worked out.',
+                          'What are you grateful for about your home?',
+                          'Who was the last person that helped you?'
+                          ];
   int selectedPromptIndex = 0;
   bool photoPermission = false;
 
