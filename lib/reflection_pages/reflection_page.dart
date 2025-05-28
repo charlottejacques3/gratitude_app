@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/utilities/date_functions.dart';
 import 'package:gratitude_app/reflection_pages/new_reflection.dart';
-import 'package:gratitude_app/widgets.dart';
+import 'package:gratitude_app/utilities/widgets.dart';
 import 'reflection_detail_page.dart';
 
 class ReflectionPage extends StatefulWidget {

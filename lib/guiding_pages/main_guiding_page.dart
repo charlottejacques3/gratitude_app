@@ -7,7 +7,7 @@ import 'package:gratitude_app/guiding_pages/inspiration_page.dart';
 import 'package:gratitude_app/guiding_pages/log_emotions_page.dart';
 import  'dart:math';
 
-import 'package:gratitude_app/widgets.dart';
+import 'package:gratitude_app/utilities/widgets.dart';
 
 
 class GuidingPage extends StatefulWidget {

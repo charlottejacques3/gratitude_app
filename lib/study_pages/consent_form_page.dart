@@ -11,7 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:signature/signature.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:markdown/markdown.dart' as md;
-import 'package:gratitude_app/widgets.dart';
+import 'package:gratitude_app/utilities/widgets.dart';
 
 
 class ConsentFormPage extends StatefulWidget {

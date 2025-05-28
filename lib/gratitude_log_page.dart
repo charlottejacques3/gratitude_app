@@ -5,7 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:gratitude_app/congrats_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gratitude_app/logs_model.dart';
-import 'package:gratitude_app/widgets.dart';
+import 'package:gratitude_app/utilities/widgets.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:provider/provider.dart';
 import 'guiding_pages/main_guiding_page.dart';

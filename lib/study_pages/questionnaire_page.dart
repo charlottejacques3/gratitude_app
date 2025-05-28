@@ -5,7 +5,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:gratitude_app/study_pages/study_complete_page.dart';
 import 'package:gratitude_app/study_pages/tutorial_page.dart';
 import 'package:gratitude_app/utilities/alarm_manager.dart';
-import 'package:gratitude_app/widgets.dart';
+import 'package:gratitude_app/utilities/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 

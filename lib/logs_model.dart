@@ -1,7 +1,7 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
-import 'package:gratitude_app/widgets.dart';
+import 'package:gratitude_app/utilities/widgets.dart';
 
 class LogsModel extends ChangeNotifier {
   List<DynamicFormWidget> _textLogs = [DynamicFormWidget(key: Key('1'), logController: TextEditingController())];
