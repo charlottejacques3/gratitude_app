@@ -105,22 +105,25 @@ class _PastLogsPageState extends State<PastLogsPage> {
           }
         }
 
-        //look through moods and group by date
+        //look through moods and group by date + pick the most recent one
         if (values['Moods'] != null) {
-          Map<dynamic, dynamic> moods = values['Moods'];
-          moods.forEach((key, value) {
+          List<dynamic> moods = [];
+          values['Moods'].forEach((k,v) => moods.add(v));
+          moods.sort((a, b) => a['date'].compareTo(b['date']));
+          // moods.forEach((key, value) {
+          for(final moodLog in moods) {
             if (mounted) {
-              String formatted = formatDate(value['date']);
+              String formatted = formatDate(moodLog['date']);
               setState(() {
                 try {
-                  moodsByDate[formatted] = value['mood'];
+                  moodsByDate[formatted] = moodLog['mood'];
                 } on Exception catch (e) {
                   // TODO
                   print('error: $e');
                 }
               });
             }
-          });
+          };
         }
       }
 

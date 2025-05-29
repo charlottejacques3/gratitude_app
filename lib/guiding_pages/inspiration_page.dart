@@ -497,6 +497,7 @@ class _InspirationPageState extends State<InspirationPage> {
                         //send image to firebase
                         try {
                           String url = await saveImageToFirebase();
+                          print('URL: $url');
                           Map<String, String> logData = {'type': 'image', 'log': url, 'inspo': inspoType};
                           Navigator.pop(context);
                           Navigator.pop(context, logData);

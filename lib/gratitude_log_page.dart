@@ -486,7 +486,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                       } else if (preloaded['type'].compareTo('image') == 0) {
                         // imageUrls.add(preloaded['log']);
                         // numImages++;
-                        prov.addImageUrl(preloaded['url']);
+                        prov.addImageUrl(preloaded['log']);
                         prov.incNumImages();
                       }
                     }
