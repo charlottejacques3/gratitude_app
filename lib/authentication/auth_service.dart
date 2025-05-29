@@ -26,7 +26,8 @@ class AuthService {
       );
 
       //pick random group + save to sharedprefs + global variables
-      int group = Random().nextInt(2); //0 is control group, 1 is experimental!!
+      //TEMPORARY - SET BACK!!!
+      int group = 1;//Random().nextInt(2); //0 is control group, 1 is experimental!!
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String groupName = 'control';
       if (group == 1) {

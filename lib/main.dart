@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gratitude_app/logs_model.dart';
 import 'package:gratitude_app/utilities/globals.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/foundation.dart';
 
 //firebase imports
 import 'package:firebase_core/firebase_core.dart';
@@ -48,6 +50,12 @@ void main() async {
   if (prefs.getString('group') != null) {
     Globals.group = prefs.getString('group')!;
   }
+
+  //get font license
+  LicenseRegistry.addLicense(() async* {
+    final license = await rootBundle.loadString('assets/google_fonts/OFL.txt');
+    yield LicenseEntryWithLineBreaks(['google_fonts'], license);
+  });
 
   runApp(
     ChangeNotifierProvider(

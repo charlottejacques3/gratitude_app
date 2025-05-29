@@ -448,6 +448,11 @@ import 'package:gratitude_app/utilities/globals.dart';
                 )
               ),
 
+              //licenses
+              InfoButton(
+                text: 'Licenses',
+                action: () => showLicensePage(context: context)
+              ),
 
               //log out
               SizedBox(height: 50,),

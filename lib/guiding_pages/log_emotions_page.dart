@@ -86,7 +86,11 @@ class _LogEmotionsPageState extends State<LogEmotionsPage> {
                           'negative_emotions': logController.text,
                           'date': DateTime.now().toIso8601String(),
                         };
-                        dbRef.push().set(reframingLogs);
+                        try {
+                          dbRef.push().set(reframingLogs);
+                        } catch(e) {
+                          print('ERROR SAVING REFRAMING LOGS: $e');
+                        }
                   
                         //go back to log page
                         Navigator.pop(context);

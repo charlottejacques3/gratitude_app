@@ -296,8 +296,14 @@ class _DemographicsPageState extends State<DemographicsPage> {
                   child: DropdownMenu(
                     controller: gratitudeNoAppController,
                     initialSelection: gratitudeNoAppController.text,
-                    requestFocusOnTap: true,
                     dropdownMenuEntries: frequencies,
+                    menuStyle: MenuStyle(
+                      backgroundColor: WidgetStateColor.resolveWith(
+                        (Set<WidgetState> states) {
+                          return Color.fromARGB(255, 249, 241, 237);
+                        }
+                      )
+                    ),
                   ),
                 ),
               ],
@@ -466,8 +472,14 @@ class ApplicationInfo extends StatelessWidget {
                   DropdownMenu(
                     controller: freqController,
                     initialSelection: freqController.text,
-                    requestFocusOnTap: true,
                     dropdownMenuEntries: frequencies,
+                    menuStyle: MenuStyle(
+                      backgroundColor: WidgetStateColor.resolveWith(
+                        (Set<WidgetState> states) {
+                          return Color.fromARGB(255, 249, 241, 237);
+                        }
+                      )
+                    ),
                   ),
                 ],
               ),

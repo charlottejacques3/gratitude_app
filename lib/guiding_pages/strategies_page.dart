@@ -22,7 +22,7 @@ class _StrategiesPageState extends State<StrategiesPage> {
   //finish humorous imaging
   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group)
                                                           .child(FirebaseAuth.instance.currentUser!.uid)
-                                                          .child('ReframingStrategies');
+                                                          .child('NegativeEmotionLogs');
   Map<String, dynamic> reframingLogs = {};
   Map<String, List<String>> strategies = {
     'Substitution': ['Is there a more positive way to look at this situation?', 'For each negative thought, try to substitute a more positive and realistic thought below.'],

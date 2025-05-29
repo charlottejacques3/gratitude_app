@@ -77,7 +77,7 @@ class _GuidingPageState extends State<GuidingPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Column(
+        child: ListView(
           children: [
             SizedBox(height: 30),
             Text("That's okay! Sometimes we have days like that.",

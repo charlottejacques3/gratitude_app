@@ -514,8 +514,14 @@ class Selector extends StatelessWidget {
           DropdownMenu(
             controller: dropdownController,
             initialSelection: dropdownController.text,
-            requestFocusOnTap: true,
             dropdownMenuEntries: dropdownOptions,
+            menuStyle: MenuStyle(
+              backgroundColor: WidgetStateColor.resolveWith(
+                (Set<WidgetState> states) {
+                  return Color.fromARGB(255, 249, 241, 237);
+                }
+              )
+            ),
           ),
         ],
       ),
