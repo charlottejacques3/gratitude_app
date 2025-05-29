@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:gratitude_app/congrats_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gratitude_app/logs_model.dart';
+import 'package:gratitude_app/utilities/globals.dart';
 import 'package:gratitude_app/utilities/widgets.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:provider/provider.dart';
@@ -25,7 +26,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
   
   int nextKey = 2;
   String uid = FirebaseAuth.instance.currentUser!.uid;
-  DatabaseReference dbUserRef = FirebaseDatabase.instance.ref().child('users')
+  DatabaseReference dbUserRef = FirebaseDatabase.instance.ref().child(Globals.group)
                                                           .child(FirebaseAuth.instance.currentUser!.uid);
 
   bool guided = false; //keeps track of whether they worked through emotions in this session
@@ -422,15 +423,19 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                 //set for the first time
                 else {
                   try {
-                    Map<String, int> guidingRecord = {'log_emotions': 0, 'thought_traps': 0, 'strategies': 0};
-                    if (guidedStage.isNotEmpty) {
-                      guidingRecord[guidedStage] = 1;
+                    statsRef.child('num_logs').set(numLogs);
+                    // statsRef.set({
+                    //   'num_logs': numLogs,
+                    //   // 'days_used': [DateTime.now().toIso8601String()],
+                    //   'guiding_to_log': guidingRecord
+                    // });
+                    if (Globals.group.compareTo('experimental') == 0) {
+                      Map<String, int> guidingRecord = {'log_emotions': 0, 'thought_traps': 0, 'strategies': 0};
+                      if (guidedStage.isNotEmpty) {
+                        guidingRecord[guidedStage] = 1;
+                      }
+                      statsRef.child('guiding_to_log').set(guidingRecord);
                     }
-                    statsRef.set({
-                      'num_logs': numLogs,
-                      // 'days_used': [DateTime.now().toIso8601String()],
-                      'guiding_to_log': guidingRecord
-                    });
                   } on Exception catch (e) {
                     print('FIRST TIME EXCEPTION: $e');
                   }
@@ -457,6 +462,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
           ),
           
           //button to send to inspiration page
+          Globals.group.compareTo('experimental') == 0 ? 
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: ElevatedButton(
@@ -507,7 +513,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                 textAlign: TextAlign.center,
               )
             ),
-          ),
+          ) : Container(),
         ],
       ),
     );

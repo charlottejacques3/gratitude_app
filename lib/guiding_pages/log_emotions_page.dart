@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:gratitude_app/guiding_pages/cbt_page.dart';
+import 'package:gratitude_app/utilities/globals.dart';
 
 
 class LogEmotionsPage extends StatefulWidget {
@@ -15,7 +16,7 @@ class LogEmotionsPage extends StatefulWidget {
 class _LogEmotionsPageState extends State<LogEmotionsPage> {
 
   final TextEditingController logController = TextEditingController();
-   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
+   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group)
                                                           .child(FirebaseAuth.instance.currentUser!.uid)
                                                           .child('NegativeEmotionLogs');
 

@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:gratitude_app/main.dart';
+import 'package:gratitude_app/utilities/globals.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'utilities/date_functions.dart';
 
@@ -19,7 +20,7 @@ class PastLogsPage extends StatefulWidget {
 
 class _PastLogsPageState extends State<PastLogsPage> {
 
-  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
+  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group)
                                                           .child(FirebaseAuth.instance.currentUser!.uid);
                                                           // .child('GratitudeLogs');
   StreamSubscription<DatabaseEvent>? listener;
@@ -75,10 +76,12 @@ class _PastLogsPageState extends State<PastLogsPage> {
             bool connection = true;
             if (item['type'].compareTo('image') == 0 && connected) {
               connection = await InternetConnection().hasInternetAccess;
-              setState(() {
-                containsImages = true;
-                connected = connection;
-              });
+              if (mounted) {
+                setState(() {
+                  containsImages = true;
+                  connected = connection;
+                });
+              }
             }
 
             //don't add images if no internet
@@ -315,10 +318,21 @@ class _PastLogsPageState extends State<PastLogsPage> {
               right: 0,
               left: 0,
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
+                  //update stats
+                  DatabaseReference statsRef = dbRef.child('Stats');
+                  final snapshot = await statsRef.get();
+                  if (snapshot.exists) {
+                    final data = snapshot.value as Map<dynamic, dynamic>;
+
+                    //update num logs
+                    if (data['num_logs'] != null) {
+                      statsRef.child('num_logs').set(data['num_logs'] - idsToDelete.length);
+                    }
+                  }
                   //loop through logs to delete
                   for (var id in idsToDelete) {
-                    dbRef.child(id).remove();
+                    dbRef.child('GratitudeLogs').child(id).remove();
                   }
                   setState(() {
                     idsToDelete = [];

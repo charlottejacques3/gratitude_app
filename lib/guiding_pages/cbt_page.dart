@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:gratitude_app/guiding_pages/strategies_page.dart';
+import 'package:gratitude_app/utilities/globals.dart';
 
 
 class CBTPage extends StatefulWidget {
@@ -35,7 +36,7 @@ class _CBTPageState extends State<CBTPage> {
   Set<int> selectedIndexes = {};
   Map<String, dynamic> reframingLogs = {};
   
-   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
+   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group)
                                                           .child(FirebaseAuth.instance.currentUser!.uid)
                                                           .child('NegativeEmotionLogs');
 

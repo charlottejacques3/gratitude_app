@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:gratitude_app/utilities/firebase_options.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:gratitude_app/utilities/globals.dart';
 
 //read settings from settings - NOT USED ANYMORE
 Future<Map<dynamic, dynamic>> readSettings() async {
@@ -11,7 +12,7 @@ Future<Map<dynamic, dynamic>> readSettings() async {
   );
   Map<dynamic, dynamic> values = {};
   try {
-    DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
+    DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group)
                                                           .child(FirebaseAuth.instance.currentUser!.uid)
                                                           .child('Settings');
     var dataSnapshot = await dbRef.once();

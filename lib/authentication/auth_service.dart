@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +7,7 @@ import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/study_pages/demographics_page.dart';
 import 'package:gratitude_app/utilities/alarm_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:gratitude_app/utilities/globals.dart' show Globals;
 
 class AuthService {
 
@@ -22,8 +25,19 @@ class AuthService {
         MaterialPageRoute(builder: (BuildContext context) => const DemographicsPage())//ConsentFormPage())
       );
 
-      //save default settings to shared preferences
+      //pick random group + save to sharedprefs + global variables
+      int group = Random().nextInt(2); //0 is control group, 1 is experimental!!
       SharedPreferences prefs = await SharedPreferences.getInstance();
+      String groupName = 'control';
+      if (group == 1) {
+        groupName = 'experimental';
+      }
+      prefs.setString('group', groupName);
+      Globals.group = groupName;
+      print('ASSIGNED GROUP: $group');
+      print('GLOBAL VARIABLE: ${Globals.group}');
+
+      //save default settings to shared preferences
       prefs.setBool('random_notifications', true);
       prefs.setInt('random_start_hours', 9); //9am start
       prefs.setInt('random_start_minutes', 0);

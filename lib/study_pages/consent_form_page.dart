@@ -12,6 +12,7 @@ import 'package:signature/signature.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:markdown/markdown.dart' as md;
 import 'package:gratitude_app/utilities/widgets.dart';
+import 'package:gratitude_app/utilities/globals.dart';
 
 
 class ConsentFormPage extends StatefulWidget {
@@ -130,7 +131,7 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
         String url = await refFile.getDownloadURL();
 
         //store to database
-        DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users').child(FirebaseAuth.instance.currentUser!.uid);
+        DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group).child(FirebaseAuth.instance.currentUser!.uid);
         await dbRef.update({'consent_form': url});
 
       } catch(e) {

@@ -28,7 +28,7 @@
 
 //   List<PromptWidget> promptWidgets = [];
 //   Map<String, dynamic> reframingLogs = {};
-//   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
+//   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group)
 //                                                           .child(FirebaseAuth.instance.currentUser!.uid)
 //                                                           .child('NegativeEmotionLogs');
 

@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:gratitude_app/utilities/globals.dart';
 import '../utilities/date_functions.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -24,7 +25,7 @@ class InspirationPage extends StatefulWidget {
 
 class _InspirationPageState extends State<InspirationPage> {
 
-   DatabaseReference dbUserRef = FirebaseDatabase.instance.ref().child('users')
+   DatabaseReference dbUserRef = FirebaseDatabase.instance.ref().child(Globals.group)
                                                           .child(FirebaseAuth.instance.currentUser!.uid);
   StreamSubscription<DatabaseEvent>? listener1;
   StreamSubscription<DatabaseEvent>? listener2;

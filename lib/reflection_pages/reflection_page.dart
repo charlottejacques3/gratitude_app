@@ -8,6 +8,7 @@ import 'package:gratitude_app/utilities/date_functions.dart';
 import 'package:gratitude_app/reflection_pages/new_reflection.dart';
 import 'package:gratitude_app/utilities/widgets.dart';
 import 'reflection_detail_page.dart';
+import 'package:gratitude_app/utilities/globals.dart';
 
 class ReflectionPage extends StatefulWidget {
   final bool editMode; 
@@ -21,7 +22,7 @@ class ReflectionPage extends StatefulWidget {
 
 class _ReflectionPageState extends State<ReflectionPage> {
 
-  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
+  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group)
                                                           .child(FirebaseAuth.instance.currentUser!.uid)
                                                           .child('Reflections');
   StreamSubscription<DatabaseEvent>? listener;
@@ -226,7 +227,7 @@ class _ReflectionPageState extends State<ReflectionPage> {
                     )
                   );
                 }, 
-                child: Text('Delete All Selected Logs')
+                child: Text('Delete All Selected Reflections')
               )
             ) : Container()
         ],

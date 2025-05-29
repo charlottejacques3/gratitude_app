@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:gratitude_app/study_pages/questionnaire_page.dart';
 import 'package:gratitude_app/utilities/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:gratitude_app/utilities/globals.dart';
 
 
 class DemographicsPage extends StatefulWidget {
@@ -101,7 +102,7 @@ class _DemographicsPageState extends State<DemographicsPage> {
     }
 
     //save to db
-    DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users').child(FirebaseAuth.instance.currentUser!.uid);
+    DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group).child(FirebaseAuth.instance.currentUser!.uid);
     await dbRef.update({'Demographics': demographics});
 
     //update demographics complete

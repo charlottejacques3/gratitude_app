@@ -8,6 +8,7 @@ import 'package:gratitude_app/utilities/alarm_manager.dart';
 import 'package:gratitude_app/utilities/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:gratitude_app/utilities/globals.dart';
 
 
 class QuestionnairePage extends StatefulWidget {
@@ -199,7 +200,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     };
 
     //save to db
-    DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users').child(FirebaseAuth.instance.currentUser!.uid);
+    DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group).child(FirebaseAuth.instance.currentUser!.uid);
     if (widget.number == 1) {
       await dbRef.update({'HappinessQuestionnairesInitial': data});
     } else if (widget.number == 2) {

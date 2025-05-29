@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/guiding_pages/final_page.dart';
-
+import 'package:gratitude_app/utilities/globals.dart';
 import 'strategy_widgets.dart';
 
 
@@ -20,7 +20,7 @@ class StrategiesPage extends StatefulWidget {
 class _StrategiesPageState extends State<StrategiesPage> {
 
   //finish humorous imaging
-  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
+  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group)
                                                           .child(FirebaseAuth.instance.currentUser!.uid)
                                                           .child('ReframingStrategies');
   Map<String, dynamic> reframingLogs = {};

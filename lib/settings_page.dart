@@ -11,6 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'utilities/date_functions.dart';
 import 'utilities/alarm_manager.dart';
 import 'authentication/auth_service.dart';
+import 'package:gratitude_app/utilities/globals.dart';
 // import 'view_consent_form.dart';
 
 
@@ -300,7 +301,7 @@ import 'authentication/auth_service.dart';
               // InfoButton(
               //   text: 'View My Consent Form', 
               //   action: () async {
-              //     DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users').child(FirebaseAuth.instance.currentUser!.uid);
+              //     DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group).child(FirebaseAuth.instance.currentUser!.uid);
               //     final snapshot = await dbRef.child('consent_form').get();
               //     if (snapshot.exists) {
               //       Uri url = Uri.parse(snapshot.value as String);
@@ -419,7 +420,7 @@ import 'authentication/auth_service.dart';
                                     ),
                                     onPressed: () async {
                                       //delete data
-                                      DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
+                                      DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group)
                                                           .child(FirebaseAuth.instance.currentUser!.uid);
                                       dbRef.remove();
                                       //log out

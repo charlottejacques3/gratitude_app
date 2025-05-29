@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gratitude_app/logs_model.dart';
+import 'package:gratitude_app/utilities/globals.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 
@@ -42,6 +43,11 @@ void main() async {
   //print last notif date
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   print('LAST NOTIF TIME: ${prefs.getString('scheduled_notif_date')}');
+
+  //set up global variable for group
+  if (prefs.getString('group') != null) {
+    Globals.group = prefs.getString('group')!;
+  }
 
   runApp(
     ChangeNotifierProvider(
@@ -132,8 +138,13 @@ class _MyHomePageState extends State<MyHomePage> {
         page = PastLogsPage(editMode: pastLogsEditMode);
         pageHeader = 'Past Logs';
       case 2:
-        page = ReflectionPage(editMode: reflectionEditMode);
-        pageHeader = 'Reflection';
+        //only allow if in experimental group
+        if (Globals.group.compareTo('experimental') == 0) {
+          page = ReflectionPage(editMode: reflectionEditMode);
+          pageHeader = 'Reflection';
+        } else {
+          throw UnimplementedError('no widget for $currentPageIndex');
+        }
       default:
         throw UnimplementedError('no widget for $currentPageIndex');
     }
@@ -209,20 +220,30 @@ class _MyHomePageState extends State<MyHomePage> {
           });
         },
         selectedIndex: currentPageIndex,
-        destinations: [
-          NavigationDestination(
-            icon: Icon(Icons.edit), 
-            label: 'Log',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.book), 
-            label: 'Past Logs',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.psychology), 
-            label: 'Reflect',
-          ),
-        ],
+        destinations: 
+          Globals.group.compareTo('experimental') == 0 ? [  //experimental group
+            NavigationDestination(
+              icon: Icon(Icons.edit), 
+              label: 'Log',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.book), 
+              label: 'Past Logs',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.psychology), 
+              label: 'Reflect',
+            ),
+          ] : [ //control group
+            NavigationDestination(
+              icon: Icon(Icons.edit), 
+              label: 'Log',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.book), 
+              label: 'Past Logs',
+            ),
+          ],
       ),
         body: Column(
         children: [
