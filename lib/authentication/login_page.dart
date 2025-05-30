@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/authentication/auth_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 
 class LoginPage extends StatefulWidget {
@@ -93,12 +94,12 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   Text('I agree to the '),
                   InkWell(
-                    child: Text('Terms of Use',
+                    child: Text('Privacy Policy',
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.primary
                       )
                     ),
-                    onTap: () {} //ADD TERMS OF USE ONCE I HAVE THEM!!
+                    onTap: () => launchUrl(Uri.parse('https://gratitude-buddy-privacy.netlify.app/'))
                   )
                 ],
               )
