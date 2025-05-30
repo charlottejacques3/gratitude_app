@@ -57,9 +57,9 @@ class _CongratsPageState extends State<CongratsPage> {
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-            Spacer(
-              flex: 1
-            ),
+            // Spacer(
+            //   flex: 1
+            // ),
             Text('Good work!',
               style: Theme.of(context).textTheme.headlineLarge!,
               textAlign: TextAlign.center,
@@ -73,8 +73,8 @@ class _CongratsPageState extends State<CongratsPage> {
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge!,
             ),
-            Wrap(
-              alignment: WrapAlignment.center,
+            Row(
+              // alignment: WrapAlignment.center,
               children: [
                 MoodButton(moodNum: 1, icon: Icons.sentiment_very_dissatisfied, onClick: () => selectMood(1), selectedMood: selectedMood, iconColour: Color.fromARGB(255, 250, 100, 100)),
                 MoodButton(moodNum: 2, icon: Icons.sentiment_dissatisfied, onClick: () => selectMood(2), selectedMood: selectedMood, iconColour: Color.fromARGB(255, 250, 142, 100)),

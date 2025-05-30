@@ -51,23 +51,20 @@ class _LogEmotionsPageState extends State<LogEmotionsPage> {
             SizedBox(height: 30),
 
             //logging space
-            Flexible(
-              fit: FlexFit.loose,
-              child: TextFormField(
-                controller: logController,
-                keyboardType: TextInputType.multiline,
-                minLines: 5,
-                maxLines: 15,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter some text';
-                  }
-                  return null;
-                },
+            TextFormField(
+              controller: logController,
+              keyboardType: TextInputType.multiline,
+              minLines: 5,
+              maxLines: 15,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
               ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter some text';
+                }
+                return null;
+              },
             ),
 
             //buttons
