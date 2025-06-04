@@ -64,6 +64,7 @@ dependencies:
   pdfrx: ^1.1.28
   connectivity_plus: ^6.1.4
   markdown_widget: ^2.3.2+8
+  fl_chart: ^1.0.0
 
 dev_dependencies:
   flutter_test:

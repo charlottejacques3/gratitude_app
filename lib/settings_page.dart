@@ -251,6 +251,9 @@ import 'package:gratitude_app/utilities/globals.dart';
                       exact: true,
                       wakeup: true
                     );
+
+                    //back to previous page
+                    Navigator.pop(context);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Please enter a valid time.')),
@@ -338,6 +341,9 @@ import 'package:gratitude_app/utilities/globals.dart';
                           ),
                           SizedBox(height: 10,),
                           Text('Please only fill out these questionnaires once the study period has concluded!',
+                            textAlign: TextAlign.center,
+                          ),
+                          Text('You will not be able to access the app after you fill out these questionnaires.',
                             textAlign: TextAlign.center,
                           ),
                           Row(

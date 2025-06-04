@@ -113,7 +113,7 @@ class _LoginPageState extends State<LoginPage> {
                   //check if agreed to terms
                   if (!agreeToTerms) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please accept the Terms of Use')),
+                      const SnackBar(content: Text('Please accept the Privacy Policy')),
                     );
                   } else {
                     await AuthService().signup(
