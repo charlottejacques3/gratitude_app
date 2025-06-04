@@ -28,6 +28,26 @@ String formatDate(String isoDate) {
   return formatted;
 }
 
+String formatDateShort(String isoDate) {
+  DateTime date = DateTime.parse(isoDate);
+  String formatted;
+  int daysAgo = calculateDifference(date);
+
+  if (daysAgo == 0) {
+    formatted = 'Today';
+  } else if (daysAgo == 1) {
+    formatted = 'Yesterday';
+  } else if (daysAgo <= 6){
+    formatted = DateFormat('EEEE', 'en_US').format(date);
+  } else if (daysAgo <= 364) {
+    formatted = DateFormat('MMMMEEEEd', 'en_US').format(date);
+  } else {
+    formatted = DateFormat.yMMMMEEEEd().format(date);
+  }
+
+  return formatted;
+}
+
 
 //am/pm to 24 hours
 Map<String, int> amPmTo24(String time, String amPm) {

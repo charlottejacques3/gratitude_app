@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gratitude_app/logs_model.dart';
+import 'package:gratitude_app/stats_page.dart';
 import 'package:gratitude_app/utilities/globals.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
@@ -153,6 +154,14 @@ class _MyHomePageState extends State<MyHomePage> {
         } else {
           throw UnimplementedError('no widget for $currentPageIndex');
         }
+      case 3: 
+        //only allow if in experimental group
+        if (Globals.group.compareTo('experimental') == 0) {
+          page = StatsPage();
+          pageHeader = 'Statistics';
+        } else {
+          throw UnimplementedError('no widget for $currentPageIndex');
+        }
       default:
         throw UnimplementedError('no widget for $currentPageIndex');
     }
@@ -241,6 +250,10 @@ class _MyHomePageState extends State<MyHomePage> {
             NavigationDestination(
               icon: Icon(Icons.psychology), 
               label: 'Reflect',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.show_chart), 
+              label: 'Statistics',
             ),
           ] : [ //control group
             NavigationDestination(
