@@ -134,7 +134,7 @@ class _StrategiesPageState extends State<StrategiesPage> {
       appBar: AppBar(
         centerTitle: true,
         title: 
-          Text('Log Gratitude',
+          Text('Reframing',
             style: Theme.of(context).textTheme.titleLarge!.copyWith(
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold

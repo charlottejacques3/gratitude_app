@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:gratitude_app/logs_model.dart';
+import 'package:gratitude_app/main.dart';
+import 'package:provider/provider.dart';
 
 
 class FinalPage extends StatefulWidget {
@@ -17,7 +20,7 @@ class _FinalPageState extends State<FinalPage> {
       appBar: AppBar(
         centerTitle: true,
         title: 
-          Text('Log Gratitude',
+          Text('Reframing',
             style: Theme.of(context).textTheme.titleLarge!.copyWith(
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold
@@ -43,10 +46,10 @@ class _FinalPageState extends State<FinalPage> {
             //bring back to main page
             ElevatedButton(
               onPressed: () {
-                for(var i = 0; i < 4; i++) {
-                  Navigator.pop(context);
-                }
-                Navigator.pop(context, {'guided':true, 'guiding_stage':'strategies'});
+                final prov = Provider.of<LogsModel>(context, listen:false);
+                prov.setGuidingStage('strategies');
+                prov.setInspoUsed('');
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(startingPageIndex: 0)));
               }, 
               child: Text("Let's do it!"))
           ],

@@ -2,7 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:gratitude_app/guiding_pages/strategies_page.dart';
+import 'package:gratitude_app/logs_model.dart';
+import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/utilities/globals.dart';
+import 'package:provider/provider.dart';
 
 
 class CBTPage extends StatefulWidget {
@@ -64,7 +67,7 @@ class _CBTPageState extends State<CBTPage> {
       appBar: AppBar(
         centerTitle: true,
         title: 
-          Text('Log Gratitude',
+          Text('Reframing',
             style: Theme.of(context).textTheme.titleLarge!.copyWith(
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold
@@ -190,10 +193,10 @@ class _CBTPageState extends State<CBTPage> {
                         dbRef.push().set(reframingLogs);
                   
                         //go back to log page
-                        for(var i = 0; i < 2; i++) {
-                          Navigator.pop(context);
-                        }
-                        Navigator.pop(context, {'guided':true, 'guiding_stage':'thought_traps'});
+                        final prov = Provider.of<LogsModel>(context, listen:false);
+                        prov.setInspoUsed('');
+                        prov.setGuidingStage('thought_traps');
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(startingPageIndex: 0)));
                       }, 
                       child: Text("I've thought of something to log!",
                         textAlign: TextAlign.center,

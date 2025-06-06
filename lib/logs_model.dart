@@ -10,6 +10,10 @@ class LogsModel extends ChangeNotifier {
   UnmodifiableListView<String> get imageUrls => UnmodifiableListView(_imageUrls);
   int _numImages = 0;
   int get numImages => _numImages;
+  String _inspoUsed = '';
+  String get inspoUsed => _inspoUsed;
+  String _guidingStage = '';
+  String get guidingStage => _guidingStage;
 
 
   void addTextLog(DynamicFormWidget log, bool preloaded) {
@@ -63,6 +67,16 @@ class LogsModel extends ChangeNotifier {
   void removeAllImageUrls() {
     _imageUrls = [];
     _numImages = 0;
+    notifyListeners();
+  }
+
+  void setInspoUsed(String inspo) {
+    _inspoUsed = inspo;
+    notifyListeners();
+  }
+
+  void setGuidingStage(String stage) {
+    _guidingStage = stage;
     notifyListeners();
   }
 }

@@ -2,7 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:gratitude_app/guiding_pages/cbt_page.dart';
+import 'package:gratitude_app/logs_model.dart';
+import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/utilities/globals.dart';
+import 'package:provider/provider.dart';
 
 
 class LogEmotionsPage extends StatefulWidget {
@@ -32,7 +35,7 @@ class _LogEmotionsPageState extends State<LogEmotionsPage> {
       appBar: AppBar(
         centerTitle: true,
         title: 
-          Text('Log Gratitude',
+          Text('Reframing',
             style: Theme.of(context).textTheme.titleLarge!.copyWith(
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold
@@ -90,8 +93,13 @@ class _LogEmotionsPageState extends State<LogEmotionsPage> {
                         }
                   
                         //go back to log page
-                        Navigator.pop(context);
-                        Navigator.pop(context, {'guided':true, 'guiding_stage':'log_emotions'});
+                        final prov = Provider.of<LogsModel>(context, listen:false);
+                        prov.setGuidingStage('log_emotions');
+                        prov.setInspoUsed('');
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(startingPageIndex: 0)));
+
+                        // Navigator.pop(context);
+                        // Navigator.pop(context, {'guided':true, 'guiding_stage':'log_emotions'});
                       }, 
                       child: Text("I've thought of something to log!",
                         textAlign: TextAlign.center,
@@ -132,6 +140,23 @@ class _LogEmotionsPageState extends State<LogEmotionsPage> {
           ]
         ),
       ),
+      // bottomNavigationBar: NavigationBar(
+      //   destinations: [  //experimental group
+      //     NavigationDestination(
+      //       icon: Icon(Icons.edit), 
+      //       label: 'Log',
+      //     ),
+      //     NavigationDestination(
+      //       icon: Icon(Icons.book), 
+      //       label: 'Past Logs',
+      //     ),
+      //     NavigationDestination(
+      //       icon: Icon(Icons.psychology), 
+      //       label: 'Reflect',
+      //     ),
+      //   ]
+      // ),
+      // floatingActionButton: FloatingActionButton.extended(onPressed: () {}, label: Text('Switch strategies')),
     );
   }
 }

@@ -30,6 +30,12 @@ class _CongratsPageState extends State<CongratsPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    print('REFRAMED: ${widget.reframed}');
+  }
+
+  @override
   void dispose() {
     super.dispose();
     adviceController.dispose();

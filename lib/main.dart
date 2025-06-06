@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:gratitude_app/guiding_pages/inspiration_page.dart';
+import 'package:gratitude_app/guiding_pages/main_reframing_page.dart';
 import 'package:gratitude_app/logs_model.dart';
-import 'package:gratitude_app/stats_page.dart';
 import 'package:gratitude_app/utilities/globals.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
@@ -73,6 +74,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
+    //only allow portrait
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+
     //set styles for the app
     Color bg = Color.fromARGB(255, 250, 240, 230);
     return MaterialApp(
@@ -136,34 +143,42 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    
-    //select the correct page to load
     Widget page;
-    switch (currentPageIndex) {
-      case 0:
-        page = GratitudeLogPage();
-        pageHeader = 'Log Gratitude';
-      case 1:
-        page = PastLogsPage(editMode: pastLogsEditMode);
-        pageHeader = 'Past Logs';
-      case 2:
-        //only allow if in experimental group
-        if (Globals.group.compareTo('experimental') == 0) {
+    
+    //select the correct page to load for experimental
+    if (Globals.group.compareTo('experimental') == 0) {
+      switch (currentPageIndex) {
+        case 0:
+          page = GratitudeLogPage();
+          pageHeader = 'Log Gratitude';
+        case 1:
+          page = InspirationPage();
+          pageHeader = 'Inspiration';
+        case 2: 
+          page = MainReframingPage();
+          pageHeader = 'Reframing';
+        case 3:
           page = ReflectionPage(editMode: reflectionEditMode);
           pageHeader = 'Reflection';
-        } else {
+        case 4:
+          page = PastLogsPage(editMode: pastLogsEditMode);
+          pageHeader = 'Past Logs';
+        default:
           throw UnimplementedError('no widget for $currentPageIndex');
-        }
-      case 3: 
-        //only allow if in experimental group
-        if (Globals.group.compareTo('experimental') == 0) {
-          page = StatsPage();
-          pageHeader = 'Statistics';
-        } else {
+      }
+    }
+    //select the correct page to load for control
+    else {
+      switch (currentPageIndex) {
+        case 0:
+          page = GratitudeLogPage();
+          pageHeader = 'Log Gratitude';
+        case 1:
+          page = PastLogsPage(editMode: pastLogsEditMode);
+          pageHeader = 'Past Logs';
+        default:
           throw UnimplementedError('no widget for $currentPageIndex');
-        }
-      default:
-        throw UnimplementedError('no widget for $currentPageIndex');
+      }
     }
 
     return Scaffold(
@@ -176,7 +191,7 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
 
             //add edit button for past logs page
-            currentPageIndex == 1 ?
+            (currentPageIndex == 1 && Globals.group.compareTo('experimental') != 0) || (currentPageIndex == 4 && Globals.group.compareTo('experimental') == 0)?
             Expanded(
               child: Align(
                 alignment: Alignment.centerLeft,
@@ -191,7 +206,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             )
             : //add edit button for reflection page
-            currentPageIndex == 2 ?
+            currentPageIndex == 3 ?
             Expanded(
               child: Align(
                 alignment: Alignment.centerLeft,
@@ -244,16 +259,20 @@ class _MyHomePageState extends State<MyHomePage> {
               label: 'Log',
             ),
             NavigationDestination(
-              icon: Icon(Icons.book), 
-              label: 'Past Logs',
+              icon: Icon(Icons.lightbulb),
+              label: 'Ideas'
             ),
             NavigationDestination(
-              icon: Icon(Icons.psychology), 
+              icon: Icon(Icons.psychology),
+              label: 'Reframe'
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.spa), 
               label: 'Reflect',
             ),
             NavigationDestination(
-              icon: Icon(Icons.show_chart), 
-              label: 'Statistics',
+              icon: Icon(Icons.book), 
+              label: 'Past Logs',
             ),
           ] : [ //control group
             NavigationDestination(
@@ -265,7 +284,7 @@ class _MyHomePageState extends State<MyHomePage> {
               label: 'Past Logs',
             ),
           ],
-      ),
+        ),
         body: Column(
         children: [
           Expanded(

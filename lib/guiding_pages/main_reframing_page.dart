@@ -3,22 +3,21 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:gratitude_app/guiding_pages/inspiration_page.dart';
 import 'package:gratitude_app/guiding_pages/log_emotions_page.dart';
 import  'dart:math';
 import 'package:gratitude_app/utilities/globals.dart';
 import 'package:gratitude_app/utilities/widgets.dart';
 
 
-class GuidingPage extends StatefulWidget {
-  const GuidingPage({super.key});
+class MainReframingPage extends StatefulWidget {
+  const MainReframingPage({super.key});
 
   @override
-  State<GuidingPage> createState() => _GuidingPageState();
+  State<MainReframingPage> createState() => _MainReframingPageState();
 }
 
 
-class _GuidingPageState extends State<GuidingPage> {
+class _MainReframingPageState extends State<MainReframingPage> {
 
   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group)
                                                           .child(FirebaseAuth.instance.currentUser!.uid)
@@ -65,22 +64,12 @@ class _GuidingPageState extends State<GuidingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: 
-          Text('Log Gratitude',
-            style: Theme.of(context).textTheme.titleLarge!.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.bold
-            ),
-          )
-      ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: ListView(
           children: [
             SizedBox(height: 30),
-            Text("That's okay! Sometimes we have days like that.",
+            Text("To fully reap the benefits of gratitude, it can help to reframe your negative emotions.",
               style: Theme.of(context).textTheme.titleMedium!,
               textAlign: TextAlign.center,
             ),
@@ -88,47 +77,46 @@ class _GuidingPageState extends State<GuidingPage> {
 
             //show advice if there is any
             selectedAdvice.isNotEmpty ? 
-            Text('Remember, as past you said:\n$selectedAdvice',
-              style: Theme.of(context).textTheme.titleMedium!,
-              textAlign: TextAlign.center,
-            )
-            
-            : Container(),
-            SizedBox(height: 20,),
+            Column(
+              children: [
+                Text('Remember, as past you said:',
+                  style: Theme.of(context).textTheme.titleMedium!,
+                  textAlign: TextAlign.center,
+                ),
+                LayoutBuilder(
+                  builder: (BuildContext context, BoxConstraints constraints) {
+                    return Container(
+                      width: constraints.maxWidth,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(5)),
+                        border: Border.all(
+                          width: 0.5,
+                          color: Colors.grey
+                        )
+                      ),
+                      child: Text(selectedAdvice,
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  }
+                )
+              ],
+            ) : Container(),
+            SizedBox(height: 20,),  
 
-            Text("How would you like to move forward?",
-              style: Theme.of(context).textTheme.titleMedium!,
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 30),  
-
-            //inspiration button
+            //start button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: SwitchedColourButton(
-                text: 'Give me some inspiration!', 
-                onClick: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const InspirationPage())
-                  );
-                },
-              )
-            ), 
-
-            //guiding button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: SwitchedColourButton(
-                text: "I want to work through what's bothering me", 
+                text: 'Get Started', 
                 onClick: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const LogEmotionsPage())
                   );
-                }, 
+                },
               )
-            ),      
+            ),     
           ],
         ),
       )

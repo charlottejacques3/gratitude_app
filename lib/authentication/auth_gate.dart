@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gratitude_app/authentication/login_page.dart';
 import 'package:gratitude_app/main.dart';
+import 'package:gratitude_app/select_method_page.dart';
 import 'package:gratitude_app/study_pages/study_complete_page.dart';
 import 'package:gratitude_app/study_pages/demographics_page.dart';
 import 'package:gratitude_app/study_pages/questionnaire_page.dart';
 import 'package:gratitude_app/study_pages/withdraw_page.dart';
+import 'package:gratitude_app/utilities/globals.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
@@ -86,6 +88,8 @@ class AuthGate extends StatelessWidget {
         // SharedPreferences prefs = await SharedPreferences.getInstance();
         if (!snapshot.hasData) {
           return LoginPage();
+        } else if (Globals.group.compareTo('experimental') == 0) {
+          return SelectMethodPage();
         }
         return MyHomePage(startingPageIndex: 0,);
       },

@@ -64,6 +64,7 @@ class LabeledRadio extends StatelessWidget {
   }
 }
 
+
 class YesNoRadio extends StatelessWidget {
   const YesNoRadio({
     super.key,
@@ -117,13 +118,13 @@ class YesNoRadio extends StatelessWidget {
   }
 }
 
+
 class DynamicFormWidget extends StatelessWidget {
 
   const DynamicFormWidget({super.key, required this.logController});
 
   final TextEditingController logController; 
   // final dynamic manageFormList;
-
 
   @override
   Widget build(BuildContext context) {
@@ -156,3 +157,51 @@ class DynamicFormWidget extends StatelessWidget {
     );
   }
 }
+
+
+// class BottomNavBar extends StatelessWidget {
+
+//   const BottomNavBar({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+
+//     return NavigationBar(
+//         onDestinationSelected: (int index) {
+//           //change currentIndex based on what's been selected
+//           setState(() {
+//             currentPageIndex = index;
+//           });
+//         },
+//         selectedIndex: currentPageIndex,
+//         destinations: 
+//           Globals.group.compareTo('experimental') == 0 ? [  //experimental group
+//             NavigationDestination(
+//               icon: Icon(Icons.edit), 
+//               label: 'Log',
+//             ),
+//             NavigationDestination(
+//               icon: Icon(Icons.book), 
+//               label: 'Past Logs',
+//             ),
+//             NavigationDestination(
+//               icon: Icon(Icons.psychology), 
+//               label: 'Reflect',
+//             ),
+//             NavigationDestination(
+//               icon: Icon(Icons.show_chart), 
+//               label: 'Statistics',
+//             ),
+//           ] : [ //control group
+//             NavigationDestination(
+//               icon: Icon(Icons.edit), 
+//               label: 'Log',
+//             ),
+//             NavigationDestination(
+//               icon: Icon(Icons.book), 
+//               label: 'Past Logs',
+//             ),
+//           ],
+//         );
+//   }
+// }

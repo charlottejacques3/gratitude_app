@@ -5,11 +5,11 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:gratitude_app/congrats_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gratitude_app/logs_model.dart';
+import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/utilities/globals.dart';
 import 'package:gratitude_app/utilities/widgets.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:provider/provider.dart';
-import 'guiding_pages/main_guiding_page.dart';
 import 'package:image_picker/image_picker.dart';
 enum ImageSourceType { gallery, camera }
 
@@ -29,9 +29,8 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
   DatabaseReference dbUserRef = FirebaseDatabase.instance.ref().child(Globals.group)
                                                           .child(FirebaseAuth.instance.currentUser!.uid);
 
-  bool guided = false; //keeps track of whether they worked through emotions in this session
-  String guidedStage = '';
-  String inspirationUsed = ''; //keeps track of the type of inspiration used, if applicable
+  // bool guided = true; //keeps track of whether they worked through emotions in this session
+  // String guidedStage = '';
 
   //get images
   void handleImageUpload(var source) async {
@@ -75,7 +74,6 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
   void initState() {
     super.initState();
     setState(() {
-      guided = false;
       dbUserRef.keepSynced(true);
     });
   }
@@ -342,6 +340,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                 //update stats
                 DatabaseReference statsRef = dbUserRef.child('Stats');
                 final snapshot = await statsRef.get();
+                final prov = Provider.of<LogsModel>(context, listen:false);
                 if (snapshot.exists) {
                   final data = snapshot.value as Map<dynamic, dynamic>;
 
@@ -383,6 +382,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                   // }
 
                   //set inspiration used, if applicable
+                  String inspirationUsed = prov.inspoUsed;
                   if (inspirationUsed.isNotEmpty) {
                     try {
                       if (data['inspo_to_log'] != null) {
@@ -402,7 +402,9 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                   }
 
                   //set guiding used, if applicable
-                  if (guided && guidedStage.isNotEmpty) {
+                  String guidedStage = prov.guidingStage;
+                  print(guidedStage);
+                  if (guidedStage.isNotEmpty) {
                     try {
                       if (data['guiding_to_log'] != null) {
                         statsRef.child('guiding_to_log').update({
@@ -431,6 +433,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                     // });
                     if (Globals.group.compareTo('experimental') == 0) {
                       Map<String, int> guidingRecord = {'log_emotions': 0, 'thought_traps': 0, 'strategies': 0};
+                      String guidedStage = prov.guidingStage;
                       if (guidedStage.isNotEmpty) {
                         guidingRecord[guidedStage] = 1;
                       }
@@ -445,12 +448,15 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                 if (nonEmptyLogs) {
                   Navigator.push(
                     context, 
-                    MaterialPageRoute(builder: (context) => CongratsPage(reframed: guided,))
+                    MaterialPageRoute(builder: (context) => CongratsPage(reframed: prov.guidingStage.isNotEmpty,))
                   ).then((_) {
                     //update page
                     setState(() {
-                      guided = false;
-                      Provider.of<LogsModel>(context, listen:false).resetTextLogs();
+                      // guided = false;
+                      final prov = Provider.of<LogsModel>(context, listen:false);
+                      prov.resetTextLogs();
+                      prov.setGuidingStage('');
+                      prov.setInspoUsed('');
                       // dynamicForms = [DynamicFormWidget(key: Key('1'), logController: TextEditingController())];
                       dbRef.keepSynced(true);
                     });
@@ -461,57 +467,77 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
             ),
           ),
           
-          //button to send to inspiration page
+          //help button
           Globals.group.compareTo('experimental') == 0 ? 
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: ElevatedButton(
-              style: Theme.of(context).elevatedButtonTheme.style!.copyWith(
-                backgroundColor: WidgetStatePropertyAll<Color>(Color.fromARGB(255, 249, 241, 237)),
-              ),
-              onPressed: () async {
-                final preloaded = await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const GuidingPage())
-                );
-
-                if (preloaded != null) {
-                  setState(() {
-                    //if there is preloaded data from the inspiration page, set it
-                    if (preloaded.containsKey('type') && preloaded.containsKey('log')) {
-                      final prov = Provider.of<LogsModel>(context, listen:false);
-                      if (preloaded['type'].compareTo('text') == 0) {
-                        prov.addTextLog(DynamicFormWidget(key: Key('1'), logController: TextEditingController(text: preloaded['log'])), true);
-                        // dynamicForms.add(DynamicFormWidget(key: Key('1'), logController: TextEditingController(text: preloaded['log'])));
-                      } else if (preloaded['type'].compareTo('image') == 0) {
-                        // imageUrls.add(preloaded['log']);
-                        // numImages++;
-                        prov.addImageUrl(preloaded['log']);
-                        prov.incNumImages();
-                      }
-                    }
-
-                    //save the inspo type that was used
-                    if(preloaded.containsKey('inspo')) {
-                      inspirationUsed = preloaded['inspo'];
-                    }
-
-                    //keep track of whether they worked through their emotions in that session
-                    if (preloaded.containsKey('guided')) {
-                      guided = preloaded['guided'];
-                    }
-                    if (preloaded.containsKey('guiding_stage')) {
-                      guidedStage = preloaded['guiding_stage'];
-                    }
-                  });
-                }
-              },
-              child: Text("Help, I can't think of anything!",
-                style: TextStyle(
-                  color: Color.fromARGB(255, 209, 108, 103)
+            child: MenuAnchor(
+              menuChildren: [
+                MenuItemButton(
+                  child: Text('Give me some inspiration!'),
+                  onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(startingPageIndex: 1))),
                 ),
-                textAlign: TextAlign.center,
-              )
+                MenuItemButton(
+                  child: Text("I want to work through what's bothering me"),
+                  onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(startingPageIndex: 2))),
+                )
+              ],
+              builder: (BuildContext context, MenuController controller, Widget? child) {
+                return ElevatedButton(
+                  style: Theme.of(context).elevatedButtonTheme.style!.copyWith(
+                    backgroundColor: WidgetStatePropertyAll<Color>(Color.fromARGB(255, 249, 241, 237)),
+                  ),
+                  onPressed: () {
+                    print('OPENING!');
+                    if (controller.isOpen) {
+                      controller.close();
+                    } else {
+                      controller.open();
+                    }
+                    // final preloaded = await Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(builder: (context) => const GuidingPage())
+                    // );
+                
+                    // if (preloaded != null) {
+                    //   setState(() {
+                    //     //if there is preloaded data from the inspiration page, set it
+                    //     if (preloaded.containsKey('type') && preloaded.containsKey('log')) {
+                    //       final prov = Provider.of<LogsModel>(context, listen:false);
+                    //       if (preloaded['type'].compareTo('text') == 0) {
+                    //         prov.addTextLog(DynamicFormWidget(key: Key('1'), logController: TextEditingController(text: preloaded['log'])), true);
+                    //         // dynamicForms.add(DynamicFormWidget(key: Key('1'), logController: TextEditingController(text: preloaded['log'])));
+                    //       } else if (preloaded['type'].compareTo('image') == 0) {
+                    //         // imageUrls.add(preloaded['log']);
+                    //         // numImages++;
+                    //         prov.addImageUrl(preloaded['log']);
+                    //         prov.incNumImages();
+                    //       }
+                    //     }
+                
+                    //     //save the inspo type that was used
+                    //     // if(preloaded.containsKey('inspo')) {
+                    //     //   inspirationUsed = preloaded['inspo'];
+                    //     // }
+                
+                    //     //keep track of whether they worked through their emotions in that session
+                    //     // if (preloaded.containsKey('guided')) {
+                    //     //   guided = preloaded['guided'];
+                    //     // }
+                    //     // if (preloaded.containsKey('guiding_stage')) {
+                    //     //   guidedStage = preloaded['guiding_stage'];
+                    //     // }
+                    //   });
+                    // }
+                  },
+                  child: Text("Help, I can't think of anything!",
+                    style: TextStyle(
+                      color: Color.fromARGB(255, 209, 108, 103)
+                    ),
+                    textAlign: TextAlign.center,
+                  )
+                );
+              }
             ),
           ) : Container(),
         ],

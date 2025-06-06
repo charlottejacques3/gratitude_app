@@ -223,7 +223,7 @@ class _ReflectionPageState extends State<ReflectionPage> {
                   Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                      builder: (BuildContext context) => MyHomePage(startingPageIndex: 2,)
+                      builder: (BuildContext context) => MyHomePage(startingPageIndex: Globals.group.compareTo('experimental') == 0 ? 3 : 2,)
                     )
                   );
                 }, 

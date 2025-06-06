@@ -343,7 +343,7 @@ class _PastLogsPageState extends State<PastLogsPage> {
                   Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                      builder: (BuildContext context) => MyHomePage(startingPageIndex: 1,)
+                      builder: (BuildContext context) => MyHomePage(startingPageIndex: Globals.group.compareTo('experimental') == 0 ? 4 : 1,)
                     )
                   );
                 }, 

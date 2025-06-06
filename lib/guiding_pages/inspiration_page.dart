@@ -6,7 +6,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:gratitude_app/logs_model.dart';
+import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/utilities/globals.dart';
+import 'package:gratitude_app/utilities/widgets.dart';
+import 'package:provider/provider.dart';
 import '../utilities/date_functions.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -65,7 +69,7 @@ class _InspirationPageState extends State<InspirationPage> {
                           'What is one good thing that has happened today?',
                           'What place makes you feel calm and happy?',
                           'What is a song/movie/TV show that you are grateful for?',
-                          'What impportant life lesson have you learned that you are grateful for?',
+                          'What important life lesson have you learned that you are grateful for?',
                           'Think of a recent memory that you are grateful for.',
                           'Can you think of a teacher or mentor who you are grateful for?',
                           'What is your favourite holiday or tradition?',
@@ -337,16 +341,16 @@ class _InspirationPageState extends State<InspirationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: 
-          Text('Log Gratitude',
-            style: Theme.of(context).textTheme.titleLarge!.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.bold
-            ),
-          ),
-      ),
+      // appBar: AppBar(
+      //   centerTitle: true,
+      //   title: 
+      //     Text('Log Gratitude',
+      //       style: Theme.of(context).textTheme.titleLarge!.copyWith(
+      //         color: Theme.of(context).colorScheme.primary,
+      //         fontWeight: FontWeight.bold
+      //       ),
+      //     ),
+      // ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Center(
@@ -488,31 +492,44 @@ class _InspirationPageState extends State<InspirationPage> {
                     child: Text('Log this!'),
                     onPressed: () async {
                       // Navigator.pop(context);
+                      final prov = Provider.of<LogsModel>(context, listen:false);
                       if (inspoType.compareTo('Random Past Log') == 0) {
                         //send past log data back to main page
-                        Map<String, String> logData = {'type': selectedPastLogType, 'log': selectedPastLog, 'inspo': inspoType};
-                        Navigator.pop(context);
-                        Navigator.pop(context, logData);
+                        if (selectedPastLogType.compareTo('text') == 0) {
+                          print('text inspo');
+                          prov.addTextLog(DynamicFormWidget(key: Key('1'), logController: TextEditingController(text: selectedPastLog)), true);
+                        } else if (selectedPastLogType.compareTo('image') == 0) {
+                          prov.addImageUrl(selectedPastLog);
+                          prov.incNumImages();
+                        }
+                        // Map<String, String> logData = {'type': selectedPastLogType, 'log': selectedPastLog, 'inspo': inspoType};
+                        // Navigator.pop(context);
+                        // Navigator.pop(context, logData);
                       } else if (inspoType.compareTo('Random Photo') == 0) {
                         //send image to firebase
                         try {
                           String url = await saveImageToFirebase();
-                          print('URL: $url');
-                          Map<String, String> logData = {'type': 'image', 'log': url, 'inspo': inspoType};
-                          Navigator.pop(context);
-                          Navigator.pop(context, logData);
+                          prov.addImageUrl(url);
+                          prov.incNumImages();
+                          // Map<String, String> logData = {'type': 'image', 'log': url, 'inspo': inspoType};
+                          // Navigator.pop(context);
+                          // Navigator.pop(context, logData);
                         } catch(e) {
                           print('Error saving to Firebase');
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('Error saving image')),
                           );
-                          Navigator.pop(context);
-                        Navigator.pop(context);
+                        //   Navigator.pop(context);
+                        // Navigator.pop(context);
                         }
-                      } else {
-                        Navigator.pop(context);
-                        Navigator.pop(context, {'inspo': inspoType});
-                      }
+                      } 
+                      prov.setInspoUsed(inspoType);
+                      prov.setGuidingStage('');
+                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(startingPageIndex: 0)));
+                      // else {
+                      //   Navigator.pop(context);
+                      //   Navigator.pop(context, {'inspo': inspoType});
+                      // }
                     }
                   ),
                   SizedBox(width: 20),
