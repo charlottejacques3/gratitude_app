@@ -10,6 +10,7 @@ import 'package:gratitude_app/logs_model.dart';
 import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/utilities/globals.dart';
 import 'package:gratitude_app/utilities/widgets.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:provider/provider.dart';
 import '../utilities/date_functions.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -84,6 +85,7 @@ class _InspirationPageState extends State<InspirationPage> {
                           ];
   int selectedPromptIndex = 0;
   bool photoPermission = false;
+  bool connection = true;
 
   Map<String, int> inspoStats = {'Gratitude Prompt': 0, 'Random Photo': 0, 'Random Past Log': 0};
 
@@ -98,15 +100,15 @@ class _InspirationPageState extends State<InspirationPage> {
   @override
   void dispose() async{
     super.dispose();
-    // print('LISTENER VALUE: $listener');
+    // print('DISPOSING');
     if (listener1 != null) {
-      print('HELLO CANCELLING LISTENER');
       await listener1!.cancel();
+      // print('CANCELLING LISTENER1');
     }
     if (listener2 != null) {
-      print('HELLO CANCELLING LISTENER');
       await listener2!.cancel();
     }
+    // print('LISTENERS: $listener1, $listener2');
     sendStats();
   }
 
@@ -131,10 +133,16 @@ class _InspirationPageState extends State<InspirationPage> {
   //check whether there are logs/permissions for photos
   void initialChecks() async {
 
+    //check for internet
+    bool conn = await InternetConnection().hasInternetAccess;
+    setState(() {
+      connection = conn;
+    });
+
     //check for random photo
     final PermissionState ps = await PhotoManager.requestPermissionExtend();
     print('photos: $ps');
-    if (ps.isAuth) {
+    if (ps.isAuth && connection) {
       setState(() {
         photoPermission = true;
         possibleInspoTypes.add('Random Photo');
@@ -144,10 +152,25 @@ class _InspirationPageState extends State<InspirationPage> {
 
     //check if there are logs
     listener1 = dbUserRef.child('GratitudeLogs').onValue.listen((event) {
+      print('READING');
       DataSnapshot dataSnapshot = event.snapshot;
       if (dataSnapshot.value != null) {
         Map<dynamic, dynamic> values =  dataSnapshot.value as Map<dynamic, dynamic>;
-        if (values.isNotEmpty) {
+
+        //look for non-images if there's no internet
+        bool validLogs = false;
+        if (connection) {
+          validLogs = values.isNotEmpty;
+        } else {
+          for (dynamic value in values.values) {
+            if (value['type'].compareTo('text') == 0) {
+              validLogs = true;
+              break;
+            }
+          }
+        }
+
+        if (validLogs) {
           setState(() {
             possibleInspoTypes.add('Random Past Log');
             selectedInspoTypes.add('Random Past Log');
@@ -191,7 +214,7 @@ class _InspirationPageState extends State<InspirationPage> {
   }
 
   //dialog if the random log/photo don't work
-  void dialog(String text, Function() actionButton, String actionButtonText) {
+  void dialog(String text, Function() actionButton, String actionButtonText, bool twoButtons) {
     showDialog(
       context: context,
       builder: (BuildContext context) => Dialog(
@@ -208,17 +231,19 @@ class _InspirationPageState extends State<InspirationPage> {
               ),
               Row(
                 children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ElevatedButton(
-                        onPressed: () => Navigator.pop(context), 
-                        child: Text('Cancel', 
-                          textAlign: TextAlign.center,
-                        )
+                  twoButtons ? 
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context), 
+                          child: Text('Cancel', 
+                            textAlign: TextAlign.center,
+                          )
+                        ),
                       ),
-                    ),
-                  ),
+                    )
+                  : Container(),
 
                   //confirm opt out
                   Expanded(
@@ -256,8 +281,17 @@ class _InspirationPageState extends State<InspirationPage> {
         List<dynamic> keys = values.keys.toList();
 
         //pick random key
-        final randomNum = Random().nextInt(values.length);
-        dynamic pastLogKey = keys[randomNum];
+        bool validPastLog = false;
+        dynamic pastLogKey;
+        while (!validPastLog) {
+          final randomNum = Random().nextInt(values.length);
+          pastLogKey = keys[randomNum];
+
+          //check if it's an image for internet
+          if (connection || values[pastLogKey]['type'].compareTo('text') == 0) {
+            validPastLog = true;
+          } 
+        }
 
         //format the date
         String formatted = formatDate(values[pastLogKey]['date']);
@@ -605,22 +639,33 @@ class _InspirationPageState extends State<InspirationPage> {
                                         else {
                                           // String msg = '';
                                           if (e.compareTo('Random Photo') == 0) {
-                                            dialog(
-                                              'Please allow complete access to the camera roll to use this feature',
-                                              () {
-                                                PhotoManager.openSetting();
-                                              },
-                                              'Open Settings'
-                                            );
+                                            if (!connection) {
+                                              dialog(
+                                                'Please connect to the internet to use this feature',
+                                                () {
+                                                  Navigator.pop(context);
+                                                },
+                                                'Okay',
+                                                false
+                                              );
+                                            } else {
+                                              dialog(
+                                                'Please allow complete access to the camera roll to use this feature',
+                                                () {
+                                                  PhotoManager.openSetting();
+                                                },
+                                                'Open Settings',
+                                                true
+                                              );
+                                            }
                                           } else if (e.compareTo('Random Past Log') == 0) {
                                               dialog(
                                                 'Please add a log to use this feature',
                                                 () {
-                                                  Navigator.pop(context);
-                                                  Navigator.pop(context);
-                                                  Navigator.pop(context);
+                                                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(startingPageIndex: 0)));
                                                 },
-                                                'Add a Log'
+                                                'Add a Log',
+                                                true
                                               );
                                           } else {
                                             ScaffoldMessenger.of(context).showSnackBar(

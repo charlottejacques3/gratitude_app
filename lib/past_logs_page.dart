@@ -22,7 +22,8 @@ class _PastLogsPageState extends State<PastLogsPage> {
   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group)
                                                           .child(FirebaseAuth.instance.currentUser!.uid);
                                                           // .child('GratitudeLogs');
-  StreamSubscription<DatabaseEvent>? listener;
+  StreamSubscription<DatabaseEvent>? logListener;
+  StreamSubscription<DatabaseEvent>? moodListener;
   List<Map<dynamic, dynamic>> gratitudeLogs = [];
   Map<String, Map<String, List<Map<String, String>>>> categorizedLogs = {};
   Map<String, int> moodsByDate = {};
@@ -37,19 +38,20 @@ class _PastLogsPageState extends State<PastLogsPage> {
   @override
   void initState() {
     super.initState();
-    dbRef.keepSynced(true);
+    // dbRef.keepSynced(true);
     
-    listener = dbRef.onValue.listen((event) async {
+    logListener = dbRef.child('GratitudeLogs').onValue.listen((event) async {
       //re-initialize gratitudeLogs to empty
       gratitudeLogs = [];
 
       DataSnapshot dataSnapshot = event.snapshot;
       if (dataSnapshot.value != null) {
         Map<dynamic, dynamic> values = dataSnapshot.value as Map<dynamic, dynamic>;
+        print('INITIAL VALUES: ${values}');
 
         //look through logs
-        if (values['GratitudeLogs'] != null) {
-          Map<dynamic, dynamic> logs = values['GratitudeLogs'];
+        // if (values['GratitudeLogs'] != null) {
+          Map<dynamic, dynamic> logs = values;//['GratitudeLogs'];
           logs.forEach((key, value) {
             if (mounted) {
               try {
@@ -114,32 +116,15 @@ class _PastLogsPageState extends State<PastLogsPage> {
               }
             }
           }
-        }
+        // }
 
         print('LOGS: $categorizedLogs');
-
-        //look through moods and group by date + pick the most recent one
-        if (values['Moods'] != null) {
-          List<dynamic> moods = [];
-          values['Moods'].forEach((k,v) => moods.add(v));
-          moods.sort((a, b) => a['date'].compareTo(b['date']));
-          for(final moodLog in moods) {
-            if (mounted) {
-              // String formatted = formatDate(moodLog['date']);
-              setState(() {
-                try {
-                  moodsByTime[moodLog['date']] = moodLog['mood'];
-                } on Exception catch (e) {
-                  print('error: $e');
-                }
-              });
-            }
-          }
-        }
       }
-      setState(() {
-        loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          loading = false;
+        });
+      }
 
       if (!connected && containsImages) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -147,13 +132,40 @@ class _PastLogsPageState extends State<PastLogsPage> {
         );
       }
     });
+
+    //listen for moods
+    moodListener = dbRef.child('Moods').onValue.listen((event) async {
+
+      DataSnapshot dataSnapshot = event.snapshot;
+      if (dataSnapshot.value != null) {
+        Map<dynamic, dynamic> values = dataSnapshot.value as Map<dynamic, dynamic>;
+        List<dynamic> moods = [];
+        values.forEach((k,v) => moods.add(v));
+        moods.sort((a, b) => a['date'].compareTo(b['date']));
+        for(final moodLog in moods) {
+          if (mounted) {
+            // String formatted = formatDate(moodLog['date']);
+            setState(() {
+              try {
+                moodsByTime[moodLog['date']] = moodLog['mood'];
+              } on Exception catch (e) {
+                print('error: $e');
+              }
+            });
+          }
+        }
+      }
+    });
   }
 
   @override
   void dispose() {
     super.dispose();
-    if (listener != null) {
-      listener!.cancel();
+    if (logListener != null) {
+      logListener!.cancel();
+    }
+    if (moodListener != null) {
+      moodListener!.cancel();
     }
   }
 
