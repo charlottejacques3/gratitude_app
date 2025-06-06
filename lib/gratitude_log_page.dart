@@ -316,7 +316,6 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                   }
 
                   //send all image urls to database
-                  print('IMAGES: ${Provider.of<LogsModel>(context, listen:false).imageUrls}');
                   for (final url in Provider.of<LogsModel>(context, listen:false).imageUrls) {
                     nonEmptyLogs = true;
                     //map to a dictionary
@@ -357,32 +356,35 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                   });
                   
                   //check if today is in dates list
-                  // if (data['days_used'] != null) {
-                  //   bool todayAdded = false;
-                  //   List<dynamic> dates = [];
-                  //   for (final date in data['days_used']) {
-                  //     DateTime dt = DateTime.parse(date);
-                  //     if (dt.day == DateTime.now().day) {
-                  //       todayAdded = true;
-                  //       dates.add(date);
-                  //     }
-                  //   }
-                  //   print('INITIAL: $dates');
-                  //   if (!todayAdded) {
-                  //     dates.add(DateTime.now().toIso8601String());
-                  //     print('AFTER: $dates');
-                  //     // print(data['days_used'].runtimeType);
-                  //     // List<dynamic> prevDays = data['days_used'];
-                  //     // prevDays.add(DateTime.now().toIso8601String());
-                  //     statsRef.update({
-                  //       'days_used': dates//data['days_used'].add(DateTime.now().toIso8601String())
-                  //     });
-                  //   }
-                  // } else {
-                  //   statsRef.update({
-                  //     'days_used': [DateTime.now().toIso8601String()]
-                  //   });
-                  // }
+                  if (data['days_used'] != null) {
+                    bool todayAdded = false;
+                    print('PREV DATA: ${data['days_used']}, type: ${data['days_used'].runtimeType}');
+                    List<dynamic> dates = [];
+                    for (final date in data['days_used']) {
+                      DateTime dt = DateTime.parse(date);
+                      print('DT: $dt');
+                      if (dt.day == DateTime.now().day) {
+                        todayAdded = true;
+                      } else {
+                        dates.add(date);
+                      }
+                    }
+                    // print('INITIAL: $dates');
+                    if (!todayAdded) {
+                      dates.add(DateTime.now().toIso8601String());
+                      // print('AFTER: $dates');
+                      // print(data['days_used'].runtimeType);
+                      // List<dynamic> prevDays = data['days_used'];
+                      // prevDays.add(DateTime.now().toIso8601String());
+                      statsRef.update({
+                        'days_used': dates//data['days_used'].add(DateTime.now().toIso8601String())
+                      });
+                    }
+                  } else {
+                    statsRef.update({
+                      'days_used': [DateTime.now().toIso8601String()]
+                    });
+                  }
 
                   //set inspiration used, if applicable
                   String inspirationUsed = prov.inspoUsed;
@@ -491,7 +493,6 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                     backgroundColor: WidgetStatePropertyAll<Color>(Color.fromARGB(255, 249, 241, 237)),
                   ),
                   onPressed: () {
-                    print('OPENING!');
                     if (controller.isOpen) {
                       controller.close();
                     } else {
