@@ -292,19 +292,21 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                 DatabaseReference dbRef = dbUserRef.child('GratitudeLogs');
                 int numLogs = 0; //keep track of number of logs
                 bool nonEmptyLogs = false;
+                String dateAdded = DateTime.now().toIso8601String();
                 try {
                   //send all text entries to database
                   for (final item in Provider.of<LogsModel>(context, listen:false).textLogs) {
                     String log = item.logController.text;
                     if (log.isNotEmpty) { //don't add empty entries
                       nonEmptyLogs = true;
-                      numLogs++;
                       //map to a dictionary
-                      Map<String, String> gratitudeLogs = {
+                      Map<String, dynamic> gratitudeLogs = {
                         'gratitude_item': log,
-                        'date': DateTime.now().toIso8601String(),
-                        'type': 'text'
+                        'date': dateAdded,
+                        'type': 'text',
+                        'number': numLogs
                       };
+                      numLogs++;
                       //push creates a unique key
                       dbRef.push().set(gratitudeLogs);
               
@@ -317,13 +319,14 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                   print('IMAGES: ${Provider.of<LogsModel>(context, listen:false).imageUrls}');
                   for (final url in Provider.of<LogsModel>(context, listen:false).imageUrls) {
                     nonEmptyLogs = true;
-                    numLogs++;
                     //map to a dictionary
-                    Map<String, String> gratitudeImages = {
+                    Map<String, dynamic> gratitudeImages = {
                       'gratitude_item': url,
-                      'date': DateTime.now().toIso8601String(),
-                      'type': 'image'
+                      'date': dateAdded,
+                      'type': 'image',
+                      'number': numLogs,
                     };
+                    numLogs++;
                     //send to database
                     dbRef.push().set(gratitudeImages);
                     //remove images from screen
@@ -448,7 +451,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                 if (nonEmptyLogs) {
                   Navigator.push(
                     context, 
-                    MaterialPageRoute(builder: (context) => CongratsPage(reframed: prov.guidingStage.isNotEmpty,))
+                    MaterialPageRoute(builder: (context) => CongratsPage(reframed: prov.guidingStage.isNotEmpty, dateAdded: dateAdded,))
                   ).then((_) {
                     //update page
                     setState(() {

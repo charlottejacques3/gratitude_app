@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -25,8 +24,9 @@ class _PastLogsPageState extends State<PastLogsPage> {
                                                           // .child('GratitudeLogs');
   StreamSubscription<DatabaseEvent>? listener;
   List<Map<dynamic, dynamic>> gratitudeLogs = [];
-  Map<String, List<Map<String, String>>> categorizedLogs = {};
+  Map<String, Map<String, List<Map<String, String>>>> categorizedLogs = {};
   Map<String, int> moodsByDate = {};
+  Map<String, int> moodsByTime = {};
   List<IconData> moods = [Icons.sentiment_very_dissatisfied, Icons.sentiment_dissatisfied, Icons.sentiment_neutral, Icons.sentiment_satisfied_alt, Icons.sentiment_very_satisfied_rounded];
   List<Color> colours = [Color.fromARGB(255, 250, 100, 100), Color.fromARGB(255, 250, 142, 100), Color.fromARGB(255, 214, 185, 87), Color.fromARGB(255, 152, 201, 97), Color.fromARGB(255, 105, 182, 159)];
   bool loading = true;
@@ -65,12 +65,16 @@ class _PastLogsPageState extends State<PastLogsPage> {
           });
 
           //sort by date 
-          gratitudeLogs.sort((a, b) => a['date'].compareTo(b['date']));
+          gratitudeLogs.sort((a, b) {
+            int byDate = a['date'].compareTo(b['date']);
+            if (byDate != 0) return byDate;
+            return a['number'].compareTo(b['number']); 
+          });
 
           //group by date
           for (final item in gratitudeLogs) {
             String formatted = formatDate(item['date']);
-            item['date'] = formatted;
+            // item['date'] = formatted;
 
             //so it will update if there's no internet
             bool connection = true;
@@ -95,9 +99,16 @@ class _PastLogsPageState extends State<PastLogsPage> {
               if (mounted) {
                 setState(() {
                   if (categorizedLogs.containsKey(formatted)) {
-                    categorizedLogs[formatted]!.add(data);
+                    if (categorizedLogs[formatted]!.containsKey(item['date'])) {
+                      categorizedLogs[formatted]![item['date']]!.add(data);
+                    } else {
+                      categorizedLogs[formatted]![item['date']] = [data];
+                    }
+                    // categorizedLogs[formatted]!.add(data);
                   } else {
-                    categorizedLogs[formatted] = [data];
+                    categorizedLogs[formatted] = {
+                      item['date']: [data]
+                    };
                   }
                 });
               }
@@ -105,28 +116,27 @@ class _PastLogsPageState extends State<PastLogsPage> {
           }
         }
 
+        print('LOGS: $categorizedLogs');
+
         //look through moods and group by date + pick the most recent one
         if (values['Moods'] != null) {
           List<dynamic> moods = [];
           values['Moods'].forEach((k,v) => moods.add(v));
           moods.sort((a, b) => a['date'].compareTo(b['date']));
-          // moods.forEach((key, value) {
           for(final moodLog in moods) {
             if (mounted) {
-              String formatted = formatDate(moodLog['date']);
+              // String formatted = formatDate(moodLog['date']);
               setState(() {
                 try {
-                  moodsByDate[formatted] = moodLog['mood'];
+                  moodsByTime[moodLog['date']] = moodLog['mood'];
                 } on Exception catch (e) {
-                  // TODO
                   print('error: $e');
                 }
               });
             }
-          };
+          }
         }
       }
-
       setState(() {
         loading = false;
       });
@@ -173,7 +183,7 @@ class _PastLogsPageState extends State<PastLogsPage> {
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, parentIndex) {
-                      List<Map<String, String>> lst = categorizedLogs.values.elementAt(categorizedLogs.length - 1 - parentIndex);
+                      Map<String, List<Map<String, String>>> dateMap = categorizedLogs.values.elementAt(categorizedLogs.length - 1 - parentIndex);
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -189,118 +199,182 @@ class _PastLogsPageState extends State<PastLogsPage> {
                               ),
                               SizedBox(width: 15,),
                               //display mood if available
-                              moodsByDate.containsKey(categorizedLogs.keys.elementAt(categorizedLogs.length - 1 - parentIndex))
-                              ? Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.all(Radius.circular(5)),
-                                  border: Border.all(
-                                    width: 0.5,
-                                    color: Colors.black
-                                  ),
-                                  color: colours[moodsByDate[categorizedLogs.keys.elementAt(categorizedLogs.length - 1 - parentIndex)]! - 1],
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text('Mood of the day: ',
-                                        style: Theme.of(context).textTheme.bodyLarge!
-                                      ),
-                                      Icon(moods[moodsByDate[categorizedLogs.keys.elementAt(categorizedLogs.length - 1 - parentIndex)]! - 1],
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              ) : Container(),
+                              // moodsByDate.containsKey(categorizedLogs.keys.elementAt(categorizedLogs.length - 1 - parentIndex))
+                              // ? Container(
+                              //   decoration: BoxDecoration(
+                              //     borderRadius: BorderRadius.all(Radius.circular(5)),
+                              //     border: Border.all(
+                              //       width: 0.5,
+                              //       color: Colors.black
+                              //     ),
+                              //     color: colours[moodsByDate[categorizedLogs.keys.elementAt(categorizedLogs.length - 1 - parentIndex)]! - 1],
+                              //   ),
+                              //   child: Padding(
+                              //     padding: const EdgeInsets.all(8.0),
+                              //     child: Row(
+                              //       mainAxisSize: MainAxisSize.min,
+                              //       children: [
+                              //         Text('Mood of the day: ',
+                              //           style: Theme.of(context).textTheme.bodyLarge!
+                              //         ),
+                              //         Icon(moods[moodsByDate[categorizedLogs.keys.elementAt(categorizedLogs.length - 1 - parentIndex)]! - 1],
+                              //         )
+                              //       ],
+                              //     ),
+                              //   ),
+                              // ) : Container(),
                             ],
                           ),
                           SizedBox(height: 5,),
                           
+                          //boxes for individual log periods
                           ListView.builder(
-                            shrinkWrap: true,
+                            itemCount: dateMap.length,
                             physics: NeverScrollableScrollPhysics(),
-                            itemCount: lst.length,
-                            itemBuilder: (context, childIndex) {
+                            shrinkWrap: true,
+                            itemBuilder: (context, middleIndex) {
+                              List<Map<String, String>> lst = dateMap.values.elementAt(middleIndex);
                               return Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
-                                child: ListTile(
-                                  title: Builder(
-                                    builder: (context) {
-
-                                      //displaying text
-                                      if ('text'.compareTo(lst[childIndex]['type']!) == 0) { 
-                                        return Text(lst[childIndex]['log']!,
-                                          style: Theme.of(context).textTheme.bodyLarge!
-                                        );
-                                      } 
-                                      //displaying images
-                                      else if ('image'.compareTo(lst[childIndex]['type']!) == 0) {
-                                        //check internet connection
-                                        // bool connected = await InternetConnection().hasInternetAccess;
-                                        // if (!connected) {
-                                        //   return Text('No internet connection - please go online to view photo logs');
-                                        // }
-                                        try {
-                                          return ListTile(
-                                            title: Align(
-                                              alignment: Alignment.centerLeft,
-                                              child: Image.network(
-                                                lst[childIndex]['log']!,
-                                                height: 130,
-                                                loadingBuilder: (context, child, loadingProgress) {
-                                                  if (loadingProgress != null) {
-                                                    return Align(
-                                                      alignment: Alignment.centerLeft,
-                                                      child: Container(
-                                                        alignment: Alignment.center,
-                                                        height: 200,
-                                                        width: 200,
-                                                        child: CircularProgressIndicator()
-                                                      )
-                                                    );
-                                                  } else {
-                                                    return child;
-                                                  }
-                                                },
+                                padding: const EdgeInsets.all(8.0),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.all(Radius.circular(5)),
+                                    border: Border.all(
+                                      width: 0.5,
+                                      color: Colors.grey
+                                    )
+                                  ),
+                                  child: ListView(
+                                    physics: NeverScrollableScrollPhysics(),
+                                    shrinkWrap: true,
+                                    children: [
+                                      //display mood
+                                      moodsByTime.containsKey(dateMap.keys.elementAt(middleIndex)) ?
+                                        Row(
+                                          children: [
+                                            Flexible(
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                    borderRadius: BorderRadius.all(Radius.circular(5)),
+                                                    border: Border.all(
+                                                      width: 0.5,
+                                                      color: Colors.black
+                                                    ),
+                                                    color: colours[moodsByTime[dateMap.keys.elementAt(middleIndex)]! - 1],
+                                                  ),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(8.0),
+                                                    child: Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        Text('Mood: ',
+                                                          style: Theme.of(context).textTheme.bodyLarge!
+                                                        ),
+                                                        Icon(moods[moodsByTime[dateMap.keys.elementAt(middleIndex)]! - 1],
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
                                               ),
                                             ),
+                                          ],
+                                        )
+                                      : Container(),
+                                
+                                      //display logs
+                                      ListView.builder(
+                                        shrinkWrap: true,
+                                        physics: NeverScrollableScrollPhysics(),
+                                        itemCount: lst.length,
+                                        itemBuilder: (context, childIndex) {
+                                          return Padding(
+                                            padding: const EdgeInsets.only(left: 8.0),
+                                            child: ListTile(
+                                              title: Builder(
+                                                builder: (context) {
+                                      
+                                                  //displaying text
+                                                  if ('text'.compareTo(lst[childIndex]['type']!) == 0) { 
+                                                    return Text(lst[childIndex]['log']!,
+                                                      style: Theme.of(context).textTheme.bodyLarge!
+                                                    );
+                                                  } 
+                                                  //displaying images
+                                                  else if ('image'.compareTo(lst[childIndex]['type']!) == 0) {
+                                                    //check internet connection
+                                                    // bool connected = await InternetConnection().hasInternetAccess;
+                                                    // if (!connected) {
+                                                    //   return Text('No internet connection - please go online to view photo logs');
+                                                    // }
+                                                    try {
+                                                      return ListTile(
+                                                        title: Align(
+                                                          alignment: Alignment.centerLeft,
+                                                          child: Image.network(
+                                                            lst[childIndex]['log']!,
+                                                            height: 130,
+                                                            loadingBuilder: (context, child, loadingProgress) {
+                                                              if (loadingProgress != null) {
+                                                                return Align(
+                                                                  alignment: Alignment.centerLeft,
+                                                                  child: Container(
+                                                                    alignment: Alignment.center,
+                                                                    height: 200,
+                                                                    width: 200,
+                                                                    child: CircularProgressIndicator()
+                                                                  )
+                                                                );
+                                                              } else {
+                                                                return child;
+                                                              }
+                                                            },
+                                                          ),
+                                                        ),
+                                                      );
+                                                    } catch (e) {
+                                                      print('error displaying image: $e');
+                                                      return Container();
+                                                    }   
+                                                  } else {
+                                                    return Container();
+                                                  }
+                                                }
+                                              ),
+                                              contentPadding: widget.editMode ? EdgeInsets.only(left:0) : EdgeInsets.only(left:10),
+                                              dense: true,
+                                              visualDensity: VisualDensity(horizontal:VisualDensity.minimumDensity, vertical: VisualDensity.minimumDensity),
+                                              horizontalTitleGap: 0,
+                                              minLeadingWidth: 0,
+                                      
+                                              //add leading if in edit mode
+                                              leading: widget.editMode ? 
+                                                Checkbox(
+                                                  shape: CircleBorder(),
+                                                  value: idsToDelete.contains(lst[childIndex]['id']), 
+                                                  onChanged: (isSelected) {
+                                                    if (isSelected == true) {
+                                                    setState(() {
+                                                      idsToDelete.add(lst[childIndex]['id']); //if just selected, add to list
+                                                    });
+                                                  } else {
+                                                    setState(() {
+                                                      idsToDelete.remove(lst[childIndex]['id']); //if just unselected, remove from list
+                                                    });
+                                                  }
+                                                  }
+                                                ) : Container(width: 0,)
+                                              ) 
                                           );
-                                        } catch (e) {
-                                          print('error displaying image: $e');
-                                          return Container();
-                                        }   
-                                      } else {
-                                        return Container();
-                                      }
-                                    }
+                                        },
+                                      ),
+                                    ],
                                   ),
-                                  contentPadding: widget.editMode ? EdgeInsets.only(left:0) : EdgeInsets.only(left:10),
-                                  dense: true,
-                                  visualDensity: VisualDensity(horizontal:VisualDensity.minimumDensity, vertical: VisualDensity.minimumDensity),
-                                  horizontalTitleGap: 0,
-                                  minLeadingWidth: 0,
-
-                                  //add leading if in edit mode
-                                  leading: widget.editMode ? 
-                                    Checkbox(
-                                      shape: CircleBorder(),
-                                      value: idsToDelete.contains(lst[childIndex]['id']), 
-                                      onChanged: (isSelected) {
-                                        if (isSelected == true) {
-                                        setState(() {
-                                          idsToDelete.add(lst[childIndex]['id']); //if just selected, add to list
-                                        });
-                                      } else {
-                                        setState(() {
-                                          idsToDelete.remove(lst[childIndex]['id']); //if just unselected, remove from list
-                                        });
-                                      }
-                                      }
-                                    ) : Container(width: 0,)
-                                  ) 
+                                ),
                               );
-                            },
+                            }
                           ),
                         ],
                       );

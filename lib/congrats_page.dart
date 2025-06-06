@@ -6,9 +6,10 @@ import 'package:gratitude_app/utilities/widgets.dart';
 
 
 class CongratsPage extends StatefulWidget {
-  const CongratsPage({super.key, required this.reframed});
+  const CongratsPage({super.key, required this.reframed, required this.dateAdded});
 
   final bool reframed;
+  final String dateAdded;
 
   @override
   State<CongratsPage> createState() => _CongratsPageState();
@@ -144,7 +145,7 @@ class _CongratsPageState extends State<CongratsPage> {
                 if (selectedMood != 0) {
                   Map<String, dynamic> mood = {
                     'mood': selectedMood,
-                    'date': DateTime.now().toIso8601String()
+                    'date': widget.dateAdded
                   };
                   try {
                     dbRef.child('Moods').push().set(mood);
