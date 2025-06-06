@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gratitude_app/main.dart';
+import 'package:gratitude_app/select_method_page.dart';
 
 
 class TutorialPage extends StatefulWidget {
@@ -76,7 +76,7 @@ class _TutorialPageState extends State<TutorialPage> {
                           curPage++;
                         });
                       } else {
-                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyHomePage(startingPageIndex: 0,)));
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const SelectMethodPage()));
                       }
                     }, 
                     style: ButtonStyle(

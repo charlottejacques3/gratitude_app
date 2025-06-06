@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:gratitude_app/main.dart';
+import 'package:gratitude_app/select_method_page.dart';
 import 'package:gratitude_app/study_pages/study_complete_page.dart';
 import 'package:gratitude_app/study_pages/tutorial_page.dart';
 import 'package:gratitude_app/utilities/alarm_manager.dart';
@@ -34,7 +36,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
   List<Map<String, dynamic>> satisfactionQuestions = [
     {'question': "In most ways my life is close to ideal.", 'controller': TextEditingController()},
     {'question': "The conditions of my life are excellent.", 'controller': TextEditingController()},
-    {'question': "I am satisfied wih my life.", 'controller': TextEditingController()},
+    {'question': "I am satisfied with my life.", 'controller': TextEditingController()},
     {'question': "So far I have gotten the important things I want in life.", 'controller': TextEditingController()},
     {'question': "If I could live my life over, I would change almost nothing.", 'controller': TextEditingController()},
   ];
@@ -229,7 +231,13 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
 
       //send to tutorial page
       Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (BuildContext context) => const TutorialPage())
+        context, MaterialPageRoute(builder: (BuildContext context) {
+          if (Globals.group.compareTo('experimental') == 0) {
+            return SelectMethodPage();
+          } else {
+            return MyHomePage(startingPageIndex: 0);
+          }
+        })
       );
     } 
     

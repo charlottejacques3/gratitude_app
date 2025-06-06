@@ -17,8 +17,9 @@ class _SelectMethodPageState extends State<SelectMethodPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromARGB(150, 188, 143, 186),
+      backgroundColor: Color.fromARGB(248, 227, 196, 225),
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Color.fromARGB(0, 188, 143, 186),
         actions: [
           Padding(
