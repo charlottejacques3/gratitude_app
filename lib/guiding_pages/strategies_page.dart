@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/guiding_pages/final_page.dart';
+import 'package:gratitude_app/resources_page.dart';
 import 'package:gratitude_app/utilities/globals.dart';
 import 'strategy_widgets.dart';
 
@@ -248,6 +249,15 @@ class _StrategiesPageState extends State<StrategiesPage> {
                 ),
               ],
             ),
+            
+            //resources
+            SizedBox(height: 15,),
+            TextButton(
+              child: Text('Are you currently in crisis? View emergency mental health resources here'),
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => ResourcesPage()));
+              },
+            )
           ],
         ),
       )

@@ -4,6 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:gratitude_app/guiding_pages/cbt_page.dart';
 import 'package:gratitude_app/logs_model.dart';
 import 'package:gratitude_app/main.dart';
+import 'package:gratitude_app/resources_page.dart';
 import 'package:gratitude_app/utilities/globals.dart';
 import 'package:provider/provider.dart';
 
@@ -137,6 +138,15 @@ class _LogEmotionsPageState extends State<LogEmotionsPage> {
                 ),
               ],
             ),
+
+            //resources
+            SizedBox(height: 15,),
+            TextButton(
+              child: Text('Are you currently in crisis? View emergency mental health resources here'),
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => ResourcesPage()));
+              },
+            )
           ]
         ),
       ),
