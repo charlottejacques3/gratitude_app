@@ -4,6 +4,7 @@ import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/main.dart';
+import 'package:gratitude_app/study_pages/consent_form_page.dart';
 import 'package:gratitude_app/study_pages/demographics_page.dart';
 import 'package:gratitude_app/utilities/alarm_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,7 +23,7 @@ class AuthService {
       //send to consent form page
       Navigator.push(
         context, 
-        MaterialPageRoute(builder: (BuildContext context) => const DemographicsPage())//ConsentFormPage())
+        MaterialPageRoute(builder: (BuildContext context) => const ConsentFormPage())
       );
 
       //pick random group + save to sharedprefs + global variables

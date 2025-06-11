@@ -324,6 +324,7 @@ class _InspirationPageState extends State<InspirationPage> {
       final List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
         type: RequestType.image,
       );
+      print('ALBUMS: $albums');
       if (albums.isNotEmpty) {
         final AssetPathEntity cameraRoll = albums.first;
         photos = await cameraRoll.getAssetListPaged(page: 0, size: 100);
