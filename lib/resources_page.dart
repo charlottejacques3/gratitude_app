@@ -13,7 +13,7 @@ class _ResourcesPageState extends State<ResourcesPage> {
   Map<String, List<Map<String, String>>> resources = {
     'Canada': [
       {'name': 'Suicide Helpline', 'number': '988', 'text': '988', 'link':'https://988.ca/'},
-      {'name': 'BC Mental Health Support Line & Crisis Chat', 'number': '3106789', 'text': '123456789', 'link': 'https://www.crisiscentrechat.ca/'},
+      {'name': 'BC Mental Health Support Line & Crisis Chat', 'number': '3106789', 'link': 'https://www.crisiscentrechat.ca/'},
       {'name': 'Hope for Wellness Helpline (Indigenous support)', 'number': '18552423310', 'link':'https://www.hopeforwellness.ca/'},
       {'name': 'Trans Lifeline', 'number': '8773306366', 'link': 'https://translifeline.org/'},
     ],

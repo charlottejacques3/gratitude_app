@@ -312,19 +312,44 @@ class _InspirationPageState extends State<InspirationPage> {
     });
   }
 
-  //request permission for + get a random photo
-  Future<void> getRandomPhoto() async {
-
+  //request permission for + get albums
+  Future<List<AssetPathEntity>> getAlbums() async {
     final PermissionState ps = await PhotoManager.requestPermissionExtend();
 
     // permission granted, get the photos
     if (ps.isAuth) { //|| ps == PermissionState.limited) {
-      List<AssetEntity> photos = [];
+
+      //read from db which albums they've allowed
+      final snapshot = await dbUserRef.child('AllowedAlbums').get();
+      if (snapshot.exists) {
+        //FINISH SO IT ONLY RETURNS ALLOWED ALBUMS!!
+      }
       
       final List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
         type: RequestType.image,
       );
       print('ALBUMS: $albums');
+      return albums;
+    } else {
+      PhotoManager.openSetting();
+    }
+    return [];
+  }
+
+  //request permission for + get a random photo
+  Future<void> getRandomPhoto() async {
+
+    // final PermissionState ps = await PhotoManager.requestPermissionExtend();
+
+    // // permission granted, get the photos
+    // if (ps.isAuth) { //|| ps == PermissionState.limited) {
+      List<AssetEntity> photos = [];
+      
+      // final List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
+      //   type: RequestType.image,
+      // );
+      // print('ALBUMS: $albums');
+      List<AssetPathEntity> albums = await getAlbums();
       if (albums.isNotEmpty) {
         final AssetPathEntity cameraRoll = albums.first;
         photos = await cameraRoll.getAssetListPaged(page: 0, size: 100);
@@ -338,10 +363,10 @@ class _InspirationPageState extends State<InspirationPage> {
     } 
     
     //permission denied
-    else {
-      PhotoManager.openSetting();
-    }
-  }
+    // else {
+    //   PhotoManager.openSetting();
+    // }
+  // }
 
   //for saving to firebase
   Future<String> saveImageToFirebase() async {
@@ -371,6 +396,40 @@ class _InspirationPageState extends State<InspirationPage> {
       print('error storing images: $e');
       throw Error();
     }
+  }
+
+  void selectAlbumsDialog() async {
+    //get all albums
+    List<AssetPathEntity> allAlbums = await getAlbums();
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog( 
+          child: Padding(
+            padding: const EdgeInsets.all(15),
+            child: ListView(
+              children: [
+                Text('Please select some albums, containing photos that make you happy, that you would like to pull from.'),
+                ListView.builder(
+                  physics: NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: allAlbums.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      // leading: Checkbox(
+                      //   value: value, onChanged: onChanged
+                      // ),
+                      title: Text(allAlbums[index].name)
+                    );
+                  }
+                )
+              ],
+            ),
+          ),
+        );
+      }
+    );
   }
 
   @override
@@ -477,6 +536,10 @@ class _InspirationPageState extends State<InspirationPage> {
                                   height: 200,
                                   width: 200,
                                 ),
+                                TextButton(
+                                  onPressed: () => selectAlbumsDialog(),
+                                  child: Text('Select Albums')
+                                )
                               ],
                             ),
                           );
