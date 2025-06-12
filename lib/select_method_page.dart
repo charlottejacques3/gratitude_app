@@ -77,6 +77,7 @@ class NavigatorButton extends StatelessWidget {
     DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group)
                                                             .child(FirebaseAuth.instance.currentUser!.uid)
                                                             .child('Stats');
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: OutlinedButton(
@@ -88,6 +89,8 @@ class NavigatorButton extends StatelessWidget {
         ),
         onPressed: () async {
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(startingPageIndex: pageIndex)));
+
+          
 
           //convert page index to page name
           String pageName;

@@ -425,10 +425,15 @@ import 'package:gratitude_app/utilities/globals.dart';
                                       backgroundColor: WidgetStatePropertyAll<Color>(Color.fromARGB(255, 209, 108, 103)),
                                     ),
                                     onPressed: () async {
+                                      //add to withdrawn list
+                                      DatabaseReference dbRef = FirebaseDatabase.instance.ref();
+                                      dbRef.child('Withdrawn').push().set({
+                                        'uid': FirebaseAuth.instance.currentUser!.uid,
+                                        'group': Globals.group,
+                                        'date': DateTime.now().toIso8601String(),
+                                      });
                                       //delete data
-                                      DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group)
-                                                          .child(FirebaseAuth.instance.currentUser!.uid);
-                                      dbRef.remove();
+                                      dbRef.child(Globals.group).child(FirebaseAuth.instance.currentUser!.uid).remove();
                                       //log out
                                       await AuthService().signout(context: context);
                                       //send to withdraw page and save preferences

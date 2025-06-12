@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:flutter/material.dart';
 import 'package:gratitude_app/utilities/notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
@@ -42,7 +43,7 @@ Future<void> notificationScheduler() async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.reload();
   String? iso = prefs.getString('scheduled_notif_date');
-  if (iso == null || DateTime.parse(iso).day != DateTime.now().day || DateTime.parse(iso).isAfter(DateTime.now())) {
+  if (iso == null || !DateUtils.isSameDay(DateTime.parse(iso), DateTime.now()) || DateTime.parse(iso).isAfter(DateTime.now())) {
 
     //make sure the period isn't over for today
     DateTime rn = DateTime.now();

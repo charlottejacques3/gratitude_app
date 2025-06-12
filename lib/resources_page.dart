@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ResourcesPage extends StatefulWidget {
-  const ResourcesPage({super.key});
+  const ResourcesPage({super.key, this.withdrawn=false});
+
+  final bool withdrawn;
 
   @override
   State<ResourcesPage> createState() => _ResourcesPageState();
@@ -42,7 +44,7 @@ class _ResourcesPageState extends State<ResourcesPage> {
             fontWeight: FontWeight.bold
           ),
         ),
-        actions: [
+        actions: widget.withdrawn ? [] : [
           IconButton(
             icon: Icon(Icons.close),
             onPressed: () {

@@ -49,6 +49,7 @@ class AuthService {
       prefs.setInt('scheduled_minutes', 0);
       prefs.setBool('allow_ai', true);
       prefs.setBool('withdraw', false);
+      prefs.setBool('withdraw_in_crisis', false);
       prefs.setBool('consent_complete', false);
       prefs.setBool('demographics_complete', false);
       prefs.setBool('initial_questionnaires_complete', false);

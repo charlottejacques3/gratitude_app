@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gratitude_app/authentication/login_page.dart';
 import 'package:gratitude_app/main.dart';
+import 'package:gratitude_app/resources_page.dart';
 import 'package:gratitude_app/select_method_page.dart';
 import 'package:gratitude_app/study_pages/study_complete_page.dart';
 import 'package:gratitude_app/study_pages/demographics_page.dart';
@@ -47,11 +48,15 @@ class _ParticipantGateState extends State<ParticipantGate> {
                 bool? demographics = snapshot.data!.getBool('demographics_complete');
                 bool? questionnaire1 = snapshot.data!.getBool('initial_questionnaires_complete');
                 bool? studyComplete = snapshot.data!.getBool('study_complete');
+                bool? withdrawInCrisis = snapshot.data!.getBool('withdraw_in_crisis');
                 // if (consent == null || !consent) {
                 //   return ConsentFormPage();
                 // } 
                 if (studyComplete != null && studyComplete) {
                   return StudyCompletePage();
+                }
+                else if (withdrawInCrisis != null && withdrawInCrisis) {
+                  return ResourcesPage(withdrawn: true,);
                 }
                 else if (demographics != null && !demographics) {
                   return DemographicsPage();

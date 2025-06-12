@@ -18,7 +18,7 @@ class DemographicsPage extends StatefulWidget {
 class _DemographicsPageState extends State<DemographicsPage> {
 
   Map<String, dynamic> textQuestions = {
-    'Name': TextEditingController(),
+    // 'Name': TextEditingController(),
     'Age': TextEditingController(),
     'Gender': TextEditingController(),
     'Profession': TextEditingController()
@@ -140,10 +140,10 @@ class _DemographicsPageState extends State<DemographicsPage> {
             ),
 
             //basic questions
-            FormRow(
-              label: 'Name',
-              controller: textQuestions['Name']!,
-            ),
+            // FormRow(
+            //   label: 'Name',
+            //   controller: textQuestions['Name']!,
+            // ),
             Row( //age
               children: [
                 Text('Age'),

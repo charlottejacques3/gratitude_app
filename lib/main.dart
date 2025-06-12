@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:gratitude_app/study_pages/checkin_popup.dart';
 import 'package:gratitude_app/guiding_pages/inspiration_page.dart';
 import 'package:gratitude_app/guiding_pages/main_reframing_page.dart';
 import 'package:gratitude_app/logs_model.dart';
@@ -139,6 +140,28 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     currentPageIndex = widget.startingPageIndex;
+
+    checkinDialog();
+  }
+
+  void checkinDialog() async {
+    //show checkin dialog if applicable
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? lastIso = prefs.getString('last_checkin');
+    if (lastIso == null || !DateUtils.isSameDay(DateTime.parse(lastIso), DateTime.now())) {
+
+      //show the dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false, 
+        builder: (BuildContext context)  {
+          return CheckinPopup();
+        }
+      );
+
+      //update that it's been seen
+      prefs.setString('last_checkin', DateTime.now().toIso8601String());
+    }
   }
 
   @override
