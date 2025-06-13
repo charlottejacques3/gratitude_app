@@ -82,7 +82,8 @@ class _InspirationPageState extends State<InspirationPage> {
                           'What is a childhood experience that you are grateful for?',
                           'Think about a time when things worked out.',
                           'What are you grateful for about your home?',
-                          'Who was the last person that helped you?'
+                          'Who was the last person that helped you?',
+                          'What is your favourite food?'
                           ];
   int selectedPromptIndex = 0;
   bool photoPermission = false;
@@ -184,7 +185,7 @@ class _InspirationPageState extends State<InspirationPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool? asked = prefs.getBool('asked_photo_permission');
     print('PERMISSION STATE: $ps');
-    if ( asked != null && !asked) {
+    if (ps == PermissionState.denied && asked != null && !asked) {
       showDialog(
         context: context, 
         builder: (BuildContext context) => Dialog(

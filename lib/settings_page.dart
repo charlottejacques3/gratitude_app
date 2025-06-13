@@ -4,6 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gratitude_app/authentication/login_page.dart';
+import 'package:gratitude_app/resources_page.dart';
 import 'package:gratitude_app/study_pages/questionnaire_page.dart';
 import 'package:gratitude_app/study_pages/withdraw_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -379,6 +380,12 @@ import 'package:gratitude_app/utilities/globals.dart';
                     )
                   )
                 )
+              ),
+
+              //resources
+              InfoButton(
+                text: 'Mental Health Resources', 
+                action: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ResourcesPage()))
               ),
 
               //opt out of study

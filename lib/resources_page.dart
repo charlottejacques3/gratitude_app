@@ -17,16 +17,12 @@ class _ResourcesPageState extends State<ResourcesPage> {
       {'name': 'Suicide Helpline', 'number': '988', 'text': '988', 'link':'https://988.ca/'},
       {'name': 'BC Mental Health Support Line & Crisis Chat', 'number': '3106789', 'link': 'https://www.crisiscentrechat.ca/'},
       {'name': 'Hope for Wellness Helpline (Indigenous support)', 'number': '18552423310', 'link':'https://www.hopeforwellness.ca/'},
-      {'name': 'Trans Lifeline', 'number': '8773306366', 'link': 'https://translifeline.org/'},
+      {'name': 'Other mental health resources', 'link': 'https://www.mhrc.ca/mh-resources'}
     ],
     'United States': [
       {'name': 'Suicide Helpline', 'number': '988', 'text':'988',
       'link': 'https://988lifeline.org/'},
       {'name': 'Crisis Text Line (text HOME)', 'text': ' 741741?body=HOME', 'link': 'https://www.crisistextline.org/'},
-      {'name':'Veteran Crisis Line', 'number': '18002738255', 'text': '838255', 'link': 'https://www.veteranscrisisline.net/'},
-      {'name': 'Trevor Project (LGBTQ+ support, text START)', 'number': '18664887386', 
-     'text':'678678?body=START', 'link': 'https://www.thetrevorproject.org/get-help/'},
-      {'name': 'Trans Lifeline', 'number': '8775658860', 'link': 'https://translifeline.org/'},
     ],
     'Mexico': [
       {'name': 'SAPTEL (mental health crisis support)', 'number':'5552598121', 'link':'http://www.saptel.org.mx/index.html'}
@@ -60,16 +56,18 @@ class _ResourcesPageState extends State<ResourcesPage> {
           children: [
             Resource(name: 'For immediate emergency assistance, call 911 right away.', number: '911', link: null, textMess:null),
 
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton(
-                onPressed: () {
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: GestureDetector(
+                onTap: () {
                   var url = Uri.parse('https://findahelpline.com/');
                   launchUrl(url);
                 },
                 child: Text('Find A Helpline In Your Region',
                   style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                     color: Theme.of(context).colorScheme.primary,
+                    decoration: TextDecoration.underline,
+                    decorationColor: Theme.of(context).colorScheme.primary,
                   ),
                   textAlign: TextAlign.left,
                 )
@@ -142,13 +140,21 @@ class Resource extends StatelessWidget {
         mainAxisSize: MainAxisSize.max,
         children: [
           Expanded(
-            child: Text(name,
-            softWrap: true,
-              style: link == null ? Theme.of(context).textTheme.bodyLarge!
-              : Theme.of(context).textTheme.bodyLarge!.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-                decoration: TextDecoration.underline,
-                decorationColor: Theme.of(context).colorScheme.primary,
+            child: GestureDetector(
+              onTap: () {
+                if (link != null) {
+                  var url = Uri.parse(link);
+                  launchUrl(url);
+                }
+              },
+              child: Text(name,
+              softWrap: true,
+                style: link == null ? Theme.of(context).textTheme.bodyLarge!
+                : Theme.of(context).textTheme.bodyLarge!.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                  decoration: TextDecoration.underline,
+                  decorationColor: Theme.of(context).colorScheme.primary,
+                ),
               ),
             ),
           ),

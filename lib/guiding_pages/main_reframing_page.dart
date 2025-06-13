@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/guiding_pages/log_emotions_page.dart';
+import 'package:gratitude_app/resources_page.dart';
 import  'dart:math';
 import 'package:gratitude_app/utilities/globals.dart';
 import 'package:gratitude_app/utilities/widgets.dart';
@@ -104,6 +106,8 @@ class _MainReframingPageState extends State<MainReframingPage> {
             ) : Container(),
             SizedBox(height: 20,),  
 
+            
+
             //start button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -116,7 +120,57 @@ class _MainReframingPageState extends State<MainReframingPage> {
                   );
                 },
               )
-            ),     
+            ), 
+
+            //disclaimer
+            SizedBox(height: 20,),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(5)),
+                border: Border.all(
+                  width: 0.5,
+                  color: Colors.grey
+                ),
+                color: Color.fromARGB(100, 209, 108, 103)
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    Icon(Icons.error_outline,
+                      color: Color.fromARGB(255, 209, 108, 103),
+                    ),
+                    SizedBox(width: 5,),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          RichText(
+                            text: TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: 'Please note that this reframing process is not designed for those who are currently in crisis and/or in need of urgent and/or professional support. If you are currently in crisis, please reach out to a professional, or consult the ',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                ),
+                                TextSpan(
+                                  text:'resources list.',
+                                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                                    color: Theme.of(context).primaryColor,
+                                    decoration: TextDecoration.underline
+                                  ),
+                                  recognizer: TapGestureRecognizer()..onTap = () {
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => const ResourcesPage()));
+                                  },
+                                )
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ),    
           ],
         ),
       )
