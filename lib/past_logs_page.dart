@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:gratitude_app/main.dart';
@@ -31,7 +32,7 @@ class _PastLogsPageState extends State<PastLogsPage> {
   List<IconData> moods = [Icons.sentiment_very_dissatisfied, Icons.sentiment_dissatisfied, Icons.sentiment_neutral, Icons.sentiment_satisfied_alt, Icons.sentiment_very_satisfied_rounded];
   List<Color> colours = [Color.fromARGB(255, 250, 100, 100), Color.fromARGB(255, 250, 142, 100), Color.fromARGB(255, 214, 185, 87), Color.fromARGB(255, 152, 201, 97), Color.fromARGB(255, 105, 182, 159)];
   bool loading = true;
-  List<dynamic> idsToDelete = [];
+  Map<dynamic, Map<dynamic, dynamic>> idsToDelete = {};
   bool connected = true;
   bool containsImages = false;
 
@@ -47,7 +48,6 @@ class _PastLogsPageState extends State<PastLogsPage> {
       DataSnapshot dataSnapshot = event.snapshot;
       if (dataSnapshot.value != null) {
         Map<dynamic, dynamic> values = dataSnapshot.value as Map<dynamic, dynamic>;
-        print('INITIAL VALUES: ${values}');
 
         //look through logs
         // if (values['GratitudeLogs'] != null) {
@@ -117,8 +117,6 @@ class _PastLogsPageState extends State<PastLogsPage> {
             }
           }
         // }
-
-        print('LOGS: $categorizedLogs');
       }
       if (mounted) {
         setState(() {
@@ -365,15 +363,18 @@ class _PastLogsPageState extends State<PastLogsPage> {
                                               leading: widget.editMode ? 
                                                 Checkbox(
                                                   shape: CircleBorder(),
-                                                  value: idsToDelete.contains(lst[childIndex]['id']), 
+                                                  value: idsToDelete.containsKey(lst[childIndex]['id']), 
                                                   onChanged: (isSelected) {
                                                     if (isSelected == true) {
                                                     setState(() {
-                                                      idsToDelete.add(lst[childIndex]['id']); //if just selected, add to list
+                                                      idsToDelete[lst[childIndex]['id']] = {
+                                                        'type': lst[childIndex]['type'],
+                                                        'value': lst[childIndex]['log']
+                                                      }; //if just selected, add to dict
                                                     });
                                                   } else {
                                                     setState(() {
-                                                      idsToDelete.remove(lst[childIndex]['id']); //if just unselected, remove from list
+                                                      idsToDelete.remove(lst[childIndex]['id']); //if just unselected, remove from dict
                                                     });
                                                   }
                                                   }
@@ -420,11 +421,22 @@ class _PastLogsPageState extends State<PastLogsPage> {
                     }
                   }
                   //loop through logs to delete
-                  for (var id in idsToDelete) {
+                  idsToDelete.forEach((id, data) {
                     dbRef.child('GratitudeLogs').child(id).remove();
-                  }
+
+                    //delete image from cloud storage
+                    if (data['type'].compareTo('image') == 0) {
+                      print('image');
+                      final storage = FirebaseStorage.instance;
+                      Reference imgRef = storage.refFromURL(data['value']);  //FirebaseStorage.instance.ref().child("images").child(FirebaseAuth.instance.currentUser!.uid);
+                      imgRef.delete();
+                    }
+                  });
+                  // for (var id in idsToDelete) {
+                  //   dbRef.child('GratitudeLogs').child(id).remove();
+                  // }
                   setState(() {
-                    idsToDelete = [];
+                    idsToDelete = {};
                   });
                   Navigator.pushReplacement(
                   context,

@@ -54,6 +54,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
 
     Reference refImageDir = refRoot.child('images').child(uid); //get reference to storage root and the user's folder
     Reference refImage = refImageDir.child(filename); //create a reference for the image to be stored
+    
 
     //store file
     try {

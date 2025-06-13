@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/utilities/widgets.dart';
 
@@ -59,6 +60,9 @@ class LogsModel extends ChangeNotifier {
   }
 
   void removeImageUrl(int index) {
+    String url = _imageUrls.elementAt(index);
+    Reference imgRef = FirebaseStorage.instance.refFromURL(url);
+    imgRef.delete();
     _imageUrls.removeAt(index);
     _numImages--;
     notifyListeners();
