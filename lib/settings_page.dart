@@ -1,8 +1,10 @@
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gratitude_app/authentication/auth_service.dart';
 import 'package:gratitude_app/authentication/login_page.dart';
 import 'package:gratitude_app/resources_page.dart';
 import 'package:gratitude_app/study_pages/questionnaire_page.dart';
@@ -11,7 +13,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'utilities/date_functions.dart';
 import 'utilities/alarm_manager.dart';
-import 'authentication/auth_service.dart';
 import 'package:gratitude_app/utilities/globals.dart';
 // import 'view_consent_form.dart';
 
@@ -406,7 +407,7 @@ import 'package:gratitude_app/utilities/globals.dart';
                             textAlign: TextAlign.center,
                           ),
                           SizedBox(height: 10,),
-                          Text('If you choose to withdraw from the study, your data will be deleted and you will no longer be able to use the app.',
+                          Text('If you choose to withdraw from the study, your account will be deleted and you will no longer be able to use the app.',
                             textAlign: TextAlign.center,
                           ),
                           Row(
@@ -441,6 +442,8 @@ import 'package:gratitude_app/utilities/globals.dart';
                                       });
                                       //delete data
                                       dbRef.child(Globals.group).child(FirebaseAuth.instance.currentUser!.uid).remove();
+                                      Reference imgRef = FirebaseStorage.instance.ref().child('images').child(FirebaseAuth.instance.currentUser!.uid);
+                                      imgRef.delete();
                                       //log out
                                       await AuthService().signout(context: context);
                                       //send to withdraw page and save preferences

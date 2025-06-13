@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:gratitude_app/main.dart';
@@ -136,4 +138,25 @@ class AuthService {
 
     await FirebaseAuth.instance.signOut();
   }
+
+  //needs work
+  Future<void> deleteAccount({required BuildContext context}) async {
+    //delete data
+    DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group).child(FirebaseAuth.instance.currentUser!.uid);
+    dbRef.remove();
+
+    //delete images
+    Reference imgRef = FirebaseStorage.instance.ref().child('images').child(FirebaseAuth.instance.currentUser!.uid);
+    imgRef.delete();
+
+    //cancel past alarms and notifications
+    await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
+    final FlutterLocalNotificationsPlugin notificationsPlugin = FlutterLocalNotificationsPlugin();
+    await notificationsPlugin.cancelAll();
+
+    await FirebaseAuth.instance.currentUser?.delete();
+    await signout(context: context);
+  }
 }
+
+
