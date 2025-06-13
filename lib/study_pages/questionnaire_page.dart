@@ -7,6 +7,7 @@ import 'package:gratitude_app/select_method_page.dart';
 import 'package:gratitude_app/study_pages/study_complete_page.dart';
 import 'package:gratitude_app/study_pages/tutorial_page.dart';
 import 'package:gratitude_app/utilities/alarm_manager.dart';
+import 'package:gratitude_app/utilities/notification_service.dart';
 import 'package:gratitude_app/utilities/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
@@ -215,6 +216,20 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setBool('initial_questionnaires_complete', true);
 
+      //send to tutorial page
+      Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (BuildContext context) {
+          if (Globals.group.compareTo('experimental') == 0) {
+            return SelectMethodPage();
+          } else {
+            return MyHomePage(startingPageIndex: 0);
+          }
+        })
+      );
+
+      //set notifs
+      await NotificationService.initNotifications();
+
       //cancel past alarms to avoid backlog
       await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
 
@@ -227,17 +242,6 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
         allowWhileIdle: true,
         exact: true,
         wakeup: true
-      );
-
-      //send to tutorial page
-      Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (BuildContext context) {
-          if (Globals.group.compareTo('experimental') == 0) {
-            return SelectMethodPage();
-          } else {
-            return MyHomePage(startingPageIndex: 0);
-          }
-        })
       );
     } 
     

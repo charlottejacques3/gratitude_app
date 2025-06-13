@@ -12,6 +12,7 @@ import 'package:gratitude_app/utilities/globals.dart';
 import 'package:gratitude_app/utilities/widgets.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../utilities/date_functions.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -86,6 +87,7 @@ class _InspirationPageState extends State<InspirationPage> {
   int selectedPromptIndex = 0;
   bool photoPermission = false;
   bool connection = true;
+  List<dynamic> selectedAlbums = List.empty(growable: true);
 
   Map<String, int> inspoStats = {'Gratitude Prompt': 0, 'Random Photo': 0, 'Random Past Log': 0};
 
@@ -95,20 +97,18 @@ class _InspirationPageState extends State<InspirationPage> {
     dbUserRef.keepSynced(true);
     initialChecks();
     pickType();
+    getAllowedAlbums();
   }
 
   @override
   void dispose() async{
     super.dispose();
-    // print('DISPOSING');
     if (listener1 != null) {
       await listener1!.cancel();
-      // print('CANCELLING LISTENER1');
     }
     if (listener2 != null) {
       await listener2!.cancel();
     }
-    // print('LISTENERS: $listener1, $listener2');
     sendStats();
   }
 
@@ -140,9 +140,9 @@ class _InspirationPageState extends State<InspirationPage> {
     });
 
     //check for random photo
-    final PermissionState ps = await PhotoManager.requestPermissionExtend();
-    print('photos: $ps');
-    if (ps.isAuth && connection) {
+    await requestPermission();
+    final PermissionState ps = await PhotoManager.getPermissionState(requestOption: const PermissionRequestOption());//await PhotoManager.requestPermissionExtend();
+    if ((ps.isAuth || ps == PermissionState.limited) && connection) {
       setState(() {
         photoPermission = true;
         possibleInspoTypes.add('Random Photo');
@@ -152,7 +152,6 @@ class _InspirationPageState extends State<InspirationPage> {
 
     //check if there are logs
     listener1 = dbUserRef.child('GratitudeLogs').onValue.listen((event) {
-      print('READING');
       DataSnapshot dataSnapshot = event.snapshot;
       if (dataSnapshot.value != null) {
         Map<dynamic, dynamic> values =  dataSnapshot.value as Map<dynamic, dynamic>;
@@ -178,6 +177,60 @@ class _InspirationPageState extends State<InspirationPage> {
         }
       }
     });
+  }
+
+  Future<void> requestPermission() async {
+    final ps = await PhotoManager.getPermissionState(requestOption: const PermissionRequestOption());
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool? asked = prefs.getBool('asked_photo_permission');
+    print('PERMISSION STATE: $ps');
+    if ( asked != null && !asked) {
+      showDialog(
+        context: context, 
+        builder: (BuildContext context) => Dialog(
+          child: Padding(
+            padding: const EdgeInsets.all(15),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text('This app would like to request access to your camera roll in order to generate a random photo that might spark gratitude',
+                  textAlign: TextAlign.center,
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            prefs.setBool('asked_photo_permission', true);
+                            Navigator.pop(context);
+                          }, 
+                          child: Text('Deny')
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            Navigator.pop(context);
+                            await PhotoManager.requestPermissionExtend();
+                          }, 
+                          child: Text('Allow')
+                        ),
+                      ),
+                    )
+                  ],
+                )
+              ],
+            )
+          ),
+        )
+      );
+    }
   }
 
   //pick a category of inspiration
@@ -317,23 +370,27 @@ class _InspirationPageState extends State<InspirationPage> {
     final PermissionState ps = await PhotoManager.requestPermissionExtend();
 
     // permission granted, get the photos
-    if (ps.isAuth) { //|| ps == PermissionState.limited) {
-
-      //read from db which albums they've allowed
-      final snapshot = await dbUserRef.child('AllowedAlbums').get();
-      if (snapshot.exists) {
-        //FINISH SO IT ONLY RETURNS ALLOWED ALBUMS!!
-      }
+    if (ps.isAuth || ps == PermissionState.limited) {
       
       final List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
         type: RequestType.image,
       );
-      print('ALBUMS: $albums');
       return albums;
     } else {
       PhotoManager.openSetting();
     }
     return [];
+  }
+
+  void getAllowedAlbums() async {
+    //get list of selected albums from db
+    final snapshot = await dbUserRef.child('SelectedAlbums').get();
+    if (snapshot.exists) {
+      selectedAlbums = [];
+      setState(() {
+        selectedAlbums.addAll(snapshot.value as List<dynamic>);
+      });
+    }
   }
 
   //request permission for + get a random photo
@@ -348,18 +405,28 @@ class _InspirationPageState extends State<InspirationPage> {
       // final List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
       //   type: RequestType.image,
       // );
-      // print('ALBUMS: $albums');
       List<AssetPathEntity> albums = await getAlbums();
-      if (albums.isNotEmpty) {
-        final AssetPathEntity cameraRoll = albums.first;
-        photos = await cameraRoll.getAssetListPaged(page: 0, size: 100);
+      // if (albums.isNotEmpty) {
+      //   final AssetPathEntity cameraRoll = albums.first;
+      //   photos = await cameraRoll.getAssetListPaged(page: 0, size: 100);
+      // }
+      for (final album in albums) {
+        if (selectedAlbums.contains(album.name)) {
+          photos.addAll(await album.getAssetListPaged(page: 0, size: 100));
+        }
       }
 
       //get random photo
-      int rand = Random().nextInt(photos.length);
-      setState(() {
-        selectedPhoto = photos[rand];
-      });
+      if (photos.isNotEmpty) {
+        int rand = Random().nextInt(photos.length);
+        setState(() {
+          selectedPhoto = photos[rand];
+        });
+      } else { //photos list is empty
+        setState(() {
+          selectedPhoto = null;
+        });
+      }
     } 
     
     //permission denied
@@ -400,33 +467,58 @@ class _InspirationPageState extends State<InspirationPage> {
 
   void selectAlbumsDialog() async {
     //get all albums
-    List<AssetPathEntity> allAlbums = await getAlbums();
+    List<AssetPathEntity> allAlbums = await getAlbums(); //fix this function
+
+    
     
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Dialog( 
-          child: Padding(
-            padding: const EdgeInsets.all(15),
-            child: ListView(
-              children: [
-                Text('Please select some albums, containing photos that make you happy, that you would like to pull from.'),
-                ListView.builder(
-                  physics: NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  itemCount: allAlbums.length,
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      // leading: Checkbox(
-                      //   value: value, onChanged: onChanged
-                      // ),
-                      title: Text(allAlbums[index].name)
-                    );
-                  }
-                )
-              ],
-            ),
-          ),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog( 
+              child: Padding(
+                padding: const EdgeInsets.all(15),
+                child: ListView(
+                  children: [
+                    Text('Please select some albums, containing photos that make you happy, that you would like to pull from.'),
+                    ListView.builder(
+                      physics: NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: allAlbums.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          leading: Checkbox(
+                            value: selectedAlbums.contains(allAlbums[index].name), 
+                            onChanged: (isSelected) {
+                              //add to list
+                              if (isSelected == true) {
+                                setState(() {
+                                  selectedAlbums.add(allAlbums[index].name);
+                                });
+                              } else {
+                                setState(() {
+                                  selectedAlbums.remove(allAlbums[index].name);
+                                });
+                              }
+                            }
+                          ),
+                          title: Text(allAlbums[index].name)
+                        );
+                      }
+                    ),
+                    SwitchedColourButton(
+                      text: 'Update', 
+                      onClick: () {
+                        dbUserRef.update({'SelectedAlbums': selectedAlbums});
+                        Navigator.pop(context);
+                      }
+                    )
+                  ],
+                ),
+              ),
+            );
+          }
         );
       }
     );
@@ -512,12 +604,8 @@ class _InspirationPageState extends State<InspirationPage> {
                   
                   //pick a random photo
                   else if (inspoType.compareTo('Random Photo') == 0) {
-                    return selectedPhoto == null
-                      ? CircularProgressIndicator()
-                                
-                    //display photo
-                    : FutureBuilder<Uint8List?>(
-                      future: selectedPhoto!.thumbnailData,
+                    return FutureBuilder<Uint8List?>(
+                      future: selectedPhoto?.originBytes,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
                           return CircularProgressIndicator();
@@ -536,6 +624,7 @@ class _InspirationPageState extends State<InspirationPage> {
                                   height: 200,
                                   width: 200,
                                 ),
+                                SizedBox(height: 20,),
                                 TextButton(
                                   onPressed: () => selectAlbumsDialog(),
                                   child: Text('Select Albums')
@@ -544,7 +633,17 @@ class _InspirationPageState extends State<InspirationPage> {
                             ),
                           );
                         } else {
-                          return Text("No image found");
+                          return Column(
+                            children: [
+                              Text("No images found in your selected albums. Please select an album to use this feature.",
+                                textAlign: TextAlign.center,
+                              ),
+                              TextButton(
+                                onPressed: () => selectAlbumsDialog(),
+                                child: Text('Select Albums')
+                              )
+                            ],
+                          );
                         }
                       },
                     );
@@ -594,7 +693,6 @@ class _InspirationPageState extends State<InspirationPage> {
                       if (inspoType.compareTo('Random Past Log') == 0) {
                         //send past log data back to main page
                         if (selectedPastLogType.compareTo('text') == 0) {
-                          print('text inspo');
                           prov.addTextLog(DynamicFormWidget(key: Key('1'), logController: TextEditingController(text: selectedPastLog)), true);
                         } else if (selectedPastLogType.compareTo('image') == 0) {
                           prov.addImageUrl(selectedPastLog);
@@ -714,7 +812,7 @@ class _InspirationPageState extends State<InspirationPage> {
                                               );
                                             } else {
                                               dialog(
-                                                'Please allow complete access to the camera roll to use this feature',
+                                                'Please allow access to the camera roll to use this feature',
                                                 () {
                                                   PhotoManager.openSetting();
                                                 },

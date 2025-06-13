@@ -54,7 +54,7 @@ class _CheckinPopupState extends State<CheckinPopup> {
                 });
               }
             ),
-            Text('You that you are free to withdraw from this study at any point.'),
+            Text('You are free to withdraw from this study at any point.'),
             SwitchedColourButton(
               text: 'Continue', 
               onClick: () {

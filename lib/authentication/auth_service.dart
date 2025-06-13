@@ -54,6 +54,7 @@ class AuthService {
       prefs.setBool('demographics_complete', false);
       prefs.setBool('initial_questionnaires_complete', false);
       prefs.setBool('study_complete', false);
+      prefs.setBool('asked_photo_permission', false);
     } 
     
     //catch signup errors

@@ -39,7 +39,7 @@ void main() async {
   FirebaseDatabase.instance.setPersistenceEnabled(true);
 
   //init notifications
-  await NotificationService.initNotifications();
+  // await NotificationService.initNotifications();
   tz.initializeTimeZones();
 
   //initialize alarm manager

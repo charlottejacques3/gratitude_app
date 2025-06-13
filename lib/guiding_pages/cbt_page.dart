@@ -91,7 +91,7 @@ class _CBTPageState extends State<CBTPage> {
             ),
             Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
-              child: Text("Often, our thinking can fall into cognitive distortions called thought traps.",
+              child: Text("Sometimes, our thinking can fall into cognitive distortions called thought traps.",
                 style: Theme.of(context).textTheme.bodyLarge!,
                 textAlign: TextAlign.center,
               ),
@@ -105,7 +105,7 @@ class _CBTPageState extends State<CBTPage> {
             ),
             Padding(
               padding: const EdgeInsets.only(bottom: 24),
-              child: Text("Tap the icon to learn what these thought traps mean.",
+              child: Text("Tap the icon to learn what these thought traps mean. Please note, these are by no means comprehensive, and you may find that none of them apply to you.",
                 style: Theme.of(context).textTheme.bodySmall!,
                 textAlign: TextAlign.center,
               ),
