@@ -1,20 +1,17 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/study_pages/demographics_page.dart';
 import 'package:http/http.dart' as http;
 import 'package:markdown_widget/markdown_widget.dart';
 import 'package:markdown_widget/widget/all.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:signature/signature.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:markdown/markdown.dart' as md;
 import 'package:gratitude_app/utilities/widgets.dart';
-import 'package:gratitude_app/utilities/globals.dart';
 
 
 class ConsentFormPage extends StatefulWidget {

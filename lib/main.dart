@@ -17,7 +17,6 @@ import 'package:firebase_database/firebase_database.dart';
 
 //notifications
 import 'package:timezone/data/latest.dart' as tz;
-import 'package:gratitude_app/utilities/notification_service.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
 //import pages
@@ -84,7 +83,7 @@ class MyApp extends StatelessWidget {
     //set styles for the app
     Color bg = Color.fromARGB(255, 250, 240, 230);
     return MaterialApp(
-      title: 'Gratitude App',
+      title: 'Gratitude Buddy',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color.fromARGB(255, 188, 143, 186)

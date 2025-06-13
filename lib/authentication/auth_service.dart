@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/study_pages/consent_form_page.dart';
 import 'package:gratitude_app/study_pages/demographics_page.dart';
@@ -128,9 +129,10 @@ class AuthService {
 
 
   Future<void> signout({required BuildContext context}) async {
-    //cancel past alarms
-    bool success = await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
-    print("Canceled alarm with IDs 0 and 1: $success");
+    //cancel past alarms and notifications
+    await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
+    final FlutterLocalNotificationsPlugin notificationsPlugin = FlutterLocalNotificationsPlugin();
+    await notificationsPlugin.cancelAll();
 
     await FirebaseAuth.instance.signOut();
   }

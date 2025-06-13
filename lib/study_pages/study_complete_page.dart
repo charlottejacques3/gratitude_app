@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gratitude_app/main.dart';
-import 'package:gratitude_app/select_method_page.dart';
 import 'package:gratitude_app/study_pages/questionnaire_page.dart';
 import 'package:gratitude_app/utilities/globals.dart';
 import 'package:shared_preferences/shared_preferences.dart';
