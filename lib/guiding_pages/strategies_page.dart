@@ -27,13 +27,13 @@ class _StrategiesPageState extends State<StrategiesPage> {
   Map<String, dynamic> reframingLogs = {};
   Map<String, List<String>> strategies = {
     'Substitution': ['Is there a more positive way to look at this situation?', 'For each negative thought, try to substitute a more positive and realistic thought below.'],
-    'Double Standard Technique': ['If a close friend was having the same problem, would you talk to them in the same way that you are talking to yourself?', 'Why not?', 'What would you tell your friend instead?'],
-    'Examine the Evidence': ['What is the evidence against this belief?', 'How can you weigh this evidence against the evidence for this belief?', 'Given the evidence, can you try to develop a more rational thought?'],
-    'Survey Technique': ['If I asked a close friend how they felt about my situation, would they agree with my thoughts?', 'What would they say instead? If you feel comfortable, you can ask someone.'],
-    'Reattribution': ['Is there concrete evidence that I am solely to blame for this problem?', 'What are some other factors that contributed to the situation turning out the way it did?'],
+    'Double Standard Technique': ['If a close friend was having the same problem, would you talk to them in the same way that you are talking to yourself?', 'If not, why?', 'What would you tell your friend?'],
+    'Examine the Evidence': ['Can you find any evidence against this belief?', 'How can you weigh this evidence against the evidence for this belief?', 'Given the evidence, can you try to develop a more rational thought?'],
+    'Survey Technique': ['If I asked a close friend how they felt about my situation, would they agree with my thoughts?', 'If not, what would they say instead? If you feel comfortable, you can ask someone.'],
+    'Reattribution': ['Is there concrete evidence that I am solely to blame for this problem?', 'Can you think of some other factors that contributed to the situation turning out the way it did?'],
     'Socratic Questioning': ['What are some questions you could ask yourself to find inconsistencies in your thinking? For example, are you making assumptions or generalizations?', 'What kind of inconsistencies or falsehoods can you find by asking these questions?'],
-    'Thinking in Shades of Grey': ['Can you identify any black-and-white thoughts you are currently having (e.g. thinking of your life as a total failure)?', 'Are these extreme thoughts absolutely true?', "Try to develop some more rational alternative thoughts. For example, maybe you're not a failure, you just need more practice."],
-    'Semantic Method': ['Can you identify any extreme or unhelpful language that you are using, such as "should", "always", or "never"?', 'Can you replace these terms with more neutral wording?'],
+    'Thinking in Shades of Grey': ['Can you identify any black-and-white thoughts you are currently having (e.g. thinking of your life as a total failure)?', 'Are these extreme thoughts absolutely true?', "If not, try to develop some more rational alternative thoughts. For example, maybe you're not a failure, you just need more practice."],
+    'Semantic Method': ['Can you identify any extreme or unhelpful language that you are using, such as "should", "always", or "never"?', 'If so, can you replace these terms with more neutral wording?'],
     'Future Projection': ['Imagine a future version of yourself who has recovered from what you are going through at the moment. What would they say to you now?'],
     'Humorous Imaging': ['If you think this would be beneficial to you, try to imagine a humorous event relating to your situation. It can be real or made up. For example, if you are worried about an exam, you could picture a giraffe bursting into the room during the exam period.', 'Imagine this humorous scene with as much detail as you can. What is the scene you are picturing?'],
     'Cost-Benefit Analysis': ['Are there any benefits to thinking in this way?', 'What are the costs of thinking in this way?', 'How do the costs and benefits measure up?'],
@@ -42,17 +42,26 @@ class _StrategiesPageState extends State<StrategiesPage> {
 
   List<PromptWidget> promptWidgets = [];
   
+  // Map<String, List<String>> strategiesPerDistortion = {
+  //   'All-or-Nothing Thinking': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Thinking in Shades of Grey', 'Semantic Method', 'Cost-Benefit Analysis'],
+  //   'Overgeneralization': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Survey Technique', 'Cost-Benefit Analysis'],
+  //   'Mental Filter': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Reattribution', 'Thinking in Shades of Grey', 'Semantic Method', 'Cost-Benefit Analysis'],
+  //   'Discounting the Positive': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Thinking in Shades of Grey', 'Cost-Benefit Analysis',],
+  //   'Fortune Telling': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Survey Technique', 'Socratic Questioning', 'Humorous Imaging', 'Future Projection', 'Cost-Benefit Analysis', 'Image Substitution'],
+  //   'Mind Reading': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Survey Technique', 'Socratic Questioning', 'Humorous Imaging', 'Cost-Benefit Analysis', 'Image Substitution'],
+  //   'Magnification and Minimization': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Thinking in Shades of Grey', 'Semantic Method', 'Cost-Benefit Analysis', 'Image Substitution'],
+  //   'Emotional Reasoning': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Survey Technique', 'Socratic Questioning', 'Semantic Method', 'Future Projection', 'Humorous Imaging', 'Cost-Benefit Analysis',],
+  //   'Should Statements': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Reattribution', 'Socratic Questioning', 'Thinking in Shades of Grey', 'Semantic Method', 'Future Projection', 'Humorous Imaging', 'Cost-Benefit Analysis',],
+  //   'Labeling': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Reattribution', 'Socratic Questioning', 'Thinking in Shades of Grey', 'Semantic Method', 'Future Projection', 'Humorous Imaging', 'Cost-Benefit Analysis',],
+  //   'Blame': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Reattribution', 'Socratic Questioning', 'Thinking in Shades of Grey', 'Semantic Method', 'Future Projection', 'Cost-Benefit Analysis',],
+  // };
+
   Map<String, List<String>> strategiesPerDistortion = {
-    'All-or-Nothing Thinking': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Thinking in Shades of Grey', 'Semantic Method', 'Cost-Benefit Analysis'],
-    'Overgeneralization': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Survey Technique', 'Cost-Benefit Analysis'],
-    'Mental Filter': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Reattribution', 'Thinking in Shades of Grey', 'Semantic Method', 'Cost-Benefit Analysis'],
-    'Discounting the Positive': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Thinking in Shades of Grey', 'Cost-Benefit Analysis',],
-    'Fortune Telling': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Survey Technique', 'Socratic Questioning', 'Humorous Imaging', 'Future Projection', 'Cost-Benefit Analysis', 'Image Substitution'],
-    'Mind Reading': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Survey Technique', 'Socratic Questioning', 'Humorous Imaging', 'Cost-Benefit Analysis', 'Image Substitution'],
-    'Magnification and Minimization': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Thinking in Shades of Grey', 'Semantic Method', 'Cost-Benefit Analysis', 'Image Substitution'],
+    'Making Generalizations': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Survey Technique', 'Cost-Benefit Analysis', 'Socratic Method', 'Thinking in Shades of Grey', 'Semantic Method', 'Time Projection'],
+    'Mental Filter': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Thinking in Shades of Grey', 'Semantic Method', 'Cost-Benefit Analysis'],
+    'Jumping to Conclusions': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Survey Technique', 'Socratic Questioning', 'Humorous Imaging', 'Future Projection', 'Cost-Benefit Analysis', 'Image Substitution'],
+    'Catastrophizing': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Thinking in Shades of Grey', 'Semantic Method', 'Cost-Benefit Analysis', 'Image Substitution'],
     'Emotional Reasoning': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Survey Technique', 'Socratic Questioning', 'Semantic Method', 'Future Projection', 'Humorous Imaging', 'Cost-Benefit Analysis',],
-    'Should Statements': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Reattribution', 'Socratic Questioning', 'Thinking in Shades of Grey', 'Semantic Method', 'Future Projection', 'Humorous Imaging', 'Cost-Benefit Analysis',],
-    'Labeling': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Reattribution', 'Socratic Questioning', 'Thinking in Shades of Grey', 'Semantic Method', 'Future Projection', 'Humorous Imaging', 'Cost-Benefit Analysis',],
     'Blame': ['Substitution', 'Double Standard Technique', 'Examine the Evidence', 'Reattribution', 'Socratic Questioning', 'Thinking in Shades of Grey', 'Semantic Method', 'Future Projection', 'Cost-Benefit Analysis',],
   };
 

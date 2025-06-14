@@ -102,7 +102,7 @@ class _LogEmotionsPageState extends State<LogEmotionsPage> {
                         // Navigator.pop(context);
                         // Navigator.pop(context, {'guided':true, 'guiding_stage':'log_emotions'});
                       }, 
-                      child: Text("I've thought of something to log!",
+                      child: Text("Back to Gratitude Logs",
                         textAlign: TextAlign.center,
                       )
                     ),

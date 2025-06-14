@@ -142,7 +142,66 @@ class _InspirationPageState extends State<InspirationPage> {
 
     //check for random photo
     await requestPermission();
-    final PermissionState ps = await PhotoManager.getPermissionState(requestOption: const PermissionRequestOption());//await PhotoManager.requestPermissionExtend();
+  }
+
+  Future<void> requestPermission() async {
+    PermissionState ps = await PhotoManager.getPermissionState(requestOption: const PermissionRequestOption());
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool? asked = prefs.getBool('asked_photo_permission');
+    if (ps == PermissionState.denied && asked != null && !asked) {
+      showDialog(
+        context: context, 
+        barrierDismissible: false,
+        builder: (BuildContext context) => Dialog(
+          child: Padding(
+            padding: const EdgeInsets.all(15),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text('This app would like to request access to your camera roll in order to generate a random photo that might spark gratitude',
+                  textAlign: TextAlign.center,
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            prefs.setBool('asked_photo_permission', true);
+                            Navigator.pop(context);
+                            continueChecks();
+                          }, 
+                          child: Text('Deny')
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            Navigator.pop(context);
+                            await PhotoManager.requestPermissionExtend();
+                            continueChecks();
+                          }, 
+                          child: Text('Allow')
+                        ),
+                      ),
+                    )
+                  ],
+                )
+              ],
+            )
+          ),
+        )
+      );
+    }
+  }
+  
+  void continueChecks() async {
+    final PermissionState ps = await PhotoManager.getPermissionState(requestOption: const PermissionRequestOption());
     if ((ps.isAuth || ps == PermissionState.limited) && connection) {
       setState(() {
         photoPermission = true;
@@ -178,60 +237,6 @@ class _InspirationPageState extends State<InspirationPage> {
         }
       }
     });
-  }
-
-  Future<void> requestPermission() async {
-    final ps = await PhotoManager.getPermissionState(requestOption: const PermissionRequestOption());
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool? asked = prefs.getBool('asked_photo_permission');
-    print('PERMISSION STATE: $ps');
-    if (ps == PermissionState.denied && asked != null && !asked) {
-      showDialog(
-        context: context, 
-        builder: (BuildContext context) => Dialog(
-          child: Padding(
-            padding: const EdgeInsets.all(15),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text('This app would like to request access to your camera roll in order to generate a random photo that might spark gratitude',
-                  textAlign: TextAlign.center,
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            prefs.setBool('asked_photo_permission', true);
-                            Navigator.pop(context);
-                          }, 
-                          child: Text('Deny')
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            Navigator.pop(context);
-                            await PhotoManager.requestPermissionExtend();
-                          }, 
-                          child: Text('Allow')
-                        ),
-                      ),
-                    )
-                  ],
-                )
-              ],
-            )
-          ),
-        )
-      );
-    }
   }
 
   //pick a category of inspiration
@@ -680,177 +685,181 @@ class _InspirationPageState extends State<InspirationPage> {
               ),
               
               //all types
-              SizedBox(height: 100),
+              SizedBox(height: 50),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
               
                   //back to logs button
-                  ElevatedButton(
-                    child: Text('Log this!'),
-                    onPressed: () async {
-                      // Navigator.pop(context);
-                      final prov = Provider.of<LogsModel>(context, listen:false);
-                      if (inspoType.compareTo('Random Past Log') == 0) {
-                        //send past log data back to main page
-                        if (selectedPastLogType.compareTo('text') == 0) {
-                          prov.addTextLog(DynamicFormWidget(key: Key('1'), logController: TextEditingController(text: selectedPastLog)), true);
-                        } else if (selectedPastLogType.compareTo('image') == 0) {
-                          prov.addImageUrl(selectedPastLog);
-                          prov.incNumImages();
-                        }
-                        // Map<String, String> logData = {'type': selectedPastLogType, 'log': selectedPastLog, 'inspo': inspoType};
+                  Expanded(
+                    child: ElevatedButton(
+                      child: Text('Add to Gratitude Log', textAlign: TextAlign.center,),
+                      onPressed: () async {
                         // Navigator.pop(context);
-                        // Navigator.pop(context, logData);
-                      } else if (inspoType.compareTo('Random Photo') == 0) {
-                        //send image to firebase
-                        try {
-                          String url = await saveImageToFirebase();
-                          prov.addImageUrl(url);
-                          prov.incNumImages();
-                          // Map<String, String> logData = {'type': 'image', 'log': url, 'inspo': inspoType};
+                        final prov = Provider.of<LogsModel>(context, listen:false);
+                        if (inspoType.compareTo('Random Past Log') == 0) {
+                          //send past log data back to main page
+                          if (selectedPastLogType.compareTo('text') == 0) {
+                            prov.addTextLog(DynamicFormWidget(key: Key('1'), logController: TextEditingController(text: selectedPastLog)), true);
+                          } else if (selectedPastLogType.compareTo('image') == 0) {
+                            prov.addImageUrl(selectedPastLog);
+                            prov.incNumImages();
+                          }
+                          // Map<String, String> logData = {'type': selectedPastLogType, 'log': selectedPastLog, 'inspo': inspoType};
                           // Navigator.pop(context);
                           // Navigator.pop(context, logData);
-                        } catch(e) {
-                          print('Error saving to Firebase');
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Error saving image')),
-                          );
+                        } else if (inspoType.compareTo('Random Photo') == 0) {
+                          //send image to firebase
+                          try {
+                            String url = await saveImageToFirebase();
+                            prov.addImageUrl(url);
+                            prov.incNumImages();
+                            // Map<String, String> logData = {'type': 'image', 'log': url, 'inspo': inspoType};
+                            // Navigator.pop(context);
+                            // Navigator.pop(context, logData);
+                          } catch(e) {
+                            print('Error saving to Firebase');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Error saving image')),
+                            );
+                          //   Navigator.pop(context);
+                          // Navigator.pop(context);
+                          }
+                        } 
+                        prov.setInspoUsed(inspoType);
+                        prov.setGuidingStage('');
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(startingPageIndex: 0)));
+                        // else {
                         //   Navigator.pop(context);
-                        // Navigator.pop(context);
-                        }
-                      } 
-                      prov.setInspoUsed(inspoType);
-                      prov.setGuidingStage('');
-                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(startingPageIndex: 0)));
-                      // else {
-                      //   Navigator.pop(context);
-                      //   Navigator.pop(context, {'inspo': inspoType});
-                      // }
-                    }
+                        //   Navigator.pop(context, {'inspo': inspoType});
+                        // }
+                      }
+                    ),
                   ),
                   SizedBox(width: 20),
         
                   //refresh button
-                  ElevatedButton(
-                    style: Theme.of(context).elevatedButtonTheme.style!.copyWith(
-                      padding: WidgetStateProperty.all<EdgeInsets>(
-                        EdgeInsets.only(right: 0, left: 16)
-                      ),
-                    ),
-                    onPressed: pickType,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Flexible(
-                          flex: 3,
-                          fit: FlexFit.loose,
-                          child: Text('Refresh')
+                  Expanded(
+                    child: ElevatedButton(
+                      style: Theme.of(context).elevatedButtonTheme.style!.copyWith(
+                        padding: WidgetStateProperty.all<EdgeInsets>(
+                          EdgeInsets.only(right: 0, left: 16)
                         ),
-        
-                        //select which options to allow
-                        Flexible(
-                          fit: FlexFit.loose,
-                          child: MenuAnchor(
-                            style: MenuStyle(
-                              backgroundColor: WidgetStateColor.resolveWith(
-                                (Set<WidgetState> states) {
-                                  return Color.fromARGB(255, 249, 241, 237);
-                                }
-                              )
-                            ),
-                            builder: (BuildContext context, MenuController controller, Widget? child) {
-                              return IconButton(
-                                icon: Icon(Icons.arrow_downward),
-                                onPressed: () {
-                                  if (controller.isOpen) {
-                                    controller.close();
-                                  } else {
-                                    controller.open();
+                      ),
+                      onPressed: pickType,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            flex: 3,
+                            fit: FlexFit.loose,
+                            child: Text('Refresh')
+                          ),
+                            
+                          //select which options to allow
+                          Flexible(
+                            fit: FlexFit.loose,
+                            child: MenuAnchor(
+                              style: MenuStyle(
+                                backgroundColor: WidgetStateColor.resolveWith(
+                                  (Set<WidgetState> states) {
+                                    return Color.fromARGB(255, 249, 241, 237);
                                   }
-                                }, 
-                              );
-                            },
-                            menuChildren: ['Gratitude Prompt', 'Random Past Log', 'Random Photo'].map((e) {
-                              return MenuItemButton(
-                                child: Row(
-                                  children: [
-                                    Checkbox(
-                                      value: selectedInspoTypes.contains(e) && possibleInspoTypes.contains(e), 
-                                      side: selectedInspoTypes.contains(e) && !possibleInspoTypes.contains(e) 
-                                        ? WidgetStateBorderSide.resolveWith(
-                                          (states) => BorderSide(width: 1.5, color: Colors.grey),
-                                        )
-                                        : WidgetStateBorderSide.resolveWith(
-                                          (states) => BorderSide(width: 1.5, color: Colors.black)
-                                        ),
-                                      onChanged: (isSelected) {
-                                        //check if possible
-                                        if (possibleInspoTypes.contains(e)) {
-                                          if (isSelected == true) {
-                                            setState(() {
-                                              selectedInspoTypes.add(e); //if just selected, add to list
-                                            });
-                                          } else {
-                                            setState(() {
-                                              selectedInspoTypes.remove(e); //if just unselected, remove from list
-                                            });
-                                          }
-                                        }
-        
-                                        //if not, show dialog
-                                        else {
-                                          // String msg = '';
-                                          if (e.compareTo('Random Photo') == 0) {
-                                            if (!connection) {
-                                              dialog(
-                                                'Please connect to the internet to use this feature',
-                                                () {
-                                                  Navigator.pop(context);
-                                                },
-                                                'Okay',
-                                                false
-                                              );
+                                )
+                              ),
+                              builder: (BuildContext context, MenuController controller, Widget? child) {
+                                return IconButton(
+                                  icon: Icon(Icons.arrow_downward),
+                                  onPressed: () {
+                                    if (controller.isOpen) {
+                                      controller.close();
+                                    } else {
+                                      controller.open();
+                                    }
+                                  }, 
+                                );
+                              },
+                              menuChildren: ['Gratitude Prompt', 'Random Past Log', 'Random Photo'].map((e) {
+                                return MenuItemButton(
+                                  child: Row(
+                                    children: [
+                                      Checkbox(
+                                        value: selectedInspoTypes.contains(e) && possibleInspoTypes.contains(e), 
+                                        side: selectedInspoTypes.contains(e) && !possibleInspoTypes.contains(e) 
+                                          ? WidgetStateBorderSide.resolveWith(
+                                            (states) => BorderSide(width: 1.5, color: Colors.grey),
+                                          )
+                                          : WidgetStateBorderSide.resolveWith(
+                                            (states) => BorderSide(width: 1.5, color: Colors.black)
+                                          ),
+                                        onChanged: (isSelected) {
+                                          //check if possible
+                                          if (possibleInspoTypes.contains(e)) {
+                                            if (isSelected == true) {
+                                              setState(() {
+                                                selectedInspoTypes.add(e); //if just selected, add to list
+                                              });
                                             } else {
-                                              dialog(
-                                                'Please allow access to the camera roll to use this feature',
-                                                () {
-                                                  PhotoManager.openSetting();
-                                                },
-                                                'Open Settings',
-                                                true
+                                              setState(() {
+                                                selectedInspoTypes.remove(e); //if just unselected, remove from list
+                                              });
+                                            }
+                                          }
+                            
+                                          //if not, show dialog
+                                          else {
+                                            // String msg = '';
+                                            if (e.compareTo('Random Photo') == 0) {
+                                              if (!connection) {
+                                                dialog(
+                                                  'Please connect to the internet to use this feature',
+                                                  () {
+                                                    Navigator.pop(context);
+                                                  },
+                                                  'Okay',
+                                                  false
+                                                );
+                                              } else {
+                                                dialog(
+                                                  'Please allow access to the camera roll to use this feature',
+                                                  () {
+                                                    PhotoManager.openSetting();
+                                                  },
+                                                  'Open Settings',
+                                                  true
+                                                );
+                                              }
+                                            } else if (e.compareTo('Random Past Log') == 0) {
+                                                dialog(
+                                                  'Please add a log to use this feature',
+                                                  () {
+                                                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(startingPageIndex: 0)));
+                                                  },
+                                                  'Add a Log',
+                                                  true
+                                                );
+                                            } else {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text('Error: this feature is not currently available')),
                                               );
                                             }
-                                          } else if (e.compareTo('Random Past Log') == 0) {
-                                              dialog(
-                                                'Please add a log to use this feature',
-                                                () {
-                                                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(startingPageIndex: 0)));
-                                                },
-                                                'Add a Log',
-                                                true
-                                              );
-                                          } else {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(content: Text('Error: this feature is not currently available')),
-                                            );
+                                            
                                           }
-                                          
                                         }
-                                      }
-                                    ),
-                                    Text(e,
-                                      style: TextStyle(
-                                        color: possibleInspoTypes.contains(e) ? Colors.black : Colors.grey
-                                      )
-                                    ),
-                                  ],
-                                )
-                              );
-                            }).toList(),
+                                      ),
+                                      Text(e,
+                                        style: TextStyle(
+                                          color: possibleInspoTypes.contains(e) ? Colors.black : Colors.grey
+                                        )
+                                      ),
+                                    ],
+                                  )
+                                );
+                              }).toList(),
+                            )
                           )
-                        )
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ],

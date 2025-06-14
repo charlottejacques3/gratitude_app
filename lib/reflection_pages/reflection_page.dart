@@ -106,7 +106,7 @@ class _ReflectionPageState extends State<ReflectionPage> {
                 ),
                 builder: (BuildContext context, MenuController controller, Widget? child) {
                   return SwitchedColourButton(
-                    text: 'New Reflection',
+                    text: 'New Activity',
                     onClick: () {
                       if (controller.isOpen) {
                         controller.close();
@@ -142,7 +142,7 @@ class _ReflectionPageState extends State<ReflectionPage> {
                 children: [
                   SizedBox(height: 30,),
                   Text(
-                    'No reflections yet!',
+                    'No gratitude activities yet!',
                     style: Theme.of(context).textTheme.titleMedium!.copyWith(
                       fontSize: 20,
                       fontWeight: FontWeight.bold
@@ -227,7 +227,7 @@ class _ReflectionPageState extends State<ReflectionPage> {
                     )
                   );
                 }, 
-                child: Text('Delete All Selected Reflections')
+                child: Text('Delete All Selected Activities')
               )
             ) : Container()
         ],

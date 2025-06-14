@@ -181,7 +181,7 @@ class _MyHomePageState extends State<MyHomePage> {
           pageHeader = 'Reframing';
         case 3:
           page = ReflectionPage(editMode: reflectionEditMode);
-          pageHeader = 'Reflection';
+          pageHeader = 'Gratitude Activities';
         case 4:
           page = PastLogsPage(editMode: pastLogsEditMode);
           pageHeader = 'Past Logs';
@@ -290,7 +290,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             NavigationDestination(
               icon: Icon(Icons.spa), 
-              label: 'Reflect',
+              label: 'Activities',
             ),
             NavigationDestination(
               icon: Icon(Icons.book), 
