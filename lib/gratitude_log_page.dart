@@ -478,6 +478,13 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: MenuAnchor(
+              style: MenuStyle(
+                backgroundColor: WidgetStateColor.resolveWith(
+                  (Set<WidgetState> states) {
+                    return Color.fromARGB(255, 249, 241, 237);
+                  }
+                )
+              ),
               menuChildren: [
                 MenuItemButton(
                   child: Text('Give me some inspiration!'),

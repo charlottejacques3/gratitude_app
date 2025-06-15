@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/utilities/notification_service.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
@@ -100,6 +101,9 @@ Future<void> notificationScheduler() async {
     }
   }
 
+  
+  final exactAlarmPermission = await Permission.scheduleExactAlarm.status;
+
   //reschedule the next alarm
   DateTime nextAlarm = await startAlarmManager();
   var timeBetween = nextAlarm.difference(DateTime.now());
@@ -110,7 +114,7 @@ Future<void> notificationScheduler() async {
     notificationScheduler,
     rescheduleOnReboot: true,
     allowWhileIdle: true,
-    exact: true,
+    exact: exactAlarmPermission.isGranted,
     wakeup: true
   );
 }

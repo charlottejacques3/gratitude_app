@@ -9,6 +9,7 @@ import 'package:gratitude_app/study_pages/tutorial_page.dart';
 import 'package:gratitude_app/utilities/alarm_manager.dart';
 import 'package:gratitude_app/utilities/notification_service.dart';
 import 'package:gratitude_app/utilities/widgets.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:gratitude_app/utilities/globals.dart';
@@ -232,17 +233,23 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
 
       //cancel past alarms to avoid backlog
       await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
+      
+      //check for notification permission
+      final notificationPermission = await Permission.notification.status; 
+      final exactAlarmPermission = await Permission.scheduleExactAlarm.status;
 
-      //schedule the next alarm
-      await AndroidAlarmManager.oneShot(
-        const Duration(seconds: 5), //schedule 5 seconds later
-        0, 
-        notificationScheduler,
-        rescheduleOnReboot: true,
-        allowWhileIdle: true,
-        exact: true,
-        wakeup: true
-      );
+      //schedule the next alarm if notifs allowed
+      if (notificationPermission.isGranted) {
+        await AndroidAlarmManager.oneShot(
+          const Duration(seconds: 5), //schedule 5 seconds later
+          0, 
+          notificationScheduler,
+          rescheduleOnReboot: true,
+          allowWhileIdle: true,
+          exact: exactAlarmPermission.isGranted,
+          wakeup: true
+        );
+      }
     } 
     
     //study concluded

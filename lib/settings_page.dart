@@ -9,6 +9,7 @@ import 'package:gratitude_app/authentication/login_page.dart';
 import 'package:gratitude_app/resources_page.dart';
 import 'package:gratitude_app/study_pages/questionnaire_page.dart';
 import 'package:gratitude_app/study_pages/withdraw_page.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'utilities/date_functions.dart';
@@ -54,6 +55,31 @@ import 'package:gratitude_app/utilities/globals.dart';
       randomEndAMPMController.dispose();
       scheduledTimeController.dispose();
       scheduledAMPMController.dispose();
+
+      //check if notifs were updated
+      checkNotifsUpdated();
+    }
+
+    void checkNotifsUpdated() async {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      bool? notifsAllowed = prefs.getBool('notifs_allowed');
+      bool? alarmsAllowed = prefs.getBool('alarms_allowed');
+      bool notifPermission = await Permission.notification.isGranted;
+      bool alarmPermission = await Permission.scheduleExactAlarm.isGranted;
+      if (notifPermission && (notifPermission != notifsAllowed || alarmPermission != alarmsAllowed)) {
+        print('RESCHEDULING ONESHOT');
+        await AndroidAlarmManager.oneShot(
+          const Duration(seconds: 5), //schedule 5 seconds later
+          0, 
+          notificationScheduler,
+          rescheduleOnReboot: true,
+          allowWhileIdle: true,
+          exact: alarmPermission,
+          wakeup: true
+        );
+      }
+      prefs.setBool('notifs_allowed', notifPermission);
+      prefs.setBool('alarms_allowed', alarmPermission);
     }
 
     void getSharedPrefs() async {
@@ -88,6 +114,12 @@ import 'package:gratitude_app/utilities/globals.dart';
       });
     }
 
+    Future<Map<String, bool>> getNotifPermissions() async {
+      bool notifsAllowed = await Permission.notification.isGranted;
+      bool alarmsAllowed = await Permission.scheduleExactAlarm.isGranted;
+      return {'notifications': notifsAllowed, 'alarms': alarmsAllowed};
+    }
+
     @override
     Widget build(BuildContext context) {
       return Scaffold(
@@ -113,155 +145,233 @@ import 'package:gratitude_app/utilities/globals.dart';
                 ),
               ),
               SizedBox(height: 10,),
-              //pick random or scheduled notifications
-              Row(
-                children: [
-                  Expanded(
-                    child: ListTile(
-                      title: Text('Random Notifications', textAlign: TextAlign.center),
-                      selected: randomNotifications,
-                      selectedTileColor: Colors.purple[100],
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(color: Colors.grey, width: 0.5),
-                        borderRadius: BorderRadius.circular(5),
-                      ), 
-                      onTap: () {
-                        setState(() {
-                          randomNotifications = true;
-                        });
-                      }
-                    ),
-                  ),
-                  SizedBox(width: 8.0),
-                  Expanded(
-                    child: ListTile(
-                      title: Text('Scheduled Notifications', textAlign: TextAlign.center),
-                      selected: !randomNotifications,
-                      selectedTileColor: Colors.purple[100],
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(color: Colors.grey, width: 1),
-                        borderRadius: BorderRadius.circular(5),
-                      ), 
-                      onTap: () {
-                        setState(() {
-                          randomNotifications = false;
-                        });
-                      }
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 30,),
-              Form(
-                key: _formKey,
-                child: Column(
-                  children: 
-                
-                    //random notification settings
-                    randomNotifications ? [
-                      Text("Set the time intervals when you want to receive a random notification",
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height:20),
-                      Row(
+
+              //check notification permissions
+              FutureBuilder(
+                future: getNotifPermissions(),
+                builder: (context, asyncSnapshot) {
+                  if (asyncSnapshot.hasData) {
+
+                    //both notifs and alarms allowed - set scheduled or random
+                    if (asyncSnapshot.data!['notifications']!) {
+                      return Column(
                         children: [
-                          Expanded(child: TimePickerWidget(
-                            timeController: randomStartTimeController,
-                            amPmController: randomStartAMPMController,
-                          )),
-                          Text("     -     "),
-                          Expanded(child: TimePickerWidget(
-                            timeController: randomEndTimeController,
-                            amPmController: randomEndAMPMController,
-                          ))
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ListTile(
+                                  title: Text('Random Notifications', textAlign: TextAlign.center),
+                                  selected: randomNotifications,
+                                  selectedTileColor: Colors.purple[100],
+                                  shape: RoundedRectangleBorder(
+                                    side: BorderSide(color: Colors.grey, width: 0.5),
+                                    borderRadius: BorderRadius.circular(5),
+                                  ), 
+                                  onTap: () {
+                                    setState(() {
+                                      randomNotifications = true;
+                                    });
+                                  }
+                                ),
+                              ),
+                              SizedBox(width: 8.0),
+                              Expanded(
+                                child: ListTile(
+                                  title: Text('Scheduled Notifications', textAlign: TextAlign.center),
+                                  selected: !randomNotifications,
+                                  selectedTileColor: Colors.purple[100],
+                                  shape: RoundedRectangleBorder(
+                                    side: BorderSide(color: Colors.grey, width: 1),
+                                    borderRadius: BorderRadius.circular(5),
+                                  ), 
+                                  onTap: () {
+                                    setState(() {
+                                      randomNotifications = false;
+                                    });
+                                  }
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 30,),
+                          Form(
+                            key: _formKey,
+                            child: Column(
+                              children: 
+                            
+                                //random notification settings
+                                randomNotifications ? [
+                                  Text("Set the time intervals when you want to receive a random notification",
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  SizedBox(height:20),
+                                  Row(
+                                    children: [
+                                      Expanded(child: TimePickerWidget(
+                                        timeController: randomStartTimeController,
+                                        amPmController: randomStartAMPMController,
+                                      )),
+                                      Text("     -     "),
+                                      Expanded(child: TimePickerWidget(
+                                        timeController: randomEndTimeController,
+                                        amPmController: randomEndAMPMController,
+                                      ))
+                                    ],
+                                  ),
+                                ]
+                            
+                                //scheduled notification settings
+                                : [
+                                  Text("Select the time you wish to receive a notification",
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  SizedBox(height:20),
+                                  TimePickerWidget(
+                                    timeController: scheduledTimeController, 
+                                    amPmController: scheduledAMPMController
+                                  )
+                                ],
+                            ),
+                          ),
+                          SizedBox(height: 20),
+                          
+                          //send settings to shared preferences
+                          ElevatedButton(
+                            child: Text("Update"),
+                            onPressed: () async {
+                              //check for valid times
+                              if (_formKey.currentState!.validate()) {
+                          
+                                //set up shared preferences
+                                SharedPreferences prefs = await SharedPreferences.getInstance();
+                                Map<String, int> time = {};
+                                //random notifications
+                                if (randomNotifications) {
+                                  
+                                  DateTime rn = DateTime.now();
+                                  //start time
+                                  Map<String, int> startTime = amPmTo24(randomStartTimeController.text, randomStartAMPMController.text);
+                                  DateTime startDT = DateTime(rn.year, rn.month, rn.day, startTime['hours']!, startTime['minutes']!);
+                                  //end time
+                                  Map<String, int> endTime = amPmTo24(randomEndTimeController.text, randomEndAMPMController.text);
+                                  DateTime endDT = DateTime(rn.year, rn.month, rn.day, endTime['hours']!, endTime['minutes']!);
+                          
+                                  //check if second time is after first
+                                  if (endDT.isAfter(startDT)) {
+                                    //if so, update shared preferences
+                                    prefs.setInt('random_start_hours', startTime['hours']!);
+                                    prefs.setInt('random_start_minutes', startTime['minutes']!);
+                                    prefs.setInt('random_end_hours', endTime['hours']!);
+                                    prefs.setInt('random_end_minutes', endTime['minutes']!);
+                                  } else {
+                                    //otherwise don't update anything
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Please ensure the end time is after the start time.')),
+                                    );
+                                    return;
+                                  }
+                                } 
+                                //scheduled notifications
+                                else {
+                                  time = amPmTo24(scheduledTimeController.text, scheduledAMPMController.text);
+                                  prefs.setInt('schduled_hours', time['hours']!);
+                                  prefs.setInt('scheduled_minutes', time['minutes']!);
+                                }
+                                //set notification style
+                                prefs.setBool('random_notifications', randomNotifications);
+                          
+                                
+                                //cancel past alarms to avoid backlog
+                                await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
+                          
+                                //immediately schedule a one shot
+                                //check for notification permission
+                                final notificationPermission = await Permission.notification.status; 
+                                final exactAlarmPermission = await Permission.scheduleExactAlarm.status;
+                          
+                                //schedule the next alarm if notifs allowed
+                                if (notificationPermission.isGranted) {
+                                  await AndroidAlarmManager.oneShot(
+                                    const Duration(seconds: 5), //schedule 5 seconds later
+                                    0, 
+                                    notificationScheduler,
+                                    rescheduleOnReboot: true,
+                                    allowWhileIdle: true,
+                                    exact: exactAlarmPermission.isGranted,
+                                    wakeup: true
+                                  );
+                                }
+                          
+                                //back to previous page
+                                Navigator.pop(context);
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Please enter a valid time.')),
+                                );
+                              }
+                            },
+                          ),
+
+                          //enabled notifs, but not exact alarms
+                          !asyncSnapshot.data!['alarms']! ? Padding(
+                            padding: const EdgeInsets.only(top: 20.0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                              borderRadius: BorderRadius.all(Radius.circular(5)),
+                              border: Border.all(
+                                width: 0.5,
+                                color: Colors.grey
+                              ),
+                              color: Color.fromARGB(100, 209, 108, 103)
+                            ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(Icons.error_outline,
+                                          color: Color.fromARGB(255, 209, 108, 103),
+                                        ),
+                                        SizedBox(width: 8,),
+                                        Expanded(child: Text('You have disabled exact alarms, which may lead to unpredictable notification behaviour. \nPlease allow Alarms and Reminders for the best experience.')),
+                                      ],
+                                    ),
+                                    ElevatedButton(
+                                      style: Theme.of(context).elevatedButtonTheme.style!.copyWith(
+                                        backgroundColor: WidgetStatePropertyAll<Color>(Color.fromARGB(255, 249, 241, 237)),
+                                      ),
+                                      onPressed: () => openAppSettings(), 
+                                      child: Text('Open Settings',
+                                        style: TextStyle(
+                                          color: Color.fromARGB(255, 209, 108, 103)
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ) : Container()
                         ],
-                      ),
-                    ]
-                
-                    //scheduled notification settings
-                    : [
-                      Text("Select the time you wish to receive a notification",
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height:20),
-                      TimePickerWidget(
-                        timeController: scheduledTimeController, 
-                        amPmController: scheduledAMPMController
-                      )
-                    ],
-                ),
-              ),
-              SizedBox(height: 20),
-
-              //send settings to shared preferences
-              ElevatedButton(
-                child: Text("Update"),
-                onPressed: () async {
-                  //check for valid times
-                  if (_formKey.currentState!.validate()) {
-
-                    //set up shared preferences
-                    SharedPreferences prefs = await SharedPreferences.getInstance();
-                    Map<String, int> time = {};
-                    //random notifications
-                    if (randomNotifications) {
-                      
-                      DateTime rn = DateTime.now();
-                      //start time
-                      Map<String, int> startTime = amPmTo24(randomStartTimeController.text, randomStartAMPMController.text);
-                      DateTime startDT = DateTime(rn.year, rn.month, rn.day, startTime['hours']!, startTime['minutes']!);
-                      //end time
-                      Map<String, int> endTime = amPmTo24(randomEndTimeController.text, randomEndAMPMController.text);
-                      DateTime endDT = DateTime(rn.year, rn.month, rn.day, endTime['hours']!, endTime['minutes']!);
-
-                      //check if second time is after first
-                      if (endDT.isAfter(startDT)) {
-                        //if so, update shared preferences
-                        prefs.setInt('random_start_hours', startTime['hours']!);
-                        prefs.setInt('random_start_minutes', startTime['minutes']!);
-                        prefs.setInt('random_end_hours', endTime['hours']!);
-                        prefs.setInt('random_end_minutes', endTime['minutes']!);
-                      } else {
-                        //otherwise don't update anything
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Please ensure the end time is after the start time.')),
-                        );
-                        return;
-                      }
+                      );
                     } 
-                    //scheduled notifications
+
+                    //notifs disabled
                     else {
-                      time = amPmTo24(scheduledTimeController.text, scheduledAMPMController.text);
-                      prefs.setInt('schduled_hours', time['hours']!);
-                      prefs.setInt('scheduled_minutes', time['minutes']!);
+                      return Column(
+                        children: [
+                          Text('Notifications have been disabled. Please enable notifications and allow Alarms and Reminders to proceed.'),
+                          ElevatedButton(
+                            onPressed: () => openAppSettings(),
+                            child: Text('Open Settings'),
+                          )
+                        ],
+                      );
                     }
-                    //set notification style
-                    prefs.setBool('random_notifications', randomNotifications);
-
-                    
-                    //cancel past alarms to avoid backlog
-                    await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
-
-                    //immediately schedule a one shot
-                    print('scheduling oneshot');
-                    await AndroidAlarmManager.oneShot(
-                      const Duration(seconds: 5), //schedule 5 seconds later
-                      0, 
-                      notificationScheduler,
-                      rescheduleOnReboot: true,
-                      allowWhileIdle: true,
-                      exact: true,
-                      wakeup: true
-                    );
-
-                    //back to previous page
-                    Navigator.pop(context);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please enter a valid time.')),
-                    );
                   }
-                },
+                  return CircularProgressIndicator();
+                }
               ),
 
               //allow ai

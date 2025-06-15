@@ -10,6 +10,8 @@ import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/study_pages/consent_form_page.dart';
 import 'package:gratitude_app/study_pages/demographics_page.dart';
 import 'package:gratitude_app/utilities/alarm_manager.dart';
+import 'package:gratitude_app/utilities/notification_service.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:gratitude_app/utilities/globals.dart' show Globals;
 
@@ -88,19 +90,28 @@ class AuthService {
         password: password
       );
 
+      //set notifs
+      await NotificationService.initNotifications();
+
       //cancel past alarms to avoid backlog
       await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
 
-      //schedule the next alarm
-      await AndroidAlarmManager.oneShot(
-        const Duration(seconds: 5), //schedule 5 seconds later
-        0, 
-        notificationScheduler,
-        rescheduleOnReboot: true,
-        allowWhileIdle: true,
-        exact: true,
-        wakeup: true
-      );
+      //check for notification permission
+      final notificationPermission = await Permission.notification.status; 
+      final exactAlarmPermission = await Permission.scheduleExactAlarm.status;
+
+      //schedule the next alarm if notifs allowed
+      if (notificationPermission.isGranted) {
+        await AndroidAlarmManager.oneShot(
+          const Duration(seconds: 5), //schedule 5 seconds later
+          0, 
+          notificationScheduler,
+          rescheduleOnReboot: true,
+          allowWhileIdle: true,
+          exact: exactAlarmPermission.isGranted,
+          wakeup: true
+        );
+      }
 
       //send to main page
       Navigator.pushReplacement(

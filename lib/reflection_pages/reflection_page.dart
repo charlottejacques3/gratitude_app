@@ -106,7 +106,7 @@ class _ReflectionPageState extends State<ReflectionPage> {
                 ),
                 builder: (BuildContext context, MenuController controller, Widget? child) {
                   return SwitchedColourButton(
-                    text: 'New Activity',
+                    text: 'New Gratitude Activity',
                     onClick: () {
                       if (controller.isOpen) {
                         controller.close();

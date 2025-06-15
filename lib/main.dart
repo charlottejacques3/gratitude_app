@@ -5,7 +5,9 @@ import 'package:gratitude_app/study_pages/checkin_popup.dart';
 import 'package:gratitude_app/guiding_pages/inspiration_page.dart';
 import 'package:gratitude_app/guiding_pages/main_reframing_page.dart';
 import 'package:gratitude_app/logs_model.dart';
+import 'package:gratitude_app/utilities/alarm_manager.dart';
 import 'package:gratitude_app/utilities/globals.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
@@ -47,6 +49,25 @@ void main() async {
   //print last notif date
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   print('LAST NOTIF TIME: ${prefs.getString('scheduled_notif_date')}');
+
+  //check if permissions have changed
+  bool? notifsAllowed = prefs.getBool('notifs_allowed');
+  bool? alarmsAllowed = prefs.getBool('alarms_allowed');
+  bool notifPermission = await Permission.notification.isGranted;
+  bool alarmPermission = await Permission.scheduleExactAlarm.isGranted;
+  if (notifPermission && (notifPermission != notifsAllowed || alarmPermission != alarmsAllowed)) {
+    await AndroidAlarmManager.oneShot(
+      const Duration(seconds: 5), //schedule 5 seconds later
+      0, 
+      notificationScheduler,
+      rescheduleOnReboot: true,
+      allowWhileIdle: true,
+      exact: alarmPermission,
+      wakeup: true
+    );
+  }
+  prefs.setBool('notifs_allowed', notifPermission);
+  prefs.setBool('alarms_allowed', alarmPermission);
 
   //set up global variable for group
   if (prefs.getString('group') != null) {
@@ -181,7 +202,7 @@ class _MyHomePageState extends State<MyHomePage> {
           pageHeader = 'Reframing';
         case 3:
           page = ReflectionPage(editMode: reflectionEditMode);
-          pageHeader = 'Gratitude Activities';
+          pageHeader = 'Activities';
         case 4:
           page = PastLogsPage(editMode: pastLogsEditMode);
           pageHeader = 'Past Logs';

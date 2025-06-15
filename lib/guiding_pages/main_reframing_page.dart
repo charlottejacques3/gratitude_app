@@ -140,7 +140,7 @@ class _MainReframingPageState extends State<MainReframingPage> {
                     Icon(Icons.error_outline,
                       color: Color.fromARGB(255, 209, 108, 103),
                     ),
-                    SizedBox(width: 5,),
+                    SizedBox(width: 8,),
                     Expanded(
                       child: Column(
                         children: [
