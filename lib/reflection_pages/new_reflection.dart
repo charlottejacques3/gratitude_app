@@ -87,7 +87,7 @@ class _NewReflectionPageState extends State<NewReflectionPage> {
             logController: TextEditingController(text: preloaded.isNotEmpty ? preloaded[0] : '')
           ),
           PromptWidget(
-            promptText: 'How has this positively affected your life?', 
+            promptText: 'How has this positively affected your life? What would happen if this little thing was absent from your daily life?', 
             logController: TextEditingController(text: preloaded.isNotEmpty ? preloaded[1] : '')
           ),
           PromptWidget(
@@ -128,7 +128,7 @@ class _NewReflectionPageState extends State<NewReflectionPage> {
           ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(16.0),
         child: ListView(
           shrinkWrap: true,
           children: [
@@ -215,6 +215,7 @@ class PromptWidget extends StatelessWidget {
           keyboardType: TextInputType.multiline,
           minLines: 3,
           maxLines: 15,
+          style: Theme.of(context).textTheme.bodyMedium,
           decoration: InputDecoration(
             border: OutlineInputBorder(),
           ),

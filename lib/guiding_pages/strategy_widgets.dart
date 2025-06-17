@@ -40,6 +40,7 @@ class PromptWidget extends StatelessWidget {
                 TextFormField(
                   controller: controllers[index],
                   keyboardType: TextInputType.multiline,
+                  style: Theme.of(context).textTheme.bodyMedium,
                   minLines: 2,
                   maxLines: 25,
                   decoration: InputDecoration(

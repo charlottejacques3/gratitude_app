@@ -255,11 +255,12 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     //study concluded
     else if (widget.number == 2) {
       //log out
-      await AuthService().signout(context: context);
+      // await AuthService().signout(context: context);
 
       //update study complete
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setBool('study_complete', true);
+      print('STUDY COMPLETE: ${prefs.getBool('study_complete')}');
 
       Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (BuildContext context) => StudyCompletePage())

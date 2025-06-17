@@ -197,6 +197,8 @@ class _InspirationPageState extends State<InspirationPage> {
           ),
         )
       );
+    } else {
+      continueChecks();
     }
   }
   
@@ -486,8 +488,11 @@ class _InspirationPageState extends State<InspirationPage> {
               child: Padding(
                 padding: const EdgeInsets.all(15),
                 child: ListView(
+                  shrinkWrap: true,
                   children: [
-                    Text('Please select some albums, containing photos that make you happy, that you would like to pull from.'),
+                    Text('Please select some albums, containing photos that make you happy, that you would like to pull from.',
+                      textAlign: TextAlign.center,
+                    ),
                     ListView.builder(
                       physics: NeverScrollableScrollPhysics(),
                       shrinkWrap: true,

@@ -60,6 +60,7 @@ class _LogEmotionsPageState extends State<LogEmotionsPage> {
               keyboardType: TextInputType.multiline,
               minLines: 5,
               maxLines: 15,
+              style: Theme.of(context).textTheme.bodyMedium,
               decoration: InputDecoration(
                 border: OutlineInputBorder(),
               ),

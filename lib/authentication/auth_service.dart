@@ -14,12 +14,14 @@ import 'package:gratitude_app/utilities/notification_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:gratitude_app/utilities/globals.dart' show Globals;
+import 'package:gratitude_app/select_method_page.dart';
 
 class AuthService {
 
   Future<void> signup({required String email, required String password, required BuildContext context}) async {
     try {
       //create account
+      // await FirebaseAuth.instance.signInWithCustomToken(token)
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email, 
         password: password
@@ -28,37 +30,15 @@ class AuthService {
       //send to consent form page
       Navigator.push(
         context, 
-        MaterialPageRoute(builder: (BuildContext context) => const ConsentFormPage())
+        MaterialPageRoute(builder: (BuildContext context) => const DemographicsPage())//ConsentFormPage())
       );
 
-      //pick random group + save to sharedprefs + global variables
-      //TEMPORARY - SET BACK!!!
-      int group = 1;//Random().nextInt(2); //0 is control group, 1 is experimental!!
+      //sharedprefs
+      setSharedPrefs();
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      String groupName = 'control';
-      if (group == 1) {
-        groupName = 'experimental';
-      }
-      prefs.setString('group', groupName);
-      Globals.group = groupName;
-      print('ASSIGNED GROUP: $group');
-      print('GLOBAL VARIABLE: ${Globals.group}');
-
-      //save default settings to shared preferences
-      prefs.setBool('random_notifications', true);
-      prefs.setInt('random_start_hours', 9); //9am start
-      prefs.setInt('random_start_minutes', 0);
-      prefs.setInt('random_end_hours', 17); //5pm end
-      prefs.setInt('random_end_minutes', 0);
-      prefs.setInt('scheduled_hours', 12); //12pm
-      prefs.setInt('scheduled_minutes', 0);
-      prefs.setBool('allow_ai', true);
-      prefs.setBool('withdraw', false);
-      prefs.setBool('withdraw_in_crisis', false);
       prefs.setBool('consent_complete', false);
       prefs.setBool('demographics_complete', false);
       prefs.setBool('initial_questionnaires_complete', false);
-      prefs.setBool('study_complete', false);
       prefs.setBool('asked_photo_permission', false);
     } 
     
@@ -89,6 +69,8 @@ class AuthService {
         email: email, 
         password: password
       );
+      
+      setSharedPrefs();
 
       //set notifs
       await NotificationService.initNotifications();
@@ -113,10 +95,15 @@ class AuthService {
         );
       }
 
-      //send to main page
+      //send to page depending on group
       Navigator.pushReplacement(
-        context, 
-        MaterialPageRoute(builder: (BuildContext context) => const MyHomePage(startingPageIndex: 0,) )
+        context, MaterialPageRoute(builder: (BuildContext context) {
+          if (Globals.group.compareTo('experimental') == 0) {
+            return SelectMethodPage();
+          } else {
+            return MyHomePage(startingPageIndex: 0);
+          }
+        })
       );
     } 
     
@@ -167,6 +154,36 @@ class AuthService {
 
     await FirebaseAuth.instance.currentUser?.delete();
     await signout(context: context);
+  }
+
+  Future<void> setSharedPrefs() async {
+    //pick random group + save to sharedprefs + global variables
+      //TEMPORARY - SET BACK!!!
+      int group = 1;//Random().nextInt(2); //0 is control group, 1 is experimental!!
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String groupName = 'control';
+      if (group == 1) {
+        groupName = 'experimental';
+      }
+      prefs.setString('group', groupName);
+      Globals.group = groupName;
+      print('ASSIGNED GROUP: $group');
+      print('GLOBAL VARIABLE: ${Globals.group}');
+
+      //save default settings to shared preferences
+      if (prefs.getBool('random_notifications') == null || prefs.getInt('random_start_hours') == null || prefs.getInt('random_start_minutes') == null || prefs.getInt('random_end_hours') == null || prefs.getInt('random_end_minutes') == null || prefs.getInt('scheduled_hours') == null || prefs.getInt('scheduled_minutes') == null) {
+        prefs.setBool('random_notifications', true);
+        prefs.setInt('random_start_hours', 9); //9am start
+        prefs.setInt('random_start_minutes', 0);
+        prefs.setInt('random_end_hours', 17); //5pm end
+        prefs.setInt('random_end_minutes', 0);
+        prefs.setInt('scheduled_hours', 12); //12pm
+        prefs.setInt('scheduled_minutes', 0);
+      }
+      prefs.setBool('allow_ai', true);
+      prefs.setBool('withdraw', false);
+      prefs.setBool('withdraw_in_crisis', false);
+      prefs.setBool('study_complete', false);
   }
 }
 
