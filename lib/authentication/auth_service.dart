@@ -18,12 +18,12 @@ import 'package:gratitude_app/select_method_page.dart';
 
 class AuthService {
 
-  Future<void> signup({required String email, required String password, required BuildContext context}) async {
+  Future<void> signup({required String username, required String password, required BuildContext context}) async {
     try {
       //create account
       // await FirebaseAuth.instance.signInWithCustomToken(token)
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email, 
+        email: '$username@mail.com', 
         password: password
       );      
 
@@ -48,9 +48,9 @@ class AuthService {
       if (e.code == 'weak-password') {
         message = 'The password provided is too weak.';
       } else if (e.code == 'email-already-in-use') {
-        message = 'An account already exists with this email.';
+        message = 'An account already exists with this username.';
       } else if (e.code == 'invalid-email') {
-        message = 'Please provide a valid email address.';
+        message = 'Please ensure your username contains only letters, numbers, or the following symbols: . , _ - + %';
       } else {
         message = 'An error occurred: ${e.code}';
       }
@@ -62,11 +62,11 @@ class AuthService {
   }
 
 
-  Future<void> signin({required String email, required String password, required BuildContext context}) async {
+  Future<void> signin({required String username, required String password, required BuildContext context}) async {
     try {
       //create account
       await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email, 
+        email: '$username@mail.com', 
         password: password
       );
       

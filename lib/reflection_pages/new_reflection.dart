@@ -55,7 +55,7 @@ class _NewReflectionPageState extends State<NewReflectionPage> {
             logController: TextEditingController(text: preloaded.isNotEmpty ? preloaded[1] : '')
           ),
           PromptWidget(
-            promptText: 'How can you be grateful for this challenging experiences?', 
+            promptText: 'How can you be grateful for this challenging experience?', 
             logController: TextEditingController(text: preloaded.isNotEmpty ? preloaded[2] : '')
           ),
         ];

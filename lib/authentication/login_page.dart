@@ -14,7 +14,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
 
-  TextEditingController emailController = TextEditingController();
+  TextEditingController usernameController = TextEditingController();
   TextEditingController pwController = TextEditingController();
   bool hasAccount = false;
   bool agreeToTerms = false;
@@ -28,7 +28,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void dispose() {
     super.dispose();
-    emailController.dispose();
+    usernameController.dispose();
     pwController.dispose();
   }
 
@@ -56,14 +56,14 @@ class _LoginPageState extends State<LoginPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            //email/password
+            //username/password
             Row(
               children: [
-                Text('Email: '),
+                Text('Username: '),
                 Expanded(
                   child: TextFormField(
-                    controller: emailController,
-                    keyboardType: TextInputType.emailAddress,
+                    controller: usernameController,
+                    // keyboardType: TextInputType.usernameAddress,
                   ),
                 )
               ],
@@ -117,7 +117,7 @@ class _LoginPageState extends State<LoginPage> {
                     );
                   } else {
                     await AuthService().signup(
-                      email: emailController.text,
+                      username: usernameController.text,
                       password: pwController.text,
                       context: context
                     );
@@ -125,7 +125,7 @@ class _LoginPageState extends State<LoginPage> {
                 } else {
                   //log in
                   await AuthService().signin(
-                    email: emailController.text,
+                    username: usernameController.text,
                     password: pwController.text,
                     context: context
                   );
@@ -136,6 +136,25 @@ class _LoginPageState extends State<LoginPage> {
                 Text('Log In')
               : Text('Sign Up')
             ),
+
+            // ElevatedButton(
+            //   onPressed: () async {
+            //     try {
+            //       final userCredential =
+            //           await FirebaseAuth.instance.signInAnonymously();
+            //       print("Signed in with temporary account: $userCredential");
+            //     } on FirebaseAuthException catch (e) {
+            //       switch (e.code) {
+            //         case "operation-not-allowed":
+            //           print("Anonymous auth hasn't been enabled for this project.");
+            //           break;
+            //         default:
+            //           print("Unknown error.");
+            //       }
+            //     }
+            //   },
+            //   child: Text('sign in anon')
+            // ),
         
             //switch log in / sign up pages
             Row(

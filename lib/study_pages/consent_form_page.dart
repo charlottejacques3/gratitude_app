@@ -38,6 +38,7 @@
 //   bool notInCrisis = false;
 //   TextEditingController name = TextEditingController();
 //   TextEditingController date = TextEditingController();
+//   TextEditingController email = TextEditingController();
 //   SignatureController signatureController = SignatureController(); 
 //   Uint8List? signatureBytes;
 
@@ -45,7 +46,7 @@
 //   String data = "# Gratitude Buddy";
 
 //   void sendEmail(String pdfFile) async {
-//     final email = FirebaseAuth.instance.currentUser!.email;
+//     // final email = FirebaseAuth.instance.currentUser!.email;
 //     final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
 //     await http.post(
 //       url,
@@ -59,7 +60,7 @@
 //         'user_id': 'SbsdJIwP7lrvY2JK1',
 //         'template_params': {
 //           'name': name.text,
-//           'email': email,
+//           'email': email.text,
 //           'form': pdfFile
 //         }
 //       }),
@@ -125,6 +126,8 @@
 //               //participant info
 //               pw.Text('Name: ${name.text}'),
 //               pw.Text('Date: ${date.text}'),
+//               pw.Text('Email: ${email.text}'),
+//               pw.Text('Username: ${FirebaseAuth.instance.currentUser!.email!.split('@')[0]}'),
 //               pw.Row(
 //                 children: [
 //                   pw.Text('Signature: '),
@@ -396,7 +399,6 @@
 //                   SizedBox(width: 10,),
 //                   Expanded(
 //                     child: TextFormField(
-//                       keyboardType: TextInputType.datetime,
 //                       controller: date,
 //                       validator: (value) {
 //                         if (value == null || value.isEmpty) {
@@ -410,7 +412,26 @@
 //               ),
 
 //               //email
-
+//               Row(
+//                 children: [
+//                   Text('Email'),
+//                   SizedBox(width: 10,),
+//                   Expanded(
+//                     child: TextFormField(
+//                       keyboardType: TextInputType.emailAddress,
+//                       controller: email,
+//                       validator: (value) {
+//                         if (value == null || value.isEmpty) {
+//                           return 'Please fill out this field';
+//                         } else if (!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value)) {
+//                           return 'Please enter a valid email address';
+//                         }
+//                         return null;
+//                       },
+//                     ),
+//                   ),
+//                 ],
+//               ),
 
 //               //show e-signature
 //               Padding(

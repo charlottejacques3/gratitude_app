@@ -43,7 +43,7 @@ class _SelectMethodPageState extends State<SelectMethodPage> {
             SizedBox(height: 30,),
             NavigatorButton(
               pageIndex: 0, 
-              text: "I'd like to make a gratitude list!",
+              text: "I can think of something to log - I'd like to go straight to the gratitude list!",
               icon: Icons.edit,
               iconLabel: 'Log',
             ),
