@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/authentication/auth_service.dart';
+import 'package:gratitude_app/utilities/widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 
@@ -54,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
+        child: ListView(
           children: [
             //username/password
             Row(
@@ -63,7 +64,6 @@ class _LoginPageState extends State<LoginPage> {
                 Expanded(
                   child: TextFormField(
                     controller: usernameController,
-                    // keyboardType: TextInputType.usernameAddress,
                   ),
                 )
               ],
@@ -78,6 +78,24 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 )
               ],
+            ),
+
+            //switch login/signup
+            Row(
+              children: 
+                hasAccount ? [
+                  Text("Don't have an account?"),
+                  TextButton(
+                    onPressed: switchPage, 
+                    child: Text('Sign up')
+                  )
+                ] : [
+                  Text("Already have an account?"),
+                  TextButton(
+                    onPressed: switchPage, 
+                    child: Text('Log in')
+                  )
+                ],
             ),
 
             //agree to terms if signing up
@@ -104,10 +122,11 @@ class _LoginPageState extends State<LoginPage> {
                 ],
               )
             : Container(),
+            SizedBox(height: 30,),
         
             //log in button
-            ElevatedButton(
-              onPressed: () async {
+            SwitchedColourButton(
+              onClick: () async {
                 //sign up
                 if (!hasAccount) {
                   //check if agreed to terms
@@ -130,49 +149,39 @@ class _LoginPageState extends State<LoginPage> {
                     context: context
                   );
                 }
-                
               }, 
-              child: hasAccount ?
-                Text('Log In')
-              : Text('Sign Up')
+              text: hasAccount ? 'Log In' : 'Sign Up'
             ),
 
-            // ElevatedButton(
-            //   onPressed: () async {
-            //     try {
-            //       final userCredential =
-            //           await FirebaseAuth.instance.signInAnonymously();
-            //       print("Signed in with temporary account: $userCredential");
-            //     } on FirebaseAuthException catch (e) {
-            //       switch (e.code) {
-            //         case "operation-not-allowed":
-            //           print("Anonymous auth hasn't been enabled for this project.");
-            //           break;
-            //         default:
-            //           print("Unknown error.");
-            //       }
-            //     }
-            //   },
-            //   child: Text('sign in anon')
-            // ),
-        
-            //switch log in / sign up pages
-            Row(
-              children: 
-                hasAccount ? [
-                  Text("Don't have an account?"),
-                  TextButton(
-                    onPressed: switchPage, 
-                    child: Text('Sign up')
-                  )
-                ] : [
-                  Text("Already have an account?"),
-                  TextButton(
-                    onPressed: switchPage, 
-                    child: Text('Log in')
-                  )
-                ],
-            )
+            !hasAccount ? Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Text('Or',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                
+                Row(
+                  children: [
+                    Expanded(
+                      child: SwitchedColourButton(
+                        onClick: () async {
+                           if (!agreeToTerms) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Please accept the Privacy Policy')),
+                            );
+                          } else {
+                            await AuthService().signInAnon(context: context);
+                          }
+                        }, 
+                        text: 'Sign In Anonymously'
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ) : Container(),
           ],
         ),
       )

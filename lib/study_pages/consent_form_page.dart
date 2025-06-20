@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/study_pages/demographics_page.dart';
 import 'package:http/http.dart' as http;
@@ -48,6 +49,7 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
 
   void sendEmail(String pdfFile) async {
     final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
+    String username = FirebaseAuth.instance.currentUser!.uid;
     await http.post(
       url,
       headers: {
@@ -61,7 +63,8 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
         'template_params': {
           'name': name.text,
           'email': email.text,
-          'form': pdfFile
+          'form': pdfFile,
+          'username': username
         }
       }),
     );
@@ -411,9 +414,9 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
               ),
           
               //finish consent form
-              ElevatedButton(
-                child: Text('Submit Form and Sign Up'),
-                onPressed: () async {
+              SwitchedColourButton(
+                text: 'Submit Form and Sign Up',
+                onClick: () async {
                   if(!readForm || !askQuestions || !voluntary || !withdrawConsent || !consent) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Please accept all terms of the consent form to use the app')),

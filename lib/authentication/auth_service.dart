@@ -6,6 +6,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:gratitude_app/authentication/login_page.dart';
 import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/study_pages/consent_form_page.dart';
 import 'package:gratitude_app/study_pages/demographics_page.dart';
@@ -21,43 +22,13 @@ class AuthService {
   Future<void> signup({required String username, required String password, required BuildContext context}) async {
     try {
       //create account
-      // await FirebaseAuth.instance.signInWithCustomToken(token)
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: '$username@mail.com', 
         password: password
       );      
-
-      //send to consent form page
-      Navigator.push(
-        context, 
-        MaterialPageRoute(builder: (BuildContext context) => const ConsentFormPage())
-      );
-
-      //sharedprefs
-      setSharedPrefs();
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setBool('consent_complete', false);
-      prefs.setBool('demographics_complete', false);
-      prefs.setBool('initial_questionnaires_complete', false);
-      prefs.setBool('asked_photo_permission', false);
-    } 
-    
-    //catch signup errors
-    on FirebaseAuthException catch(e) {
-      String message = '';
-      if (e.code == 'weak-password') {
-        message = 'The password provided is too weak.';
-      } else if (e.code == 'email-already-in-use') {
-        message = 'An account already exists with this username.';
-      } else if (e.code == 'invalid-email') {
-        message = 'Please ensure your username contains only letters, numbers, or the following symbols: . , _ - + %';
-      } else {
-        message = 'An error occurred: ${e.code}';
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      basicSignUp(context);
+    } on FirebaseAuthException catch(e) {
+      catchSignupErrors(e.code, context);
     }
   }
 
@@ -107,23 +78,9 @@ class AuthService {
       );
     } 
     
-    //catch signup errors
+    //catch signin errors
     on FirebaseAuthException catch(e) {
-      String message = '';
-      if (e.code == 'invalid-credential') {
-        message = 'The username or password is incorrect.';
-      } else if (e.code == 'user-not-found') {
-        message = 'No user found for that email.';
-      } else if (e.code == 'invalid-email') {
-        message = 'Please provide a valid email address.';
-      } else {
-        message = 'An error occurred: ${e.code}';
-      }
-
-      //show message to user
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      catchSigninErrors(e.code, context);
     }
   }
 
@@ -137,15 +94,102 @@ class AuthService {
     await FirebaseAuth.instance.signOut();
   }
 
-  //needs work
-  Future<void> deleteAccount({required BuildContext context}) async {
+
+  Future<void> reAuthDelete({required BuildContext context, required String email, required String password}) async {
+    //re-authenticate
+    final submittedCredential = EmailAuthProvider.credential(email: email, password: password);
+    try {
+      await FirebaseAuth.instance.currentUser?.reauthenticateWithCredential(submittedCredential);
+      deleteAccount(context);
+    } on FirebaseAuthException catch(e) {
+      catchSigninErrors(e.code, context);
+    }
+  }
+
+
+  Future<void> signInAnon({required BuildContext context}) async {
+    try {
+      await FirebaseAuth.instance.signInAnonymously();
+      basicSignUp(context);
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: ${e.code}'))
+      );
+    }
+  }
+
+
+  Future<void> anonToCredential({required BuildContext context, required String email, required String password}) async {
+    final submittedCredential = EmailAuthProvider.credential(email: email, password: password);
+
+    //link to user data
+    try {
+      await FirebaseAuth.instance.currentUser!.linkWithCredential(submittedCredential);
+    } on FirebaseAuthException catch (e) {
+      catchSignupErrors(e.code, context);
+    }
+  }
+
+
+  Future<void> basicSignUp(BuildContext context) async {
+    //send to consent form page
+    Navigator.push(
+      context, 
+      MaterialPageRoute(builder: (BuildContext context) => const ConsentFormPage())
+    );
+
+    //sharedprefs
+    setSharedPrefs();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool('consent_complete', false);
+    prefs.setBool('demographics_complete', false);
+    prefs.setBool('initial_questionnaires_complete', false);
+    prefs.setBool('asked_photo_permission', false);
+  }
+
+
+  Future<void> setSharedPrefs() async {
+    //pick random group + save to sharedprefs + global variables
+    //TEMPORARY - SET BACK!!!
+    int group = 1;//Random().nextInt(2); //0 is control group, 1 is experimental!!
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String groupName = 'control';
+    if (group == 1) {
+      groupName = 'experimental';
+    }
+    prefs.setString('group', groupName);
+    Globals.group = groupName;
+    print('ASSIGNED GROUP: $group');
+    print('GLOBAL VARIABLE: ${Globals.group}');
+
+    //save default settings to shared preferences
+    if (prefs.getBool('random_notifications') == null || prefs.getInt('random_start_hours') == null || prefs.getInt('random_start_minutes') == null || prefs.getInt('random_end_hours') == null || prefs.getInt('random_end_minutes') == null || prefs.getInt('scheduled_hours') == null || prefs.getInt('scheduled_minutes') == null) {
+      prefs.setBool('random_notifications', true);
+      prefs.setInt('random_start_hours', 9); //9am start
+      prefs.setInt('random_start_minutes', 0);
+      prefs.setInt('random_end_hours', 17); //5pm end
+      prefs.setInt('random_end_minutes', 0);
+      prefs.setInt('scheduled_hours', 12); //12pm
+      prefs.setInt('scheduled_minutes', 0);
+    }
+    prefs.setBool('allow_ai', true);
+    prefs.setBool('withdraw', false);
+    prefs.setBool('withdraw_in_crisis', false);
+    prefs.setBool('study_complete', false);
+  }
+
+
+  Future<void> deleteAccount(BuildContext context) async {
     //delete data
     DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group).child(FirebaseAuth.instance.currentUser!.uid);
     dbRef.remove();
 
     //delete images
     Reference imgRef = FirebaseStorage.instance.ref().child('images').child(FirebaseAuth.instance.currentUser!.uid);
-    imgRef.delete();
+    final listImages = await imgRef.listAll();
+    if (listImages.items.isNotEmpty) {
+      imgRef.delete();
+    }
 
     //cancel past alarms and notifications
     await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
@@ -154,37 +198,44 @@ class AuthService {
 
     await FirebaseAuth.instance.currentUser?.delete();
     await signout(context: context);
-  }
-
-  Future<void> setSharedPrefs() async {
-    //pick random group + save to sharedprefs + global variables
-      //TEMPORARY - SET BACK!!!
-      int group = 1;//Random().nextInt(2); //0 is control group, 1 is experimental!!
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String groupName = 'control';
-      if (group == 1) {
-        groupName = 'experimental';
-      }
-      prefs.setString('group', groupName);
-      Globals.group = groupName;
-      print('ASSIGNED GROUP: $group');
-      print('GLOBAL VARIABLE: ${Globals.group}');
-
-      //save default settings to shared preferences
-      if (prefs.getBool('random_notifications') == null || prefs.getInt('random_start_hours') == null || prefs.getInt('random_start_minutes') == null || prefs.getInt('random_end_hours') == null || prefs.getInt('random_end_minutes') == null || prefs.getInt('scheduled_hours') == null || prefs.getInt('scheduled_minutes') == null) {
-        prefs.setBool('random_notifications', true);
-        prefs.setInt('random_start_hours', 9); //9am start
-        prefs.setInt('random_start_minutes', 0);
-        prefs.setInt('random_end_hours', 17); //5pm end
-        prefs.setInt('random_end_minutes', 0);
-        prefs.setInt('scheduled_hours', 12); //12pm
-        prefs.setInt('scheduled_minutes', 0);
-      }
-      prefs.setBool('allow_ai', true);
-      prefs.setBool('withdraw', false);
-      prefs.setBool('withdraw_in_crisis', false);
-      prefs.setBool('study_complete', false);
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));
   }
 }
 
 
+
+void catchSignupErrors(String code, BuildContext context) {
+  String message;
+  switch (code) {
+    case 'weak-password':
+      message = 'The password provided is too weak.';
+    case 'email-already-in-use':
+      message = 'An account already exists with this username.';
+    case 'invalid-email':
+      message = 'Please ensure your username contains only letters, numbers, or the following symbols: . , _ - + %';
+    default:
+      message = 'An error occurred: $code';
+  }
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(message)),
+  );
+}
+
+void catchSigninErrors(String code, BuildContext context) {
+  String message;
+  switch (code) {
+    case 'user-not-found':
+      message = 'No user found for that username.';
+    case 'invalid-credential':
+      message = 'The username or password is incorrect.';
+    case 'invalid-email':
+      message = 'Please ensure your username contains only letters, numbers, or the following symbols: . , _ - + %';
+    default:
+      message = 'An error occurred: $code';
+  }
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(message)),
+  );
+}
