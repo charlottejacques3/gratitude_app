@@ -30,7 +30,7 @@ class AuthService {
       //send to consent form page
       Navigator.push(
         context, 
-        MaterialPageRoute(builder: (BuildContext context) => const DemographicsPage())//ConsentFormPage())
+        MaterialPageRoute(builder: (BuildContext context) => const ConsentFormPage())
       );
 
       //sharedprefs
