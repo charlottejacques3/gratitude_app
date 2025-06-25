@@ -3,6 +3,8 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:gratitude_app/authentication/auth_service.dart';
+import 'package:gratitude_app/authentication/login_page.dart';
 import 'package:gratitude_app/study_pages/demographics_page.dart';
 import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
@@ -196,7 +198,7 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
         //   icon: Icon(Icons.arrow_back)
         // ),
         centerTitle: true,
-        // automaticallyImplyLeading: false,
+        automaticallyImplyLeading: false,
         title: Text('Study Consent Form',
           style: Theme.of(context).textTheme.titleLarge!.copyWith(
             color: Theme.of(context).colorScheme.primary,
@@ -417,9 +419,60 @@ class _ConsentFormPageState extends State<ConsentFormPage> {
               SwitchedColourButton(
                 text: 'Submit Form and Sign Up',
                 onClick: () async {
-                  if(!readForm || !askQuestions || !voluntary || !withdrawConsent || !consent) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please accept all terms of the consent form to use the app')),
+                  if(!readForm || !askQuestions || !voluntary || !withdrawConsent || !consent || !ageResidency || !interviewRecorded || !dataUsed || !notInCrisis) {
+                    // ScaffoldMessenger.of(context).showSnackBar(
+                    //   const SnackBar(content: Text('Please accept all terms of the consent form to use the app')),
+                    // );
+                    // show dialog asking if they want to continue using app
+                    showDialog(
+                      context: context,
+                      builder:(context) => Dialog(
+                        child: Padding(
+                          padding: const EdgeInsets.all(15),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text('Please accept all terms of the consent form to use the app.',
+                                style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                                  fontWeight: FontWeight.bold
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(height: 15,),
+                              SwitchedColourButton(
+                                onClick: () => Navigator.pop(context), 
+                                text: 'Complete consent form'
+                              ),
+                              // ElevatedButton(
+                              //   onPressed: () => Navigator.pop(context), 
+                              //   child: Text('Complete consent form')
+                              // ),
+                              ElevatedButton(
+                                onPressed: () async {
+                                   showLoginDialog(
+                                    context: context,
+                                    header: 'Please log in again to confirm your account deletion',
+                                    submitButton: 'Delete Account',
+                                    username: TextEditingController(),
+                                    pw: TextEditingController(),
+                                    onSubmit: (TextEditingController username, TextEditingController pw) {
+                                      AuthService().reAuthDelete(context: context, email: '${username.text}@mail.com', password: pw.text);
+                                    }
+                                  );
+                                  // await FirebaseAuth.instance.currentUser?.delete();
+                                  // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));
+                                },
+                                child: Text('I no longer wish to use the app',
+                                  style: TextStyle(
+                                    color: Color.fromARGB(255, 209, 108, 103)
+                                  )
+                                )
+                              )
+                            ],
+                          )
+                        )
+                      ),
                     );
                   } else if (signatureBytes == null) {
                     ScaffoldMessenger.of(context).showSnackBar(

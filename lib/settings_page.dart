@@ -9,6 +9,7 @@ import 'package:gratitude_app/authentication/login_page.dart';
 import 'package:gratitude_app/resources_page.dart';
 import 'package:gratitude_app/study_pages/questionnaire_page.dart';
 import 'package:gratitude_app/study_pages/withdraw_page.dart';
+import 'package:gratitude_app/utilities/widgets.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -118,74 +119,7 @@ class _SettingsPageState extends State<SettingsPage> {
     return {'notifications': notifsAllowed, 'alarms': alarmsAllowed};
   }
 
-  void showLoginDialog({required String header, required Function onSubmit, required TextEditingController username, required TextEditingController pw, required String submitButton}) {
-    showDialog(
-      context: context, 
-      barrierDismissible:  false,
-      builder: (context) => Dialog(
-        child: Padding(
-          padding: const EdgeInsets.all(15),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(header,
-                style: Theme.of(context).textTheme.titleMedium
-              ),
-              Row(
-                children: [
-                  Text('Username: '),
-                  Expanded(
-                    child: TextFormField(
-                      controller: username,
-                    ),
-                  )
-                ],
-              ),
-              Row(
-                children: [
-                  Text('Password: '),
-                  Expanded(
-                    child: TextFormField(
-                      controller: pw,
-                      obscureText: true,
-                    ),
-                  )
-                ],
-              ),
-              SizedBox(height: 15,),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text('Cancel',
-                        textAlign: TextAlign.center,
-                      )
-                    ),
-                  ),
-                  SizedBox(width: 8,),
-                  Expanded(
-                    child: ElevatedButton(
-                      style: Theme.of(context).elevatedButtonTheme.style!.copyWith(
-                        backgroundColor: WidgetStatePropertyAll<Color>(Color.fromARGB(255, 209, 108, 103)),
-                      ),
-                      onPressed: () => onSubmit(username, pw),
-                      child: Text(submitButton,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white
-                        ),
-                      )
-                    ),
-                  ),
-                ],
-              )
-            ],
-          ),
-        )
-      )
-    );
-  }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -617,6 +551,7 @@ class _SettingsPageState extends State<SettingsPage> {
             //convert to permanent account if anon
             FirebaseAuth.instance.currentUser!.isAnonymous ? ElevatedButton(
               onPressed: () => showLoginDialog(
+                context: context,
                 header: 'Please choose a username and password',
                 submitButton: 'Sign Up',
                 username: TextEditingController(),
@@ -631,11 +566,8 @@ class _SettingsPageState extends State<SettingsPage> {
             //otherwise show account info
             : Column(
               children: [
-                Row(
-                  children: [
-
-                  ],
-                )
+                Text('Username: ${FirebaseAuth.instance.currentUser!.email!.split('@')[0]}'),
+                Text('Password: ${'*'*6}')
               ],
             ),
 
@@ -658,6 +590,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 //prompt to log in again if they have an account
                 if (!FirebaseAuth.instance.currentUser!.isAnonymous) {
                   showLoginDialog(
+                    context: context,
                     header: 'Please log in again to confirm your account deletion',
                     submitButton: 'Delete Account',
                     username: TextEditingController(),

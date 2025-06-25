@@ -159,6 +159,76 @@ class DynamicFormWidget extends StatelessWidget {
 }
 
 
+void showLoginDialog({required BuildContext context, required String header, required Function onSubmit, required TextEditingController username, required TextEditingController pw, required String submitButton}) {
+    showDialog(
+      context: context, 
+      barrierDismissible:  false,
+      builder: (context) => Dialog(
+        child: Padding(
+          padding: const EdgeInsets.all(15),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(header,
+                style: Theme.of(context).textTheme.titleMedium
+              ),
+              Row(
+                children: [
+                  Text('Username: '),
+                  Expanded(
+                    child: TextFormField(
+                      controller: username,
+                    ),
+                  )
+                ],
+              ),
+              Row(
+                children: [
+                  Text('Password: '),
+                  Expanded(
+                    child: TextFormField(
+                      controller: pw,
+                      obscureText: true,
+                    ),
+                  )
+                ],
+              ),
+              SizedBox(height: 15,),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text('Cancel',
+                        textAlign: TextAlign.center,
+                      )
+                    ),
+                  ),
+                  SizedBox(width: 8,),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: Theme.of(context).elevatedButtonTheme.style!.copyWith(
+                        backgroundColor: WidgetStatePropertyAll<Color>(Color.fromARGB(255, 209, 108, 103)),
+                      ),
+                      onPressed: () => onSubmit(username, pw),
+                      child: Text(submitButton,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white
+                        ),
+                      )
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+        )
+      )
+    );
+  }
+
+
 // class BottomNavBar extends StatelessWidget {
 
 //   const BottomNavBar({super.key});
