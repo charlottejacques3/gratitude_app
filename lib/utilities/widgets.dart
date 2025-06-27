@@ -159,7 +159,7 @@ class DynamicFormWidget extends StatelessWidget {
 }
 
 
-void showLoginDialog({required BuildContext context, required String header, required Function onSubmit, required TextEditingController username, required TextEditingController pw, required String submitButton}) {
+void showLoginDialog({required BuildContext context, required String header, required Function onSubmit, required TextEditingController username, required TextEditingController pw, required String submitButton, bool newItem=false, TextEditingController? newCon}) {
     showDialog(
       context: context, 
       barrierDismissible:  false,
@@ -184,7 +184,7 @@ void showLoginDialog({required BuildContext context, required String header, req
               ),
               Row(
                 children: [
-                  Text('Password: '),
+                  newItem ? Text('Old Password: ') : Text('Password: '),
                   Expanded(
                     child: TextFormField(
                       controller: pw,
@@ -193,6 +193,18 @@ void showLoginDialog({required BuildContext context, required String header, req
                   )
                 ],
               ),
+              //change password if applicable
+              newItem ? Row(
+                children: [
+                  Text('New Password: '),
+                  Expanded(
+                    child: TextFormField(
+                      controller: newCon,
+                      obscureText: true,
+                    ),
+                  )
+                ],
+              ) : Container(),
               SizedBox(height: 15,),
               Row(
                 children: [
@@ -210,7 +222,13 @@ void showLoginDialog({required BuildContext context, required String header, req
                       style: Theme.of(context).elevatedButtonTheme.style!.copyWith(
                         backgroundColor: WidgetStatePropertyAll<Color>(Color.fromARGB(255, 209, 108, 103)),
                       ),
-                      onPressed: () => onSubmit(username, pw),
+                      onPressed: () {
+                        if (newCon != null) {
+                          onSubmit(username, pw, newCon);
+                        } else {
+                          onSubmit(username, pw);
+                        }
+                      },
                       child: Text(submitButton,
                         textAlign: TextAlign.center,
                         style: TextStyle(

@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:another_flushbar/flushbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -112,9 +113,10 @@ class AuthService {
       await FirebaseAuth.instance.signInAnonymously();
       basicSignUp(context);
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: ${e.code}'))
-      );
+      Flushbar(
+        message: 'An error occurred: ${e.code}',
+        duration: Duration(milliseconds: 1500),
+      ).show(context);
     }
   }
 
@@ -129,6 +131,35 @@ class AuthService {
       catchSignupErrors(e.code, context);
     }
   }
+
+
+  Future<bool> editPassword({required BuildContext context, required String email, required String newPassword, required String oldPassword}) async {
+    //re-authenticate
+    final submittedCredential = EmailAuthProvider.credential(email: email, password: oldPassword);
+    try {
+      await FirebaseAuth.instance.currentUser?.reauthenticateWithCredential(submittedCredential);
+      //change password
+      // try {
+        await FirebaseAuth.instance.currentUser!.updatePassword(newPassword);
+        return true;
+      // } catch(e) {
+        // print('TYPE: ${e.runtimeType}');
+        // catchSignupErrors(e.code, context);
+        // return false;
+      // }
+    } on FirebaseAuthException catch(e) {
+      print('AUTH EXCEPTION ${e.code}');
+      if (e.code.compareTo('weak-password') == 0) {
+        catchSignupErrors(e.code, context);
+      } else {
+        catchSigninErrors(e.code, context);
+      }
+      return false;
+    } catch(e) {
+      print('Error changing password: $e');
+      return false;
+    }
+   }
 
 
   Future<void> basicSignUp(BuildContext context) async {
@@ -217,9 +248,10 @@ void catchSignupErrors(String code, BuildContext context) {
       message = 'An error occurred: $code';
   }
 
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(message)),
-  );
+  Flushbar(
+    message: message,
+    duration: Duration(milliseconds: 1500),
+  ).show(context);
 }
 
 void catchSigninErrors(String code, BuildContext context) {
@@ -235,7 +267,8 @@ void catchSigninErrors(String code, BuildContext context) {
       message = 'An error occurred: $code';
   }
 
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(message)),
-  );
+  Flushbar(
+    message: message,
+    duration: Duration(milliseconds: 1500),
+  ).show(context);
 }

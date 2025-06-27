@@ -565,9 +565,43 @@ class _SettingsPageState extends State<SettingsPage> {
             ) 
             //otherwise show account info
             : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                SizedBox(height: 10,),
                 Text('Username: ${FirebaseAuth.instance.currentUser!.email!.split('@')[0]}'),
-                Text('Password: ${'*'*6}')
+                Row(
+                  children: [
+                    Text('Password: '),
+                    Icon(Icons.circle, size: 8,),
+                    Icon(Icons.circle, size: 8,),
+                    Icon(Icons.circle, size: 8,),
+                    Icon(Icons.circle, size: 8,),
+                    Icon(Icons.circle, size: 8,),
+                    Icon(Icons.circle, size: 8,),
+                    Spacer(),
+                    TextButton(
+                      child: Text('Edit Password'),
+                      onPressed: () => showLoginDialog(
+                        context: context,
+                        header: 'Please choose a new password',
+                        submitButton: 'Edit Password',
+                        username: TextEditingController(),
+                        pw: TextEditingController(),
+                        newCon: TextEditingController(),
+                        newItem: true,
+                        onSubmit: (TextEditingController username, TextEditingController pw, TextEditingController newCon) async {
+                          if (await AuthService().editPassword(context: context, email: '${username.text}@mail.com', oldPassword: pw.text, newPassword: newCon.text)) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Password updated successfully')),
+                            );
+                            Navigator.pop(context);
+                          }
+                        }
+                      ),
+                    )
+                  ],
+                ),
+                SizedBox(height: 15,)
               ],
             ),
 
