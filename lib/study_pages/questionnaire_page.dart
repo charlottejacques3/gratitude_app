@@ -231,22 +231,25 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
       //set notifs
       await NotificationService.initNotifications();
 
+      //set sharedprefs according to given permissions
+      bool notifPermission = await Permission.notification.isGranted;
+      bool alarmPermission = await Permission.scheduleExactAlarm.isGranted;
+      prefs.setBool('notifs_allowed', notifPermission);
+      prefs.setBool('alarms_allowed', alarmPermission);
+      print('NOTIFS: ${prefs.getBool('notifs_allowed')}, ALARMS: ${prefs.getBool('alarms_allowed')}');
+
       //cancel past alarms to avoid backlog
       await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
-      
-      //check for notification permission
-      final notificationPermission = await Permission.notification.status; 
-      final exactAlarmPermission = await Permission.scheduleExactAlarm.status;
 
       //schedule the next alarm if notifs allowed
-      if (notificationPermission.isGranted) {
+      if (notifPermission) {
         await AndroidAlarmManager.oneShot(
           const Duration(seconds: 5), //schedule 5 seconds later
           0, 
           notificationScheduler,
           rescheduleOnReboot: true,
           allowWhileIdle: true,
-          exact: exactAlarmPermission.isGranted,
+          exact: alarmPermission,
           wakeup: true
         );
       }

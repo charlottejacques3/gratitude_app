@@ -161,7 +161,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     currentPageIndex = widget.startingPageIndex;
 
-    checkinDialog();
+    // checkinDialog();
   }
 
   void checkinDialog() async {
