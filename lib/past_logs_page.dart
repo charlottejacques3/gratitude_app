@@ -28,7 +28,7 @@ class _PastLogsPageState extends State<PastLogsPage> {
   List<Map<dynamic, dynamic>> gratitudeLogs = [];
   Map<String, Map<String, List<Map<String, String>>>> categorizedLogs = {};
   Map<String, int> moodsByDate = {};
-  Map<String, int> moodsByTime = {};
+  Map<String, Map<String, int>> moodsByTime = {};
   List<IconData> moods = [Icons.sentiment_very_dissatisfied, Icons.sentiment_dissatisfied, Icons.sentiment_neutral, Icons.sentiment_satisfied_alt, Icons.sentiment_very_satisfied_rounded];
   List<Color> colours = [Color.fromARGB(255, 250, 100, 100), Color.fromARGB(255, 250, 142, 100), Color.fromARGB(255, 214, 185, 87), Color.fromARGB(255, 152, 201, 97), Color.fromARGB(255, 105, 182, 159)];
   bool loading = true;
@@ -143,13 +143,23 @@ class _PastLogsPageState extends State<PastLogsPage> {
         for(final moodLog in moods) {
           if (mounted) {
             // String formatted = formatDate(moodLog['date']);
-            setState(() {
+            
+            if (moodLog['final_mood'] != null) {
+              Map<String, int> data = {};
               try {
-                moodsByTime[moodLog['date']] = moodLog['mood'];
+                data = {
+                  'final': moodLog['final_mood']
+                };
+                if (moodLog['initial_mood'] != null) {
+                  data['initial'] = moodLog['initial_mood'];
+                }
               } on Exception catch (e) {
                 print('error: $e');
               }
-            });
+              setState(() {
+                moodsByTime[moodLog['date']] = data;
+              });
+            }
           }
         }
       }
@@ -272,7 +282,7 @@ class _PastLogsPageState extends State<PastLogsPage> {
                                                       width: 0.5,
                                                       color: Colors.black
                                                     ),
-                                                    color: colours[moodsByTime[dateMap.keys.elementAt(middleIndex)]! - 1],
+                                                    color: colours[moodsByTime[dateMap.keys.elementAt(middleIndex)]!['final']! - 1],
                                                   ),
                                                   child: Padding(
                                                     padding: const EdgeInsets.all(8.0),
@@ -282,7 +292,16 @@ class _PastLogsPageState extends State<PastLogsPage> {
                                                         Text('Mood: ',
                                                           style: Theme.of(context).textTheme.bodyLarge!
                                                         ),
-                                                        Icon(moods[moodsByTime[dateMap.keys.elementAt(middleIndex)]! - 1],
+
+                                                        //if there's an initial mood
+                                                        moodsByTime[dateMap.keys.elementAt(middleIndex)]!['initial'] != null ? Row(
+                                                          children: [
+                                                            Icon(moods[moodsByTime[dateMap.keys.elementAt(middleIndex)]!['initial']! - 1]),
+                                                            Icon(Icons.arrow_forward)
+                                                          ],
+                                                        ) : Container(),
+
+                                                        Icon(moods[moodsByTime[dateMap.keys.elementAt(middleIndex)]!['final']! - 1],
                                                         )
                                                       ],
                                                     ),

@@ -15,6 +15,8 @@ class LogsModel extends ChangeNotifier {
   String get inspoUsed => _inspoUsed;
   String _guidingStage = '';
   String get guidingStage => _guidingStage;
+  int _sessionMood = 0;
+  int get sessionMood => _sessionMood;
 
 
   void addTextLog(DynamicFormWidget log, bool preloaded) {
@@ -81,6 +83,11 @@ class LogsModel extends ChangeNotifier {
 
   void setGuidingStage(String stage) {
     _guidingStage = stage;
+    notifyListeners();
+  }
+
+  void setSessionMood(int moodIndex) {
+    _sessionMood = moodIndex;
     notifyListeners();
   }
 }

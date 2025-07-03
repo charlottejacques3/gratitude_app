@@ -19,24 +19,24 @@ class _SelectMethodPageState extends State<SelectMethodPage> {
     return Scaffold(
       backgroundColor: Color.fromARGB(248, 227, 196, 225),
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+        // automaticallyImplyLeading: false,
         backgroundColor: Color.fromARGB(0, 188, 143, 186),
-        actions: [
-          Padding(
-            padding: EdgeInsetsGeometry.all(8),
-            child: IconButton(
-              icon: Icon(Icons.close),
-              onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(startingPageIndex: 0))),
-            ),
-          )
-        ],
+        // actions: [
+        //   Padding(
+        //     padding: EdgeInsetsGeometry.all(8),
+        //     child: IconButton(
+        //       icon: Icon(Icons.close),
+        //       onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(startingPageIndex: 0))),
+        //     ),
+        //   )
+        // ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
             SizedBox(height: 50,),
-            Text('Welcome back! \n\nHow would you like to practice gratitude today?',
+            Text('How would you like to practice gratitude today?',
               style: Theme.of(context).textTheme.titleLarge!,
               textAlign: TextAlign.center,
             ),

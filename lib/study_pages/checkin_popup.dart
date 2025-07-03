@@ -22,6 +22,12 @@ class _CheckinPopupState extends State<CheckinPopup> {
   bool additionalDistress = false;
 
   @override
+  void initState() {
+    super.initState();
+    print('CHECKING POPUP');
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: Color.fromARGB(255, 250, 240, 230),

@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/authentication/auth_service.dart';
+import 'package:gratitude_app/init_mood_page.dart';
 import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/select_method_page.dart';
 import 'package:gratitude_app/study_pages/study_complete_page.dart';
@@ -221,7 +222,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
       Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (BuildContext context) {
           if (Globals.group.compareTo('experimental') == 0) {
-            return SelectMethodPage();
+            return InitialMoodPage();
           } else {
             return MyHomePage(startingPageIndex: 0);
           }

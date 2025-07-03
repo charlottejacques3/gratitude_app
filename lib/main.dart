@@ -167,29 +167,8 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     currentPageIndex = widget.startingPageIndex;
-
-    checkinDialog();
   }
 
-  void checkinDialog() async {
-    //show checkin dialog if applicable
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? lastIso = prefs.getString('last_checkin');
-    if (lastIso == null || !DateUtils.isSameDay(DateTime.parse(lastIso), DateTime.now())) {
-
-      //show the dialog
-      showDialog(
-        context: context,
-        barrierDismissible: false, 
-        builder: (BuildContext context)  {
-          return CheckinPopup();
-        }
-      );
-
-      //update that it's been seen
-      prefs.setString('last_checkin', DateTime.now().toIso8601String());
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

@@ -158,6 +158,38 @@ class DynamicFormWidget extends StatelessWidget {
   }
 }
 
+class MoodButton extends StatelessWidget {
+  const MoodButton({super.key, required this.moodNum, required this.icon, required this.onClick, required this.selectedMood, required this.iconColour, this.initial=false});
+
+  final int moodNum;
+  final IconData icon;
+  final Function onClick;
+  final int selectedMood;
+  final Color iconColour;
+  final bool initial;
+
+  @override
+  Widget build(BuildContext context) {
+    
+    WidgetStateProperty<Color> selectedColour = WidgetStatePropertyAll<Color>(Color.fromARGB(100, 150, 150, 150));
+    WidgetStateProperty<Color> unselectedColour = WidgetStatePropertyAll<Color>(Color.fromARGB(255, 250, 240, 230));
+    WidgetStateProperty<Color> initBg = WidgetStatePropertyAll<Color>(Color.fromARGB(250, 227, 196, 225));
+
+    return Expanded(
+      child: IconButton(
+        style: ButtonStyle(
+          backgroundColor: selectedMood == moodNum ? selectedColour : initial ? initBg : unselectedColour
+        ),
+        onPressed: () => onClick(),
+        icon: Icon(icon,
+          size: 40,
+          color: iconColour,
+        )
+      ),
+    );
+  } 
+}
+
 
 void showLoginDialog({required BuildContext context, required String header, required Function onSubmit, required TextEditingController username, required TextEditingController pw, required String submitButton, bool newItem=false, TextEditingController? newCon}) {
     showDialog(

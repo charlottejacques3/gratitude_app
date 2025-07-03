@@ -1,6 +1,8 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gratitude_app/authentication/login_page.dart';
+import 'package:gratitude_app/init_mood_page.dart';
 import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/resources_page.dart';
 import 'package:gratitude_app/select_method_page.dart';
@@ -45,14 +47,14 @@ class _ParticipantGateState extends State<ParticipantGate> {
               if (withdraw == null || !withdraw) {
 
                 //check if completed consent form, demographics, questionnaires - CONSENT ONLY FOR IN THE WILD!
-                bool? consent = snapshot.data!.getBool('consent_complete');
+                // bool? consent = snapshot.data!.getBool('consent_complete');
                 bool? demographics = snapshot.data!.getBool('demographics_complete');
                 bool? questionnaire1 = snapshot.data!.getBool('initial_questionnaires_complete');
                 bool? studyComplete = snapshot.data!.getBool('study_complete');
                 bool? withdrawInCrisis = snapshot.data!.getBool('withdraw_in_crisis');
-                if (consent != null && !consent) {
-                  return ConsentFormPage();
-                } 
+                // if (consent != null && !consent) {
+                //   return ConsentFormPage();
+                // } 
                 if (studyComplete != null && studyComplete) {
                   return StudyCompletePage();
                 }
@@ -66,7 +68,12 @@ class _ParticipantGateState extends State<ParticipantGate> {
                   return QuestionnairePage(number: 1,);
                 }
                 else {
-                  return AuthGate();
+                  if (FirebaseAuth.instance.currentUser == null) {
+                    return LoginPage();
+                  } else if (Globals.group.compareTo('experimental') == 0) {
+                    return InitialMoodPage();
+                  }
+                  return MyHomePage(startingPageIndex: 0,);
                 }
               } else {
                 return WithdrawPage();
@@ -95,7 +102,7 @@ class AuthGate extends StatelessWidget {
         if (!snapshot.hasData) {
           return LoginPage();
         } else if (Globals.group.compareTo('experimental') == 0) {
-          return SelectMethodPage();
+          return InitialMoodPage();
         }
         return MyHomePage(startingPageIndex: 0,);
       },

@@ -396,7 +396,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
                           inspirationUsed: data['inspo_to_log'][inspirationUsed] + 1
                         });
                       } else {
-                        Map<String, int> record = {'Gratitude Prompt': 0, 'Random Photo': 0, 'Random Past Log': 0};
+                        Map<String, int> record = {'Gratitude Prompt': 0, 'Random Photo': 0, 'Random Past Log': 0, 'Past Advice': 0};
                         record[inspirationUsed] = 1;
                         statsRef.update({
                           'inspo_to_log': record

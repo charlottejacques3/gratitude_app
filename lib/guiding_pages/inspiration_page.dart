@@ -17,9 +17,6 @@ import '../utilities/date_functions.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 
-//CHANGE SO ONLY READING FROM DATABASE/PHOTO LIBRARY ONCE!!
-
-
 class InspirationPage extends StatefulWidget {
 
   const InspirationPage({super.key});
@@ -35,6 +32,8 @@ class _InspirationPageState extends State<InspirationPage> {
                                                           .child(FirebaseAuth.instance.currentUser!.uid);
   StreamSubscription<DatabaseEvent>? listener1;
   StreamSubscription<DatabaseEvent>? listener2;
+  StreamSubscription<DatabaseEvent>? adviceListener1;
+  StreamSubscription<DatabaseEvent>? adviceListener2;
   String inspoType = 'Random Past Log';
   List<String> selectedInspoTypes = ['Gratitude Prompt'];
   List<String> possibleInspoTypes = ['Gratitude Prompt'];
@@ -44,6 +43,8 @@ class _InspirationPageState extends State<InspirationPage> {
   bool loading = true;
   String selectedPastLogType = '';
   AssetEntity? selectedPhoto;
+  String selectedAdvice = '';
+  String selectedAdviceRelativeDate = '';
   List<String> prompts = ['What made you smile today?', 
                           'What is going well with your health?', 
                           'What is a small act of kindness that you have experienced recently?',
@@ -90,7 +91,7 @@ class _InspirationPageState extends State<InspirationPage> {
   bool connection = true;
   List<dynamic> selectedAlbums = List.empty(growable: true);
 
-  Map<String, int> inspoStats = {'Gratitude Prompt': 0, 'Random Photo': 0, 'Random Past Log': 0};
+  Map<String, int> inspoStats = {'Gratitude Prompt': 0, 'Random Photo': 0, 'Random Past Log': 0, 'Past Advice': 0};
 
   @override
   void initState() {
@@ -102,13 +103,19 @@ class _InspirationPageState extends State<InspirationPage> {
   }
 
   @override
-  void dispose() async{
+  void dispose() async {
     super.dispose();
     if (listener1 != null) {
       await listener1!.cancel();
     }
     if (listener2 != null) {
       await listener2!.cancel();
+    }
+    if (adviceListener1 != null) {
+      await adviceListener1!.cancel();
+    }
+    if (adviceListener2 != null) {
+      await adviceListener2!.cancel();
     }
     sendStats();
   }
@@ -239,6 +246,21 @@ class _InspirationPageState extends State<InspirationPage> {
         }
       }
     });
+
+    //check if there is advice
+    adviceListener1 = dbUserRef.child('Advice').onValue.listen((event) {
+      DataSnapshot dataSnapshot = event.snapshot;
+      if (dataSnapshot.value != null) {
+        Map<dynamic, dynamic> values =  dataSnapshot.value as Map<dynamic, dynamic>;
+
+        if (values.isNotEmpty) {
+          setState(() {
+            possibleInspoTypes.add('Past Advice');
+            selectedInspoTypes.add('Past Advice');
+          });
+        }
+      }
+    });
   }
 
   //pick a category of inspiration
@@ -271,6 +293,9 @@ class _InspirationPageState extends State<InspirationPage> {
           selectedPromptIndex = Random().nextInt(prompts.length);
         });
         break;
+      case 'Past Advice':
+        pickAdvice();
+        inspoStats['Past Advice'] = inspoStats['Past Advice']! + 1;
     }
   }
 
@@ -335,10 +360,6 @@ class _InspirationPageState extends State<InspirationPage> {
       DataSnapshot dataSnapshot = event.snapshot;
       if (dataSnapshot.value != null) {
         Map<dynamic, dynamic> values = dataSnapshot.value as Map<dynamic, dynamic>;
-        //choose a different one if it's empty, if possible
-        // if (values.isEmpty && selectedInspoTypes.length >) {
-
-        // }
         List<dynamic> keys = values.keys.toList();
 
         //pick random key
@@ -366,6 +387,38 @@ class _InspirationPageState extends State<InspirationPage> {
             selectedPastLog = values[pastLogKey]['gratitude_item'];
             selectedLogRelativeDate = formatted;
             selectedPastLogType = values[pastLogKey]['type'];
+            loading = false;
+          });
+        }
+      }
+    });
+  }
+
+  //randomly generate a piece of advice
+  void pickAdvice() {
+    adviceListener2 = dbUserRef.child('Advice').onValue.listen((event) {
+
+      //get list of keys
+      DataSnapshot dataSnapshot = event.snapshot;
+      if (dataSnapshot.value != null) {
+        Map<dynamic, dynamic> values = dataSnapshot.value as Map<dynamic, dynamic>;
+        List<dynamic> keys = values.keys.toList();
+
+        //pick random key
+        final randomNum = Random().nextInt(values.length);
+        dynamic pastLogKey = keys[randomNum];
+
+        //format the date
+        String formatted = formatDate(values[pastLogKey]['date']);
+        if (formatted.compareTo('Today') == 0 || formatted.compareTo('Yesterday') == 0) {
+          formatted = formatted.toLowerCase();
+        } 
+
+        //set selectedPastLog to the log at that key
+        if (mounted) {
+          setState(() {
+            selectedAdvice = values[pastLogKey]['advice'];
+            selectedAdviceRelativeDate = formatted;
             loading = false;
           });
         }
@@ -403,21 +456,8 @@ class _InspirationPageState extends State<InspirationPage> {
 
   //request permission for + get a random photo
   Future<void> getRandomPhoto() async {
-
-    // final PermissionState ps = await PhotoManager.requestPermissionExtend();
-
-    // // permission granted, get the photos
-    // if (ps.isAuth) { //|| ps == PermissionState.limited) {
       List<AssetEntity> photos = [];
-      
-      // final List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
-      //   type: RequestType.image,
-      // );
       List<AssetPathEntity> albums = await getAlbums();
-      // if (albums.isNotEmpty) {
-      //   final AssetPathEntity cameraRoll = albums.first;
-      //   photos = await cameraRoll.getAssetListPaged(page: 0, size: 100);
-      // }
       for (final album in albums) {
         if (selectedAlbums.contains(album.name)) {
           photos.addAll(await album.getAssetListPaged(page: 0, size: 100));
@@ -436,25 +476,12 @@ class _InspirationPageState extends State<InspirationPage> {
         });
       }
     } 
-    
-    //permission denied
-    // else {
-    //   PhotoManager.openSetting();
-    // }
-  // }
 
   //for saving to firebase
   Future<String> saveImageToFirebase() async {
-    // selectedPhoto.file
     String filename = DateTime.now().toIso8601String(); //filename with datetime
     
     try {
-    //save selected photo to storage
-    // final byteData = await rootBundle.load('assets/$filename');
-    // final file = File('${(await getTemporaryDirectory()).path}/$filename');
-    // await file.create(recursive: true);
-    // await file.writeAsBytes(byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
-
     //create references of folders/files
       if (selectedPhoto == null) throw Error();
       File? file = await selectedPhoto!.file;
@@ -475,10 +502,7 @@ class _InspirationPageState extends State<InspirationPage> {
 
   void selectAlbumsDialog() async {
     //get all albums
-    List<AssetPathEntity> allAlbums = await getAlbums(); //fix this function
-
-    
-    
+    List<AssetPathEntity> allAlbums = await getAlbums();
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -538,16 +562,6 @@ class _InspirationPageState extends State<InspirationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   centerTitle: true,
-      //   title: 
-      //     Text('Log Gratitude',
-      //       style: Theme.of(context).textTheme.titleLarge!.copyWith(
-      //         color: Theme.of(context).colorScheme.primary,
-      //         fontWeight: FontWeight.bold
-      //       ),
-      //     ),
-      // ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Center(
@@ -612,6 +626,41 @@ class _InspirationPageState extends State<InspirationPage> {
                       ]
                     );
                   } 
+
+                  //pick a random piece of advice
+                  else if (inspoType.compareTo('Past Advice') == 0) {
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        selectedAdvice.isEmpty ? //no logs
+                        Center(
+                          child: Text(
+                            'No advice left yet, try choosing a different option',
+                            style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold
+                            ),
+                          ),
+                        ) :
+                        //display progress indicator if not loaded
+                        loading 
+                          ? CircularProgressIndicator()
+                        :
+                        //past log
+                        Text('Remember, as you from $selectedAdviceRelativeDate said:',
+                          style: Theme.of(context).textTheme.titleMedium!,
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 20),
+                        Text(selectedAdvice,
+                          style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold
+                          ),
+                        )
+                      ]
+                    );
+                  }
                   
                   //pick a random photo
                   else if (inspoType.compareTo('Random Photo') == 0) {
@@ -698,7 +747,8 @@ class _InspirationPageState extends State<InspirationPage> {
                   //back to logs button
                   Expanded(
                     child: ElevatedButton(
-                      child: Text('Add to Gratitude Log', textAlign: TextAlign.center,),
+                      child: inspoType.compareTo('Past Advice') == 0 ? Text('Back to Gratitude Log', textAlign: TextAlign.center,) :
+                       Text('Add to Gratitude Log', textAlign: TextAlign.center,),
                       onPressed: () async {
                         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(startingPageIndex: 0)));
                         // Navigator.pop(context);
@@ -784,7 +834,7 @@ class _InspirationPageState extends State<InspirationPage> {
                                   }, 
                                 );
                               },
-                              menuChildren: ['Gratitude Prompt', 'Random Past Log', 'Random Photo'].map((e) {
+                              menuChildren: ['Gratitude Prompt', 'Random Past Log', 'Random Photo', 'Past Advice'].map((e) {
                                 return MenuItemButton(
                                   child: InkWell(
                                     child: Row(
@@ -844,12 +894,20 @@ class _InspirationPageState extends State<InspirationPage> {
                                                     'Add a Log',
                                                     true
                                                   );
+                                              } else if (e.compareTo('Past Advice') == 0) {
+                                                dialog(
+                                                    'Please leave a piece of advice (after logging gratitude) to use this feature',
+                                                    () {
+                                                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(startingPageIndex: 0)));
+                                                    },
+                                                    'Add a Log',
+                                                    true
+                                                  );
                                               } else {
                                                 ScaffoldMessenger.of(context).showSnackBar(
                                                   SnackBar(content: Text('Error: this feature is not currently available')),
                                                 );
                                               }
-                                              
                                             }
                                           }
                                         ),

@@ -23,7 +23,7 @@ class _MainReframingPageState extends State<MainReframingPage> {
 
   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group)
                                                           .child(FirebaseAuth.instance.currentUser!.uid)
-                                                          .child('Advice');
+                                                          .child('NegativeAdvice');
   StreamSubscription<DatabaseEvent>? listener;
   String selectedAdvice = '';
 
@@ -45,7 +45,7 @@ class _MainReframingPageState extends State<MainReframingPage> {
         final randomNum = Random().nextInt(values.length);
         dynamic pastLogKey = keys[randomNum];
 
-        //set selectedPastLog to the log at that key
+        //set selectedAdvice to the log at that key
         if (mounted) {
           setState(() {
             selectedAdvice = values[pastLogKey]['advice'];
