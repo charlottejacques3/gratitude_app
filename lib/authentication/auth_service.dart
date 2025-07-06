@@ -12,7 +12,6 @@ import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/study_pages/consent_form_page.dart';
 import 'package:gratitude_app/study_pages/demographics_page.dart';
 import 'package:gratitude_app/utilities/alarm_manager.dart';
-import 'package:gratitude_app/utilities/notification_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:gratitude_app/utilities/globals.dart' show Globals;
@@ -176,6 +175,7 @@ class AuthService {
     prefs.setBool('consent_complete', false);
     prefs.setBool('demographics_complete', false);
     prefs.setBool('initial_questionnaires_complete', false);
+    prefs.setBool('final_questionnaires_started', false);
     prefs.setBool('asked_photo_permission', false);
   }
 

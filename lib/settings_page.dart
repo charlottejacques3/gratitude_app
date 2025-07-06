@@ -431,7 +431,11 @@ class _SettingsPageState extends State<SettingsPage> {
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: ElevatedButton(
-                                  onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => QuestionnairePage(number: 2,))),
+                                  onPressed: () async {
+                                    SharedPreferences prefs = await SharedPreferences.getInstance();
+                                    prefs.setBool('final_questionnaires_started', true);
+                                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => QuestionnairePage(number: 2,)));
+                                  },
                                   child: Text('Yes, continue',
                                     textAlign: TextAlign.center,
                                   )
@@ -540,167 +544,167 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
 
             //account info
-            SizedBox(height: 50,),
-            Text('Account',
-              style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                fontSize: 20,
-                fontWeight: FontWeight.bold
-              ),
-            ),
+            // SizedBox(height: 50,),
+            // Text('Account',
+            //   style: Theme.of(context).textTheme.titleMedium!.copyWith(
+            //     fontSize: 20,
+            //     fontWeight: FontWeight.bold
+            //   ),
+            // ),
 
-            //convert to permanent account if anon
-            FirebaseAuth.instance.currentUser!.isAnonymous ? ElevatedButton(
-              onPressed: () => showLoginDialog(
-                context: context,
-                header: 'Please choose a username and password',
-                submitButton: 'Sign Up',
-                username: TextEditingController(),
-                pw: TextEditingController(),
-                onSubmit: (TextEditingController username, TextEditingController pw) {
-                  AuthService().anonToCredential(context: context, email: '${username.text}@mail.com', password: pw.text);
-                  Navigator.pop(context);
-                }
-              ),
-              child: Text('Convert to Permanent Account')
-            ) 
-            //otherwise show account info
-            : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 10,),
-                Text('Username: ${FirebaseAuth.instance.currentUser!.email!.split('@')[0]}'),
-                Row(
-                  children: [
-                    Text('Password: '),
-                    Icon(Icons.circle, size: 8,),
-                    Icon(Icons.circle, size: 8,),
-                    Icon(Icons.circle, size: 8,),
-                    Icon(Icons.circle, size: 8,),
-                    Icon(Icons.circle, size: 8,),
-                    Icon(Icons.circle, size: 8,),
-                    Spacer(),
-                    TextButton(
-                      child: Text('Edit Password'),
-                      onPressed: () => showLoginDialog(
-                        context: context,
-                        header: 'Please choose a new password',
-                        submitButton: 'Edit Password',
-                        username: TextEditingController(),
-                        pw: TextEditingController(),
-                        newCon: TextEditingController(),
-                        newItem: true,
-                        onSubmit: (TextEditingController username, TextEditingController pw, TextEditingController newCon) async {
-                          if (await AuthService().editPassword(context: context, email: '${username.text}@mail.com', oldPassword: pw.text, newPassword: newCon.text)) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Password updated successfully')),
-                            );
-                            Navigator.pop(context);
-                          }
-                        }
-                      ),
-                    )
-                  ],
-                ),
-                SizedBox(height: 15,)
-              ],
-            ),
+            // //convert to permanent account if anon
+            // FirebaseAuth.instance.currentUser!.isAnonymous ? ElevatedButton(
+            //   onPressed: () => showLoginDialog(
+            //     context: context,
+            //     header: 'Please choose a username and password',
+            //     submitButton: 'Sign Up',
+            //     username: TextEditingController(),
+            //     pw: TextEditingController(),
+            //     onSubmit: (TextEditingController username, TextEditingController pw) {
+            //       AuthService().anonToCredential(context: context, email: '${username.text}@mail.com', password: pw.text);
+            //       Navigator.pop(context);
+            //     }
+            //   ),
+            //   child: Text('Convert to Permanent Account')
+            // ) 
+            // //otherwise show account info
+            // : Column(
+            //   crossAxisAlignment: CrossAxisAlignment.start,
+            //   children: [
+            //     SizedBox(height: 10,),
+            //     Text('Username: ${FirebaseAuth.instance.currentUser!.email!.split('@')[0]}'),
+            //     Row(
+            //       children: [
+            //         Text('Password: '),
+            //         Icon(Icons.circle, size: 8,),
+            //         Icon(Icons.circle, size: 8,),
+            //         Icon(Icons.circle, size: 8,),
+            //         Icon(Icons.circle, size: 8,),
+            //         Icon(Icons.circle, size: 8,),
+            //         Icon(Icons.circle, size: 8,),
+            //         Spacer(),
+            //         TextButton(
+            //           child: Text('Edit Password'),
+            //           onPressed: () => showLoginDialog(
+            //             context: context,
+            //             header: 'Please choose a new password',
+            //             submitButton: 'Edit Password',
+            //             username: TextEditingController(),
+            //             pw: TextEditingController(),
+            //             newCon: TextEditingController(),
+            //             newItem: true,
+            //             onSubmit: (TextEditingController username, TextEditingController pw, TextEditingController newCon) async {
+            //               if (await AuthService().editPassword(context: context, email: '${username.text}@mail.com', oldPassword: pw.text, newPassword: newCon.text)) {
+            //                 ScaffoldMessenger.of(context).showSnackBar(
+            //                   const SnackBar(content: Text('Password updated successfully')),
+            //                 );
+            //                 Navigator.pop(context);
+            //               }
+            //             }
+            //           ),
+            //         )
+            //       ],
+            //     ),
+            //     SizedBox(height: 15,)
+            //   ],
+            // ),
 
-            //log out
-            ElevatedButton(
-              onPressed: () async {
-                await AuthService().signout(context: context);
-                Navigator.pushAndRemoveUntil(
-                  context, 
-                  MaterialPageRoute(builder: (BuildContext context) => const LoginPage()),
-                  (route) => false
-                );
-              }, 
-              child: Text('Log Out')
-            ),
+            // //log out
+            // ElevatedButton(
+            //   onPressed: () async {
+            //     await AuthService().signout(context: context);
+            //     Navigator.pushAndRemoveUntil(
+            //       context, 
+            //       MaterialPageRoute(builder: (BuildContext context) => const LoginPage()),
+            //       (route) => false
+            //     );
+            //   }, 
+            //   child: Text('Log Out')
+            // ),
 
-            //delete account (if in the wild study is over)
-            DateTime.now().isAfter(Globals.inTheWildEndDate) ? ElevatedButton(
-              onPressed: () {
-                //prompt to log in again if they have an account
-                if (!FirebaseAuth.instance.currentUser!.isAnonymous) {
-                  showLoginDialog(
-                    context: context,
-                    header: 'Please log in again to confirm your account deletion',
-                    submitButton: 'Delete Account',
-                    username: TextEditingController(),
-                    pw: TextEditingController(),
-                    onSubmit: (TextEditingController username, TextEditingController pw) {
-                      AuthService().reAuthDelete(context: context, email: '${username.text}@mail.com', password: pw.text);
-                    }
-                  );
-                } 
-                //otherwise just delete their data
-                else {
-                  showDialog(context: context, builder: (context) => Dialog(
-                    child: Padding(
-                      padding: const EdgeInsets.all(15),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text('Are you sure you would like to delete your account?',
-                            style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          SizedBox(height: 10,),
-                          Text('If you continue, you will be signed out and all your data will be deleted.',
-                            textAlign: TextAlign.center,
-                          ),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: ElevatedButton(
-                                    onPressed: () => Navigator.pop(context), 
-                                    child: Text('No, go back', 
-                                      textAlign: TextAlign.center,
-                                    )
-                                  ),
-                                ),
-                              ),
+            // //delete account (if in the wild study is over)
+            // DateTime.now().isAfter(Globals.inTheWildEndDate) ? ElevatedButton(
+            //   onPressed: () {
+            //     //prompt to log in again if they have an account
+            //     if (!FirebaseAuth.instance.currentUser!.isAnonymous) {
+            //       showLoginDialog(
+            //         context: context,
+            //         header: 'Please log in again to confirm your account deletion',
+            //         submitButton: 'Delete Account',
+            //         username: TextEditingController(),
+            //         pw: TextEditingController(),
+            //         onSubmit: (TextEditingController username, TextEditingController pw) {
+            //           AuthService().reAuthDelete(context: context, email: '${username.text}@mail.com', password: pw.text);
+            //         }
+            //       );
+            //     } 
+            //     //otherwise just delete their data
+            //     else {
+            //       showDialog(context: context, builder: (context) => Dialog(
+            //         child: Padding(
+            //           padding: const EdgeInsets.all(15),
+            //           child: Column(
+            //             mainAxisSize: MainAxisSize.min,
+            //             children: [
+            //               Text('Are you sure you would like to delete your account?',
+            //                 style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+            //                   fontWeight: FontWeight.bold,
+            //                 ),
+            //                 textAlign: TextAlign.center,
+            //               ),
+            //               SizedBox(height: 10,),
+            //               Text('If you continue, you will be signed out and all your data will be deleted.',
+            //                 textAlign: TextAlign.center,
+            //               ),
+            //               Row(
+            //                 children: [
+            //                   Expanded(
+            //                     child: Padding(
+            //                       padding: const EdgeInsets.all(8.0),
+            //                       child: ElevatedButton(
+            //                         onPressed: () => Navigator.pop(context), 
+            //                         child: Text('No, go back', 
+            //                           textAlign: TextAlign.center,
+            //                         )
+            //                       ),
+            //                     ),
+            //                   ),
 
-                              //confirm opt out
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: ElevatedButton(
-                                    style: Theme.of(context).elevatedButtonTheme.style!.copyWith(
-                                      backgroundColor: WidgetStatePropertyAll<Color>(Color.fromARGB(255, 209, 108, 103)),
-                                    ),
-                                    onPressed: () => AuthService().deleteAccount(context), 
-                                    child: Text('Yes, delete account',
-                                      style: TextStyle(
-                                        color: Colors.white
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    )
-                                  ),
-                                ),
-                              )
-                            ],
-                          )
-                        ],
-                      )
-                    )
-                  ));
-                }
-              }, 
-              style: Theme.of(context).elevatedButtonTheme.style!.copyWith(
-                backgroundColor: WidgetStatePropertyAll<Color>(Color.fromARGB(255, 209, 108, 103)),
-              ),
-              child: Text('Delete Account',
-                style: TextStyle(
-                  color: Colors.white
-                ),
-              ),
-            ) : Container()
+            //                   //confirm opt out
+            //                   Expanded(
+            //                     child: Padding(
+            //                       padding: const EdgeInsets.all(8.0),
+            //                       child: ElevatedButton(
+            //                         style: Theme.of(context).elevatedButtonTheme.style!.copyWith(
+            //                           backgroundColor: WidgetStatePropertyAll<Color>(Color.fromARGB(255, 209, 108, 103)),
+            //                         ),
+            //                         onPressed: () => AuthService().deleteAccount(context), 
+            //                         child: Text('Yes, delete account',
+            //                           style: TextStyle(
+            //                             color: Colors.white
+            //                           ),
+            //                           textAlign: TextAlign.center,
+            //                         )
+            //                       ),
+            //                     ),
+            //                   )
+            //                 ],
+            //               )
+            //             ],
+            //           )
+            //         )
+            //       ));
+            //     }
+            //   }, 
+            //   style: Theme.of(context).elevatedButtonTheme.style!.copyWith(
+            //     backgroundColor: WidgetStatePropertyAll<Color>(Color.fromARGB(255, 209, 108, 103)),
+            //   ),
+            //   child: Text('Delete Account',
+            //     style: TextStyle(
+            //       color: Colors.white
+            //     ),
+            //   ),
+            // ) : Container()
           ],
         ),
       )

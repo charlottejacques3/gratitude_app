@@ -1,11 +1,9 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gratitude_app/authentication/login_page.dart';
 import 'package:gratitude_app/init_mood_page.dart';
 import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/resources_page.dart';
-import 'package:gratitude_app/select_method_page.dart';
 import 'package:gratitude_app/study_pages/consent_form_page.dart';
 import 'package:gratitude_app/study_pages/study_complete_page.dart';
 import 'package:gratitude_app/study_pages/demographics_page.dart';
@@ -50,6 +48,7 @@ class _ParticipantGateState extends State<ParticipantGate> {
                 // bool? consent = snapshot.data!.getBool('consent_complete');
                 bool? demographics = snapshot.data!.getBool('demographics_complete');
                 bool? questionnaire1 = snapshot.data!.getBool('initial_questionnaires_complete');
+                bool? questionnaire2 = snapshot.data!.getBool('final_questionnaires_started');
                 bool? studyComplete = snapshot.data!.getBool('study_complete');
                 bool? withdrawInCrisis = snapshot.data!.getBool('withdraw_in_crisis');
                 // if (consent != null && !consent) {
@@ -66,6 +65,9 @@ class _ParticipantGateState extends State<ParticipantGate> {
                 }
                 else if (questionnaire1 != null && !questionnaire1) {
                   return QuestionnairePage(number: 1,);
+                } 
+                else if (questionnaire2 != null && questionnaire2) {
+                  return QuestionnairePage(number: 2);
                 }
                 else {
                   if (FirebaseAuth.instance.currentUser == null) {

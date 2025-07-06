@@ -153,35 +153,35 @@ class _LoginPageState extends State<LoginPage> {
               text: hasAccount ? 'Log In' : 'Sign Up'
             ),
 
-            !hasAccount ? Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Text('Or',
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+            // !hasAccount ? Column(
+            //   children: [
+            //     Padding(
+            //       padding: const EdgeInsets.all(10.0),
+            //       child: Text('Or',
+            //         textAlign: TextAlign.center,
+            //       ),
+            //     ),
                 
-                Row(
-                  children: [
-                    Expanded(
-                      child: SwitchedColourButton(
-                        onClick: () async {
-                           if (!agreeToTerms) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Please accept the Privacy Policy')),
-                            );
-                          } else {
-                            await AuthService().signInAnon(context: context);
-                          }
-                        }, 
-                        text: 'Sign In Anonymously'
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ) : Container(),
+            //     Row(
+            //       children: [
+            //         Expanded(
+            //           child: SwitchedColourButton(
+            //             onClick: () async {
+            //                if (!agreeToTerms) {
+            //                 ScaffoldMessenger.of(context).showSnackBar(
+            //                   const SnackBar(content: Text('Please accept the Privacy Policy')),
+            //                 );
+            //               } else {
+            //                 await AuthService().signInAnon(context: context);
+            //               }
+            //             }, 
+            //             text: 'Sign In Anonymously'
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+            //   ],
+            // ) : Container(),
           ],
         ),
       )

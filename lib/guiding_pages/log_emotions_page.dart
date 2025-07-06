@@ -64,12 +64,6 @@ class _LogEmotionsPageState extends State<LogEmotionsPage> {
               decoration: InputDecoration(
                 border: OutlineInputBorder(),
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter some text';
-                }
-                return null;
-              },
             ),
 
             //buttons

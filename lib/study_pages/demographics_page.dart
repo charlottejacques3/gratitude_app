@@ -1,8 +1,10 @@
+import 'package:another_flushbar/flushbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/study_pages/questionnaire_page.dart';
 import 'package:gratitude_app/utilities/widgets.dart';
+import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:gratitude_app/utilities/globals.dart';
 
@@ -17,19 +19,39 @@ class DemographicsPage extends StatefulWidget {
 
 class _DemographicsPageState extends State<DemographicsPage> {
 
-  Map<String, dynamic> textQuestions = {
-    // 'Name': TextEditingController(),
-    'Age': TextEditingController(),
-    'Gender': TextEditingController(),
-    'Profession': TextEditingController()
-  };
+  TextEditingController ageController = TextEditingController();
+  List<DropdownMenuEntry<dynamic>> ageRanges = [
+    DropdownMenuEntry(value: "19-29", label: "19-29"), 
+    DropdownMenuEntry(value: "30-39", label: "30-39"),
+    DropdownMenuEntry(value: "40-49", label: "40-49"), 
+    DropdownMenuEntry(value: "50-59", label: "50-59"), 
+    DropdownMenuEntry(value: "60+", label: "60+"), 
+  ];
+
+  TextEditingController genderController = TextEditingController();
+  List<DropdownMenuEntry<dynamic>> genderOptions = [
+    DropdownMenuEntry(value: "Female", label: "Female"), 
+    DropdownMenuEntry(value: "Male", label: "Male"),
+    DropdownMenuEntry(value: "Non-Binary", label: "Non-Binary"), 
+    DropdownMenuEntry(value: "Other", label: "Other"), 
+    DropdownMenuEntry(value: "Prefer not to say", label: "Prefer not to say"), 
+  ];
+
+  TextEditingController profController = TextEditingController();
+  // Map<String, dynamic> textQuestions = {
+  //   // 'Name': TextEditingController(),
+  //   // 'Age': TextEditingController(),
+  //   'Gender': TextEditingController(),
+  //   'Profession': TextEditingController()
+  // };
 
   Map<TextEditingController, TextEditingController> gratitudeApps = {};
-  bool useGratitudeApps = false;
+  bool? useGratitudeApps;
   Map<TextEditingController, TextEditingController> otherApps = {};
-  bool useOtherApps = false;
-  bool happyGoal = false;
-  bool gratitudeNoApp = false;
+  bool? useOtherApps;
+  bool? happyGoal;
+  bool? gratitudeNoApp;
+  bool? gratitudeStruggles;
 
   List<DropdownMenuEntry<dynamic>> frequencies = [
     DropdownMenuEntry(value: "Always", label: "Always"), 
@@ -39,12 +61,22 @@ class _DemographicsPageState extends State<DemographicsPage> {
     DropdownMenuEntry(value: "Always", label: "Never"), 
   ];
 
+  List<String> selectedChallenges = [];
+  List<String> challenges = [
+    "I struggle to come up with things to write about",
+    "I lose motivation quickly",
+    "I find it difficult to see the positive when I feel down",
+    "I don't know how to practice gratitude",
+    "Other"
+  ];
+  TextEditingController otherController = TextEditingController();
+
   TextEditingController gratitudeNoAppController = TextEditingController();
 
   @override
   void dispose() {
     super.dispose();
-    textQuestions.forEach((key, value) => value.dispose());
+    // textQuestions.forEach((key, value) => value.dispose());
     gratitudeApps.forEach((key, value) {
       key.dispose();
       value.dispose();
@@ -65,19 +97,16 @@ class _DemographicsPageState extends State<DemographicsPage> {
   void submitForm() async {
     //map to a dictionary
     Map<String, dynamic> demographics = {
+      'age': ageController.text,
+      'gender': genderController.text,
+      'profession': profController.text,
       'use_gratitude_app': useGratitudeApps,
       'use_other_apps': useOtherApps,
       'analog_gratitude': gratitudeNoApp,
-      'happiness_goal': happyGoal
+      'happiness_goal': happyGoal,
+      'gratitude_struggles': gratitudeStruggles,
     };
-    textQuestions.forEach((label, controller) {
-      if (label.compareTo('Age') == 0 && controller.text.isNotEmpty) {
-        demographics[label] = int.parse(controller.text);
-      } else {
-        demographics[label] = controller.text;
-      }
-    });
-    if (useGratitudeApps) {
+    if (useGratitudeApps ?? false) {
       List<Map<String, String>> appList = [];
       gratitudeApps.forEach((name, freq) {
         appList.add ({
@@ -87,7 +116,7 @@ class _DemographicsPageState extends State<DemographicsPage> {
       });
       demographics['gratitude_apps'] = appList;
     }
-    if (useOtherApps) {
+    if (useOtherApps != null && useOtherApps!) {
       List<Map<String, String>> appList = [];
       otherApps.forEach((name, freq) {
         appList.add ({
@@ -97,9 +126,15 @@ class _DemographicsPageState extends State<DemographicsPage> {
       });
       demographics['other_apps'] = appList;
     }
-    if (gratitudeNoApp) {
+    if (gratitudeNoApp ?? false) {
       demographics['analog_gratitude_freq'] = gratitudeNoAppController.text;
     }
+    if (gratitudeStruggles ?? false) {
+      demographics['challenge_list'] = selectedChallenges;
+      if (otherController.text.isNotEmpty) {
+        demographics['other_challenge'] = otherController.text;
+      }
+    } 
 
     //save to db
     DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group).child(FirebaseAuth.instance.currentUser!.uid);
@@ -134,36 +169,83 @@ class _DemographicsPageState extends State<DemographicsPage> {
         child: ListView(
           children: [
             Text(
-              'Thank you for agreeing to participate in the study! Please begin by filling out this short demographic questionnaire. You do not have to answer any questions that make you uncomfortable.',
+              'Thank you for agreeing to participate in the study! Please begin by filling out this short demographic questionnaire.',
               style: Theme.of(context).textTheme.bodyLarge!,
               textAlign: TextAlign.center,
+              
             ),
 
-            //basic questions
-            // FormRow(
-            //   label: 'Name',
-            //   controller: textQuestions['Name']!,
-            // ),
-            Row( //age
-              children: [
-                Text('Age'),
-                SizedBox(width: 10,),
-                Expanded(
-                  child: TextFormField(
-                    controller: textQuestions['Age']!,
-                    keyboardType: TextInputType.number,
+            //age
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 5.0),
+              child: Row (
+                children: [
+                  Text('Age'),
+                  SizedBox(width: 10,),
+                  DropdownMenu(
+                    controller: ageController,
+                    initialSelection: ageController.text,
+                    dropdownMenuEntries: ageRanges,
+                    menuStyle: MenuStyle(
+                      backgroundColor: WidgetStateColor.resolveWith(
+                        (Set<WidgetState> states) {
+                          return Color.fromARGB(255, 249, 241, 237);
+                        }
+                      )
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-            FormRow(
-              label: 'Gender',
-              controller: textQuestions['Gender']!,
+
+            //gender
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 5.0),
+              child: Row (
+                children: [
+                  Text('Gender'),
+                  SizedBox(width: 10,),
+                  DropdownMenu(
+                    controller: genderController,
+                    initialSelection: genderController.text,
+                    dropdownMenuEntries: genderOptions,
+                    menuStyle: MenuStyle(
+                      backgroundColor: WidgetStateColor.resolveWith(
+                        (Set<WidgetState> states) {
+                          return Color.fromARGB(255, 249, 241, 237);
+                        }
+                      )
+                    ),
+                  ),
+                ],
+              ),
             ),
-            FormRow(
-              label: 'Profession',
-              controller: textQuestions['Profession']!,
+
+            //profession
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 5.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Profession'),
+                  SizedBox(width: 10,),
+                  Expanded(
+                    child: TextFormField(
+                      controller: profController,
+                    ),
+                  ),
+                ],
+              ),
             ),
+
+            // FormRow(
+            //   label: 'Gender',
+            //   controller: textQuestions['Gender']!,
+            // ),
+            // FormRow(
+            //   label: 'Profession',
+            //   controller: textQuestions['Profession']!,
+            // ),
 
             //more questions
             YesNoRadio(
@@ -189,7 +271,7 @@ class _DemographicsPageState extends State<DemographicsPage> {
               },
               largeText: true,
             ),
-            useGratitudeApps ? Column(
+            (useGratitudeApps ?? false) ? Column(
               children: [
                 SizedBox(height: 10,),
                 Text(
@@ -238,7 +320,7 @@ class _DemographicsPageState extends State<DemographicsPage> {
               },
               largeText: true,
             ),
-            useOtherApps ? Column(
+            (useOtherApps ?? false) ? Column(
               children: [
                 SizedBox(height: 10,),
                 Text(
@@ -286,7 +368,7 @@ class _DemographicsPageState extends State<DemographicsPage> {
               },
               largeText: true,
             ),
-            gratitudeNoApp ? Column(
+            (gratitudeNoApp ?? false) ? Column(
               children: [
                 SizedBox(height: 10,),
                 Text('How often do you use the non-digital method for practing gratitude?'),
@@ -306,100 +388,152 @@ class _DemographicsPageState extends State<DemographicsPage> {
                     ),
                   ),
                 ),
+                SizedBox(height: 10,)
               ],
             ) : Container(),
+
+            //difficulties practing gratitude
+            (gratitudeNoApp ?? false) || (useGratitudeApps ?? false) ? Column(
+              children: [
+                YesNoRadio(
+                  label: 'Do you ever experience challenges when trying to practice gratitude? ', 
+                  radioSelected: gratitudeStruggles, 
+                  onChanged: (bool newValue) {
+                    setState(() {
+                      gratitudeStruggles = newValue;
+                    });
+                  },
+                  largeText: true,
+                ),
+                (gratitudeStruggles ?? false) ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(height: 10,),
+                    Text('What kind of challenges do you experience?',
+                      textAlign: TextAlign.left,
+                      style: Theme.of(context).textTheme.bodyLarge
+                    ),
+                    SizedBox(height: 10,),
+                    
+                    MultiSelectDialogField(
+                      items: challenges.map((e) => MultiSelectItem(e, e)).toList(),
+                      listType: MultiSelectListType.LIST,
+                      onConfirm: (values) {
+                        setState(() {
+                          selectedChallenges = values;
+                        });
+                      },
+                      itemsTextStyle: Theme.of(context).textTheme.bodyLarge,
+                      selectedItemsTextStyle: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                    SizedBox(height: 10,),
+
+                    selectedChallenges.contains('Other') ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Other: please specify',
+                          textAlign: TextAlign.left,
+                        ),
+                        TextFormField(
+                          controller: otherController,
+                          keyboardType: TextInputType.multiline,
+                          minLines: 2,
+                          maxLines: 5,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                      ],
+                    ) : Container()
+                  ],
+                ) : Container(),
+              ],
+            ) : Container(),
+            
 
             SwitchedColourButton (
               text: 'Submit',
               onClick: () {
 
                 //check if there are empty fields
-                List emptyFields = [];
-                textQuestions.forEach((label, text) {
-                  if (text.text.isEmpty) {
-                    emptyFields.add(label);
-                  }
-                });
-                if (useGratitudeApps && gratitudeApps.isEmpty) {
-                  emptyFields.add('List how often you use each gratitude app');
-                }
-                if (useOtherApps && otherApps.isEmpty) {
-                  emptyFields.add('List how often you use each wellness app');
-                }
-                if (gratitudeNoApp && gratitudeNoAppController.text.isEmpty) {
-                  emptyFields.add('Select how often you use a non-digital method of practing gratitude');
-                }
+                String message = '';
 
-                //show popup if there are empty fields
-                if (emptyFields.isNotEmpty) {
-                  showDialog(
-                    context: context, 
-                    builder: (BuildContext context) => Dialog(
-                      child: Padding(
-                        padding: EdgeInsets.all(15),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              'The following fields are empty:',
-                              style: Theme.of(context).textTheme.bodyLarge!
-                            ),
-                            ListView.builder(
-                              physics: NeverScrollableScrollPhysics(),
-                              shrinkWrap: true,
-                              itemCount: emptyFields.length,
-                              itemBuilder: (context, index) {
-                                return ListTile(
-                                  leading: Icon(
-                                    Icons.circle,
-                                    size: 5,
-                                  ),
-                                  title: Text(
-                                    emptyFields[index],
-                                    style: Theme.of(context).textTheme.bodyLarge!
-                                  ),
-                                  dense: true,
-                                  visualDensity: VisualDensity(horizontal:VisualDensity.minimumDensity, vertical: VisualDensity.minimumDensity),
-                                );
-                              },
-                            ),
-                            Text('Would you like to go back and fill out these fields? You are not required to answer any questions that make you uncomfortable.',
-                              style: Theme.of(context).textTheme.bodyLarge!,
-                              textAlign: TextAlign.center,
-                            ),
-                            ElevatedButton(
-                              onPressed: () => Navigator.pop(context), 
-                              child: Text("Yes, fill out remaining fields", 
-                                textAlign: TextAlign.center,
-                              )
-                            ),
-                            
-                            //confirm ignore fields
-                            ElevatedButton(
-                              style: Theme.of(context).elevatedButtonTheme.style!.copyWith(
-                                backgroundColor: WidgetStatePropertyAll<Color>(Color.fromARGB(255, 209, 108, 103)),
-                              ),
-                              onPressed: () => submitForm(), 
-                              child: Text("No, leave these fields blank",
-                                style: TextStyle(
-                                  color: Colors.white
-                                ),
-                                textAlign: TextAlign.center,
-                              )
-                            )
-                          ],
-                        ),
-                      ),
-                    )
-                  );
-                } 
-                //if nothing empty, then submit
+                if (ageController.text.isEmpty) {
+                  message = 'Please fill out your age';
+                } else if (profController.text.isEmpty) {
+                  message = 'Please fill out your profession';
+                } else if (happyGoal == null) {
+                  message = 'Please answer the question "Is being happy an important goal for you?"';
+                } else if (useGratitudeApps == null) {
+                  message = 'Please answer the question "Do you currently use a gratitude journaling app?"';
+                } else if (useOtherApps == null) {
+                  message = 'Please answer the question "Do you currently use any other wellness apps?"';
+                } else if (gratitudeNoApp == null) {
+                  message = 'Please answer the question "Do you practice gratitude without using a software application?"';
+                } else if (((useGratitudeApps ?? false) || (gratitudeNoApp ?? false)) && gratitudeStruggles == null) {
+                  message = 'Please answer the question "Do you ever experience challenges when trying to practice gratitude?"';
+                } else if ((useGratitudeApps ?? false) && gratitudeApps.isEmpty) {
+                  message = 'Please list each gratitude app and how often you use it';
+                } else if ((useOtherApps ?? false) && otherApps.isEmpty) {
+                  message = 'Please list each wellness app and how often you use it';
+                } else if ((gratitudeNoApp ?? false) && gratitudeNoAppController.text.isEmpty) {
+                  message = 'Please select how often you use a non-digital method of practing gratitude';
+                } else if ((gratitudeStruggles ?? false) && selectedChallenges.isEmpty) {
+                  message = 'Please select the challenges you have when practicing gratitude';
+                } else if ((gratitudeStruggles ?? false) && selectedChallenges.contains('Other') && otherController.text.isEmpty) {
+                  message = 'Please specify "Other"';
+                } else {
+                  //loop through apps
+                  for (var i = 0; i < gratitudeApps.length; i++) {
+                    if (gratitudeApps.keys.elementAt(i).text.isEmpty) {
+                      message = 'Please list the name of each gratitude app';
+                      break;
+                    } else if (gratitudeApps.values.elementAt(i).text.isEmpty) {
+                      message = 'Please select how often you use each gratitude app';
+                      break;
+                    }
+                  }
+                  if (message.isEmpty) {
+                    for (var i = 0; i < otherApps.length; i++) {
+                      if (otherApps.keys.elementAt(i).text.isEmpty) {
+                        message = 'Please list the name of each wellness app';
+                        break;
+                      } else if (otherApps.values.elementAt(i).text.isEmpty) {
+                        message = 'Please select how often you use each wellness app';
+                        break;
+                      }
+                    }
+                  }
+                }
+                
+                if (message.isNotEmpty) {
+                  Flushbar(
+                    message: message,
+                    duration: Duration(milliseconds: 1500),
+                    backgroundColor: Color.fromARGB(255, 209, 108, 103),
+                  ).show(context);
+                }
+                //otherwise submit form
                 else {
                   submitForm();
                 }
               }, 
-            )
+            ),
+
+            //TEMPORARY skip button
+            SwitchedColourButton(
+              text: 'Skip - TEMPORARY', 
+              onClick: () async {
+                //update demographics complete
+                SharedPreferences prefs = await SharedPreferences.getInstance(); 
+                prefs.setBool('demographics_complete', true);
+
+                Navigator.pushReplacement(
+                  context, MaterialPageRoute(builder: (BuildContext context) => QuestionnairePage(number: 1,))
+                );
+              }
+            ),
           ],
         ),
       )
@@ -410,10 +544,11 @@ class _DemographicsPageState extends State<DemographicsPage> {
 
 //form row
 class FormRow extends StatelessWidget {
-  const FormRow({super.key, required this.label, required this.controller});
+  const FormRow({super.key, required this.label, required this.controller, this.validator});
 
   final String label; 
   final TextEditingController controller;
+  final FormFieldValidator<String>? validator;
 
   @override
   Widget build(BuildContext context) {
@@ -425,6 +560,7 @@ class FormRow extends StatelessWidget {
         Expanded(
           child: TextFormField(
             controller: controller,
+            validator: validator != null ? (value) => validator!(value) : (value) =>  null
           ),
         ),
       ],

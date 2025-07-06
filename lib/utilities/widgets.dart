@@ -36,7 +36,7 @@ class LabeledRadio extends StatelessWidget {
   });
 
   final String label;
-  final bool groupValue;
+  final bool? groupValue;
   final bool value;
   final ValueChanged<bool> onChanged;
 
@@ -75,7 +75,7 @@ class YesNoRadio extends StatelessWidget {
   });
 
   final String label;
-  final bool radioSelected;
+  final bool? radioSelected;
   final ValueChanged<bool> onChanged;
   final bool largeText;
 
