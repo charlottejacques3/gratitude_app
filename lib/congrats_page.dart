@@ -158,7 +158,7 @@ class _CongratsPageState extends State<CongratsPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.max,
               children: [
-                SizedBox(height: 100,),
+                SizedBox(height: 75,),
                 Text('Good work!',
                   style: Theme.of(context).textTheme.headlineLarge!,
                   textAlign: TextAlign.center,

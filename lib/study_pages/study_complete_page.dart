@@ -42,6 +42,7 @@ class _StudyCompletePageState extends State<StudyCompletePage> {
                 Globals.group = prefs.getString('group')!;
                 prefs.setBool('study_complete', false);
                 prefs.setBool('initial_questionnaires_complete', false);
+                prefs.setBool('final_questionnaires_started', false);
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => QuestionnairePage(number:1)));
               },
             )

@@ -580,7 +580,9 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
                 emptyFields.addAll(findEmpty(happinessQuestions));
                 if (widget.number == 2) {
                   emptyFields.addAll(findEmpty(reflectionQuestions));
-                  emptyFields.addAll(findEmpty(helpfulnessQuestions));
+                  if (Globals.group.compareTo('experimental') == 0) {
+                    emptyFields.addAll(findEmpty(helpfulnessQuestions));
+                  }
                 }
 
                 print('EMPTY: $emptyFields, ${findEmpty(gratitudeQuestions)}');
