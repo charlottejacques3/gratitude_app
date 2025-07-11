@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:gratitude_app/authentication/login_page.dart';
 import 'package:gratitude_app/main.dart';
-import 'package:gratitude_app/study_pages/consent_form_page.dart';
 import 'package:gratitude_app/study_pages/demographics_page.dart';
 import 'package:gratitude_app/utilities/alarm_manager.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -187,9 +186,8 @@ class AuthService {
   Future<void> setSharedPrefs(String username) async {
     //pick group based on participant number + save to sharedprefs + global variables
     print('pnumber: ${int.tryParse(username.substring(1))}');
-    int pNumber = int.tryParse(username.substring(1)) ?? 1;
     
-    int group = pNumber % 2;//Random().nextInt(2); //0 is control group, 1 is experimental!!
+    int group = 1;//pNumber % 2;//Random().nextInt(2); //0 is control group, 1 is experimental!!
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String groupName = 'control';
     if (group == 1) {

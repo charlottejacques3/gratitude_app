@@ -4,7 +4,6 @@ import 'package:gratitude_app/authentication/login_page.dart';
 import 'package:gratitude_app/init_mood_page.dart';
 import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/resources_page.dart';
-import 'package:gratitude_app/study_pages/consent_form_page.dart';
 import 'package:gratitude_app/study_pages/study_complete_page.dart';
 import 'package:gratitude_app/study_pages/demographics_page.dart';
 import 'package:gratitude_app/study_pages/questionnaire_page.dart';

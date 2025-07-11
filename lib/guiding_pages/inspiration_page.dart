@@ -601,7 +601,20 @@ class _InspirationPageState extends State<InspirationPage> {
                               }
                             }
                           ),
-                          title: Text(allAlbums[index].name)
+                          title: Text(allAlbums[index].name),
+                          onTap: () {
+                            if (selectedAlbums.contains(allAlbums[index].name)) {
+                              //remove from list
+                              setState(() {
+                                selectedAlbums.remove(allAlbums[index].name);
+                              });
+                            } else {
+                              //add to list
+                              setState(() {
+                                selectedAlbums.add(allAlbums[index].name);
+                              });
+                          }
+                          },
                         );
                       }
                     ),

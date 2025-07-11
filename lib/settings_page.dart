@@ -5,6 +5,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gratitude_app/authentication/auth_service.dart';
+import 'package:gratitude_app/authentication/login_page.dart';
+import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/resources_page.dart';
 import 'package:gratitude_app/study_pages/questionnaire_page.dart';
 import 'package:gratitude_app/study_pages/withdraw_page.dart';
@@ -530,6 +532,22 @@ class _SettingsPageState extends State<SettingsPage> {
               text: 'Licenses',
               action: () => showLicensePage(context: context)
             ),
+
+            //control version
+            InfoButton(
+              text: 'Control Version', 
+              action: () async {
+                if (Globals.group.compareTo('experimental') == 0) {
+                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  prefs.setString('group', 'control');
+                  Globals.group = prefs.getString('group')!;
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(startingPageIndex: 0)));
+                } else if (Globals.group.compareTo('control') == 0) {
+                  await AuthService().signout(context: context);
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));
+                }
+              }
+            )
 
             //account info
             // SizedBox(height: 50,),

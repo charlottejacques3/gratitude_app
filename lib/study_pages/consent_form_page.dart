@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/authentication/auth_service.dart';
-import 'package:gratitude_app/authentication/login_page.dart';
 import 'package:gratitude_app/study_pages/demographics_page.dart';
 import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;

@@ -3,8 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/authentication/auth_service.dart';
+import 'package:gratitude_app/init_mood_page.dart';
+import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/study_pages/study_complete_page.dart';
-import 'package:gratitude_app/study_pages/welcome_page.dart';
 import 'package:gratitude_app/utilities/alarm_manager.dart';
 import 'package:gratitude_app/utilities/notification_service.dart';
 import 'package:gratitude_app/utilities/widgets.dart';
@@ -325,12 +326,12 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
       //send to tutorial page
       Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (BuildContext context) {
-          return WelcomePage();
-          // if (Globals.group.compareTo('experimental') == 0) {
-          //   return InitialMoodPage();
-          // } else {
-          //   return MyHomePage(startingPageIndex: 0);
-          // }
+          // return WelcomePage();
+          if (Globals.group.compareTo('experimental') == 0) {
+            return InitialMoodPage();
+          } else {
+            return MyHomePage(startingPageIndex: 0);
+          }
         })
       );
 
@@ -686,7 +687,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
                 // } else {
                 //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => MyHomePage(startingPageIndex: 0)));
                 // }
-                Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => WelcomePage()));
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => InitialMoodPage()));
 
                 //set notifs
                 await NotificationService.initNotifications();
