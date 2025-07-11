@@ -537,12 +537,13 @@ class _SettingsPageState extends State<SettingsPage> {
             InfoButton(
               text: 'Control Version', 
               action: () async {
+                SharedPreferences prefs = await SharedPreferences.getInstance();
                 if (Globals.group.compareTo('experimental') == 0) {
-                  SharedPreferences prefs = await SharedPreferences.getInstance();
                   prefs.setString('group', 'control');
                   Globals.group = prefs.getString('group')!;
                   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(startingPageIndex: 0)));
                 } else if (Globals.group.compareTo('control') == 0) {
+                  prefs.remove('last_checkin');
                   await AuthService().signout(context: context);
                   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));
                 }
