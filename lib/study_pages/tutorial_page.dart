@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gratitude_app/select_method_page.dart';
+import 'package:gratitude_app/init_mood_page.dart';
 
 
 class TutorialPage extends StatefulWidget {
@@ -11,7 +11,7 @@ class TutorialPage extends StatefulWidget {
 
 class _TutorialPageState extends State<TutorialPage> {
   int curPage = 1;
-  int numPages = 8;
+  int numPages = 2;
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +39,7 @@ class _TutorialPageState extends State<TutorialPage> {
                 )
               ),
               child: Image.asset(
-                'assets/tutorial/page$curPage.JPG',
+                'assets/tutorial_updated/$curPage.png',
                 // height: ,
               ),
             ),
@@ -76,7 +76,7 @@ class _TutorialPageState extends State<TutorialPage> {
                           curPage++;
                         });
                       } else {
-                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const SelectMethodPage()));
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const InitialMoodPage()));
                       }
                     }, 
                     style: ButtonStyle(

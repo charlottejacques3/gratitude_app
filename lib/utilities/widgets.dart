@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/logs_model.dart';
+import 'package:gratitude_app/study_pages/checkin_popup.dart';
+import 'package:gratitude_app/study_pages/questionnaire_page.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SwitchedColourButton extends StatelessWidget {
   const SwitchedColourButton({super.key, required this.text, required this.onClick});
@@ -191,6 +194,74 @@ class MoodButton extends StatelessWidget {
 }
 
 
+
+void checkinDialog(context) async {
+    //show checkin dialog/happiness questionnaire dialog if applicable
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? lastIso = prefs.getString('last_checkin');
+    String? endDay = prefs.getString('end_day');
+
+    if (endDay != null && DateTime.now().isAfter(DateTime.parse(endDay))) {
+      //show final happiness questionnaires dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Dialog(
+            child: Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('The study period is over!',
+                    style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 10,),
+                  Text('Thank you for your participation, we greatly appreciate it. ',
+                    textAlign: TextAlign.center,
+                  ),
+                  Text('Please fill out this final set of questionnaires. After filling out these questionnaires, you will no longer be able to access the app.',
+                    textAlign: TextAlign.center,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        SharedPreferences prefs = await SharedPreferences.getInstance();
+                        prefs.setBool('final_questionnaires_started', true);
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => QuestionnairePage(number: 2,)));
+                      },
+                      child: Text('Continue to Questionnaires',
+                        textAlign: TextAlign.center,
+                      )
+                    ),
+                  )
+                ],
+              ),
+            ),
+          );
+        }
+      );
+    } else if (lastIso == null || !DateUtils.isSameDay(DateTime.parse(lastIso), DateTime.now())) {
+
+      //show the dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false, 
+        builder: (BuildContext context)  {
+          return CheckinPopup();
+        }
+      );
+
+      //update that it's been seen
+      prefs.setString('last_checkin', DateTime.now().toIso8601String());
+    }
+  }
+
+
 void showLoginDialog({required BuildContext context, required String header, required Function onSubmit, required TextEditingController username, required TextEditingController pw, required String submitButton, bool newItem=false, TextEditingController? newCon}) {
     showDialog(
       context: context, 
@@ -277,51 +348,3 @@ void showLoginDialog({required BuildContext context, required String header, req
       )
     );
   }
-
-
-// class BottomNavBar extends StatelessWidget {
-
-//   const BottomNavBar({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-
-//     return NavigationBar(
-//         onDestinationSelected: (int index) {
-//           //change currentIndex based on what's been selected
-//           setState(() {
-//             currentPageIndex = index;
-//           });
-//         },
-//         selectedIndex: currentPageIndex,
-//         destinations: 
-//           Globals.group.compareTo('experimental') == 0 ? [  //experimental group
-//             NavigationDestination(
-//               icon: Icon(Icons.edit), 
-//               label: 'Log',
-//             ),
-//             NavigationDestination(
-//               icon: Icon(Icons.book), 
-//               label: 'Past Logs',
-//             ),
-//             NavigationDestination(
-//               icon: Icon(Icons.psychology), 
-//               label: 'Reflect',
-//             ),
-//             NavigationDestination(
-//               icon: Icon(Icons.show_chart), 
-//               label: 'Statistics',
-//             ),
-//           ] : [ //control group
-//             NavigationDestination(
-//               icon: Icon(Icons.edit), 
-//               label: 'Log',
-//             ),
-//             NavigationDestination(
-//               icon: Icon(Icons.book), 
-//               label: 'Past Logs',
-//             ),
-//           ],
-//         );
-//   }
-// }

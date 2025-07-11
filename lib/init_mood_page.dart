@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/logs_model.dart';
 import 'package:gratitude_app/select_method_page.dart';
-import 'package:gratitude_app/study_pages/checkin_popup.dart';
 import 'package:gratitude_app/utilities/widgets.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 
 class InitialMoodPage extends StatefulWidget {
@@ -23,29 +21,10 @@ class _InitialMoodPageState extends State<InitialMoodPage> {
   @override
   void initState() {
     super.initState();
-    checkinDialog();
+    checkinDialog(context);
   }
 
-  void checkinDialog() async {
-    print('CHECKIN DIALOG FROM INIT MOOD');
-    //show checkin dialog if applicable
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? lastIso = prefs.getString('last_checkin');
-    if (lastIso == null || !DateUtils.isSameDay(DateTime.parse(lastIso), DateTime.now())) {
-
-      //show the dialog
-      showDialog(
-        context: context,
-        barrierDismissible: false, 
-        builder: (BuildContext context)  {
-          return CheckinPopup();
-        }
-      );
-
-      //update that it's been seen
-      prefs.setString('last_checkin', DateTime.now().toIso8601String());
-    }
-  }
+  
 
   void selectMood(int moodNum) {
     setState(() {

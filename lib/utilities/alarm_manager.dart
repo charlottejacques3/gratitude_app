@@ -87,11 +87,21 @@ Future<void> notificationScheduler() async {
 
       //schedule the notification  
       print('NOTIF DATE: $notificationDate');
+
+      //send final happiness questionnaire message if applicable
+      String message = 'Time to log your gratitude';
+      if (prefs.getString('end_day') != null) {
+        DateTime endDT = DateTime.parse(prefs.getString('end_day')!);
+        if (DateTime.now().isAfter(endDT)) {
+          message = 'Time to fill out the final happiness questionnaires!';
+        }
+      }
+
       try {
         tz.initializeTimeZones();
         NotificationService.scheduledNotification(
           title: "Gratitude Buddy", 
-          body: "Time to log your gratitude!", 
+          body: message, 
           scheduledTime: notificationDate
         );
       } catch (e) {

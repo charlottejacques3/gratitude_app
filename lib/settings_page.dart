@@ -5,11 +5,9 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gratitude_app/authentication/auth_service.dart';
-import 'package:gratitude_app/authentication/login_page.dart';
 import 'package:gratitude_app/resources_page.dart';
 import 'package:gratitude_app/study_pages/questionnaire_page.dart';
 import 'package:gratitude_app/study_pages/withdraw_page.dart';
-import 'package:gratitude_app/utilities/widgets.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -275,7 +273,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               //scheduled notifications
                               else {
                                 time = amPmTo24(scheduledTimeController.text, scheduledAMPMController.text);
-                                prefs.setInt('schduled_hours', time['hours']!);
+                                prefs.setInt('scheduled_hours', time['hours']!);
                                 prefs.setInt('scheduled_minutes', time['minutes']!);
                               }
                               //set notification style
@@ -385,70 +383,60 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             InfoButton(
               text: 'Tutorial Video', 
-              action: () => launchUrl(Uri.parse('https://youtube.com/shorts/Da3dlMjP1vg?feature=share'))
+              action: () {
+                if (Globals.group.compareTo('experimental') == 0) {
+                  launchUrl(Uri.parse('https://youtube.com/shorts/jkGra8y_SuE?feature=share'));
+                } else {
+                  launchUrl(Uri.parse('https://youtube.com/shorts/NupumZYB_VE?feature=share'));
+                }
+              }
             ),
 
             //final questionnaire
             InfoButton(
               text: 'Fill Out Final Happiness Questionnaires',
-              action: () => showDialog(
-                context: context, 
-                builder: (BuildContext context) => Dialog(
-                  child: Padding(
-                    padding: EdgeInsets.all(15),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('Is the study period over?',
-                          style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        SizedBox(height: 10,),
-                        Text('Please only fill out these questionnaires once the study period has concluded!',
-                          textAlign: TextAlign.center,
-                        ),
-                        Text('You will not be able to access the app after you fill out these questionnaires.',
-                          textAlign: TextAlign.center,
-                        ),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: ElevatedButton(
-                                  onPressed: () => Navigator.pop(context), 
-                                  child: Text('No, go back', 
-                                    textAlign: TextAlign.center,
-                                  )
-                                ),
-                              ),
-                            ),
+              action: () async {
+                //check if study is over
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                String? endDay = prefs.getString('end_day');
+                if (endDay != null && DateTime.now().isAfter(DateTime.parse(endDay))) {
+                  prefs.setBool('final_questionnaires_started', true);
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => QuestionnairePage(number: 2,)));
+                }
 
-                            //confirm study is over
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: ElevatedButton(
-                                  onPressed: () async {
-                                    SharedPreferences prefs = await SharedPreferences.getInstance();
-                                    prefs.setBool('final_questionnaires_started', true);
-                                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => QuestionnairePage(number: 2,)));
-                                  },
-                                  child: Text('Yes, continue',
-                                    textAlign: TextAlign.center,
-                                  )
-                                ),
+                //if not show dialog
+                else {
+                  showDialog(
+                    context: context, 
+                    builder: (BuildContext context) => Dialog(
+                      child: Padding(
+                        padding: EdgeInsets.all(15),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('The study period is not over yet!',
+                              style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                                fontWeight: FontWeight.bold,
                               ),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 10,),
+                            Text('Please only fill out these questionnaires once the study period has concluded.',
+                              textAlign: TextAlign.center,
+                            ),
+                            ElevatedButton(
+                              onPressed: () => Navigator.pop(context), 
+                              child: Text('Okay', 
+                                textAlign: TextAlign.center,
+                              )
                             )
                           ],
-                        )
-                      ],
-                    ),
-                  )
-                )
-              )
+                        ),
+                      )
+                    )
+                  );
+                }
+              }
             ),
 
             //resources

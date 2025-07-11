@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:another_flushbar/flushbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,15 +18,21 @@ import 'package:gratitude_app/select_method_page.dart';
 class AuthService {
 
   Future<void> signup({required String username, required String password, required BuildContext context}) async {
-    try {
-      //create account
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: '$username@mail.com', 
-        password: password
-      );      
-      basicSignUp(context);
-    } on FirebaseAuthException catch(e) {
-      catchSignupErrors(e.code, context);
+    //make sure username is proper format
+    if (username[0] != 'p' || int.tryParse(username.substring(1)) == null) {
+      catchSignupErrors('not-p-user', context);
+    } else {
+
+      try {
+        //create account
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: '$username@mail.com', 
+          password: password
+        );      
+        basicSignUp(context, username);
+      } on FirebaseAuthException catch(e) {
+        catchSignupErrors(e.code, context);
+      }
     }
   }
 
@@ -41,7 +45,7 @@ class AuthService {
         password: password
       );
       
-      setSharedPrefs();
+      setSharedPrefs(username);
 
       //set sharedprefs according to given permissions
       bool notifPermission = await Permission.notification.isGranted;
@@ -108,17 +112,17 @@ class AuthService {
   }
 
 
-  Future<void> signInAnon({required BuildContext context}) async {
-    try {
-      await FirebaseAuth.instance.signInAnonymously();
-      basicSignUp(context);
-    } on FirebaseAuthException catch (e) {
-      Flushbar(
-        message: 'An error occurred: ${e.code}',
-        duration: Duration(milliseconds: 1500),
-      ).show(context);
-    }
-  }
+  // Future<void> signInAnon({required BuildContext context}) async {
+  //   try {
+  //     await FirebaseAuth.instance.signInAnonymously();
+  //     basicSignUp(context);
+  //   } on FirebaseAuthException catch (e) {
+  //     Flushbar(
+  //       message: 'An error occurred: ${e.code}',
+  //       duration: Duration(milliseconds: 1500),
+  //     ).show(context);
+  //   }
+  // }
 
 
   Future<void> anonToCredential({required BuildContext context, required String email, required String password}) async {
@@ -162,7 +166,7 @@ class AuthService {
    }
 
 
-  Future<void> basicSignUp(BuildContext context) async {
+  Future<void> basicSignUp(BuildContext context, String username) async {
     //send to consent form page
     Navigator.push(
       context, 
@@ -170,7 +174,7 @@ class AuthService {
     );
 
     //sharedprefs
-    setSharedPrefs();
+    setSharedPrefs(username);
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool('consent_complete', false);
     prefs.setBool('demographics_complete', false);
@@ -180,10 +184,12 @@ class AuthService {
   }
 
 
-  Future<void> setSharedPrefs() async {
-    //pick random group + save to sharedprefs + global variables
-    //TEMPORARY - SET BACK!!!
-    int group = 1;//Random().nextInt(2); //0 is control group, 1 is experimental!!
+  Future<void> setSharedPrefs(String username) async {
+    //pick group based on participant number + save to sharedprefs + global variables
+    print('pnumber: ${int.tryParse(username.substring(1))}');
+    int pNumber = int.tryParse(username.substring(1)) ?? 1;
+    
+    int group = pNumber % 2;//Random().nextInt(2); //0 is control group, 1 is experimental!!
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String groupName = 'control';
     if (group == 1) {
@@ -241,10 +247,16 @@ void catchSignupErrors(String code, BuildContext context) {
   switch (code) {
     case 'weak-password':
       message = 'The password provided is too weak.';
+      break;
     case 'email-already-in-use':
       message = 'An account already exists with this username.';
+      break;
+    case 'not-p-user':
+      message = 'Plese sign up with the username provided to you by email (e.g. p{your_participant_number})';
+      break;
     case 'invalid-email':
       message = 'Please ensure your username contains only letters, numbers, or the following symbols: . , _ - + %';
+      break;
     default:
       message = 'An error occurred: $code';
   }

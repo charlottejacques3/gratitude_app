@@ -84,7 +84,7 @@ class _StrategiesPageState extends State<StrategiesPage> {
     }
   }
 
-  PromptWidget pickStrategy(int index) {
+  PromptWidget pickStrategy(int index, String previousStrategy) {
     print('TOP');
 
     //pick a random trap
@@ -95,15 +95,20 @@ class _StrategiesPageState extends State<StrategiesPage> {
       int trapNum = Random().nextInt(selectedTraps.length);
 
       print('BEFORE PICKING');
-      //pick a random strategy
+      //set the options
       if (strategiesPerDistortion[selectedTraps[trapNum]] != null) {
         strategyOptions = strategiesPerDistortion[selectedTraps[trapNum]]!;
       } 
     }
     
-    int strategyNum = Random().nextInt(strategyOptions.length);
-    print('STRATEGY: ${strategyOptions[strategyNum]}');
-    List<String> selectedStrategyPrompts = strategies[strategyOptions[strategyNum]]!;
+    //pick a random strategy
+    String selectedStrategy = previousStrategy;
+    while (selectedStrategy.compareTo(previousStrategy) == 0) {
+      int strategyNum = Random().nextInt(strategyOptions.length);
+      print('STRATEGY: ${strategyOptions[strategyNum]}');
+      selectedStrategy = strategyOptions[strategyNum];
+    }
+    List<String> selectedStrategyPrompts = strategies[selectedStrategy]!;
 
     //create text editing controllers
     List<TextEditingController> newControllers = [];
@@ -113,12 +118,12 @@ class _StrategiesPageState extends State<StrategiesPage> {
 
     //return new prompt widget
     return PromptWidget(
-      title: strategyOptions[strategyNum],
+      title: selectedStrategy,
       controllers: newControllers, 
       prompt: selectedStrategyPrompts,
       refresh: () {
         print('refresh button: $index');
-        replaceStrategy(index);
+        replaceStrategy(index, selectedStrategy);
       }
     );
   }
@@ -126,13 +131,13 @@ class _StrategiesPageState extends State<StrategiesPage> {
   void addStrategy() {
     int index = promptWidgets.length;
     setState(() {
-      promptWidgets.add(pickStrategy(index));
+      promptWidgets.add(pickStrategy(index, ''));
     });
   }
 
-  void replaceStrategy(int index) {
+  void replaceStrategy(int index, String selectedStrategy) {
     print('hello, index: $index');
-    PromptWidget newStrategy = pickStrategy(index);
+    PromptWidget newStrategy = pickStrategy(index, selectedStrategy);
     setState(() {
       promptWidgets[index] = newStrategy;
     });

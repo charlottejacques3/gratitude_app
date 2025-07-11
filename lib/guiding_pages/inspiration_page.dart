@@ -299,6 +299,69 @@ class _InspirationPageState extends State<InspirationPage> {
     }
   }
 
+  //select checkboxes for items
+  void selectUnselectOption(dynamic e, BuildContext context) {
+    if (possibleInspoTypes.contains(e)) {
+      if (selectedInspoTypes.contains(e)) {
+        setState(() {
+          selectedInspoTypes.remove(e); //if just selected, add to list
+        });
+      } else {
+        setState(() {
+          selectedInspoTypes.add(e); //if just unselected, remove from list
+        });
+      }
+    }
+
+    //if not, show dialog
+                                            else {
+                                              // String msg = '';
+                                              if (e.compareTo('Random Photo') == 0) {
+                                                if (!connection) {
+                                                  dialog(
+                                                    'Please connect to the internet to use this feature',
+                                                    () {
+                                                      Navigator.pop(context);
+                                                    },
+                                                    'Okay',
+                                                    false
+                                                  );
+                                                } else {
+                                                  dialog(
+                                                    'Please allow access to the camera roll to use this feature',
+                                                    () {
+                                                      PhotoManager.openSetting();
+                                                    },
+                                                    'Open Settings',
+                                                    true
+                                                  );
+                                                }
+                                              } else if (e.compareTo('Random Past Log') == 0) {
+                                                  dialog(
+                                                    'Please add a log to use this feature',
+                                                    () {
+                                                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(startingPageIndex: 0)));
+                                                    },
+                                                    'Add a Log',
+                                                    true
+                                                  );
+                                              } else if (e.compareTo('Past Advice') == 0) {
+                                                dialog(
+                                                    'Please leave a piece of advice (after logging gratitude) to use this feature',
+                                                    () {
+                                                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(startingPageIndex: 0)));
+                                                    },
+                                                    'Add a Log',
+                                                    true
+                                                  );
+                                              } else {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(content: Text('Error: this feature is not currently available')),
+                                                );
+                                              }
+                                            }
+  }
+
   //dialog if the random log/photo don't work
   void dialog(String text, Function() actionButton, String actionButtonText, bool twoButtons) {
     showDialog(
@@ -848,68 +911,7 @@ class _InspirationPageState extends State<InspirationPage> {
                                             : WidgetStateBorderSide.resolveWith(
                                               (states) => BorderSide(width: 1.5, color: Colors.black)
                                             ),
-                                          onChanged: (isSelected) {
-                                            //check if possible
-                                            if (possibleInspoTypes.contains(e)) {
-                                              if (isSelected == true) {
-                                                setState(() {
-                                                  selectedInspoTypes.add(e); //if just selected, add to list
-                                                });
-                                              } else {
-                                                setState(() {
-                                                  selectedInspoTypes.remove(e); //if just unselected, remove from list
-                                                });
-                                              }
-                                            }
-                                                                
-                                            //if not, show dialog
-                                            else {
-                                              // String msg = '';
-                                              if (e.compareTo('Random Photo') == 0) {
-                                                if (!connection) {
-                                                  dialog(
-                                                    'Please connect to the internet to use this feature',
-                                                    () {
-                                                      Navigator.pop(context);
-                                                    },
-                                                    'Okay',
-                                                    false
-                                                  );
-                                                } else {
-                                                  dialog(
-                                                    'Please allow access to the camera roll to use this feature',
-                                                    () {
-                                                      PhotoManager.openSetting();
-                                                    },
-                                                    'Open Settings',
-                                                    true
-                                                  );
-                                                }
-                                              } else if (e.compareTo('Random Past Log') == 0) {
-                                                  dialog(
-                                                    'Please add a log to use this feature',
-                                                    () {
-                                                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(startingPageIndex: 0)));
-                                                    },
-                                                    'Add a Log',
-                                                    true
-                                                  );
-                                              } else if (e.compareTo('Past Advice') == 0) {
-                                                dialog(
-                                                    'Please leave a piece of advice (after logging gratitude) to use this feature',
-                                                    () {
-                                                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(startingPageIndex: 0)));
-                                                    },
-                                                    'Add a Log',
-                                                    true
-                                                  );
-                                              } else {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(content: Text('Error: this feature is not currently available')),
-                                                );
-                                              }
-                                            }
-                                          }
+                                          onChanged: (isSelected) => selectUnselectOption(e, context),
                                         ),
                                         Text(e,
                                           style: TextStyle(
@@ -918,6 +920,7 @@ class _InspirationPageState extends State<InspirationPage> {
                                         ),
                                       ],
                                     ),
+                                    onTap: () => selectUnselectOption(e, context)
                                   )
                                 );
                               }).toList(),

@@ -3,12 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/authentication/auth_service.dart';
-import 'package:gratitude_app/init_mood_page.dart';
-import 'package:gratitude_app/main.dart';
-import 'package:gratitude_app/select_method_page.dart';
-import 'package:gratitude_app/study_pages/demographics_page.dart';
 import 'package:gratitude_app/study_pages/study_complete_page.dart';
-import 'package:gratitude_app/study_pages/tutorial_page.dart';
+import 'package:gratitude_app/study_pages/welcome_page.dart';
 import 'package:gratitude_app/utilities/alarm_manager.dart';
 import 'package:gratitude_app/utilities/notification_service.dart';
 import 'package:gratitude_app/utilities/widgets.dart';
@@ -320,15 +316,21 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
       //update questionnaire complete
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setBool('initial_questionnaires_complete', true);
+      DateTime endTime = DateTime.now().add(Duration(days: 7)); 
+      DateTime endDay = DateTime(endTime.year, endTime.month, endTime.day);
+      prefs.setString('end_time', endTime.toIso8601String());
+      prefs.setString('end_day', endDay.toIso8601String());
+      print('END TIME: ${endTime.toIso8601String()}, END DATE: ${endDay.toIso8601String()}');
 
       //send to tutorial page
       Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (BuildContext context) {
-          if (Globals.group.compareTo('experimental') == 0) {
-            return InitialMoodPage();
-          } else {
-            return MyHomePage(startingPageIndex: 0);
-          }
+          return WelcomePage();
+          // if (Globals.group.compareTo('experimental') == 0) {
+          //   return InitialMoodPage();
+          // } else {
+          //   return MyHomePage(startingPageIndex: 0);
+          // }
         })
       );
 
@@ -362,7 +364,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     //study concluded
     else if (widget.number == 2) {
       //log out
-      // await AuthService().signout(context: context);
+      await AuthService().signout(context: context);
 
       //update study complete
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -675,15 +677,19 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
                 prefs.setBool('initial_questionnaires_complete', true);
 
                 //send to tutorial page
-                Navigator.pushReplacement(
-                  context, MaterialPageRoute(builder: (BuildContext context) {
-                    if (Globals.group.compareTo('experimental') == 0) {
-                      return InitialMoodPage();
-                    } else {
-                      return MyHomePage(startingPageIndex: 0);
-                    }
-                  })
-                );
+                // if (Globals.group.compareTo('experimental') == 0) {
+                //   Navigator.pushReplacement(
+                //     context, MaterialPageRoute(builder: (BuildContext context) {
+                //     return InitialMoodPage();
+                //     })
+                //   );
+                // } else {
+                //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => MyHomePage(startingPageIndex: 0)));
+                // }
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => WelcomePage()));
+
+                //set notifs
+                await NotificationService.initNotifications();
               }
             ),
           ],

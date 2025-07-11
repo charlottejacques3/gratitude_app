@@ -181,7 +181,7 @@ class _ReflectionPageState extends State<ReflectionPage> {
                     visualDensity: VisualDensity(horizontal:VisualDensity.minimumDensity, vertical: VisualDensity.minimumDensity),
                     minLeadingWidth: 0,
           
-                    //navigate to the page for that reflection
+                    //navigate to the page for that reflection, or select for editing
                     onTap: () {
                       if (!widget.editMode) {
                         Navigator.push(

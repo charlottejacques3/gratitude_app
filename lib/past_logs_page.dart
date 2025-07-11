@@ -397,8 +397,29 @@ class _PastLogsPageState extends State<PastLogsPage> {
                                                     });
                                                   }
                                                   }
-                                                ) : Container(width: 0,)
-                                              ) 
+                                                ) : Container(width: 0,),
+                                              
+                                              //check/uncheck
+                                              onTap: () {
+                                                if (widget.editMode) {
+                                                  //delete if already there
+                                                  if (idsToDelete[lst[childIndex]['id']] != null) {
+                                                    setState(() {
+                                                      idsToDelete.remove(lst[childIndex]['id']);
+                                                    });
+                                                  } 
+                                                  //otherwise add
+                                                  else {
+                                                    setState(() {
+                                                      idsToDelete[lst[childIndex]['id']] = {
+                                                        'type': lst[childIndex]['type'],
+                                                        'value': lst[childIndex]['log']
+                                                      }; //if just selected, add to dict
+                                                    });
+                                                  }
+                                                }
+                                              }
+                                            ) 
                                           );
                                         },
                                       ),

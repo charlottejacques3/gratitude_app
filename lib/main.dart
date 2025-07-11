@@ -2,12 +2,12 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:gratitude_app/study_pages/checkin_popup.dart';
 import 'package:gratitude_app/guiding_pages/inspiration_page.dart';
 import 'package:gratitude_app/guiding_pages/main_reframing_page.dart';
 import 'package:gratitude_app/logs_model.dart';
 import 'package:gratitude_app/utilities/alarm_manager.dart';
 import 'package:gratitude_app/utilities/globals.dart';
+import 'package:gratitude_app/utilities/widgets.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
@@ -167,6 +167,11 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     currentPageIndex = widget.startingPageIndex;
+
+    //set checkin for control group 
+    if (Globals.group.compareTo('control') == 0) {
+      checkinDialog(context);
+    }
   }
 
 
