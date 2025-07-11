@@ -613,7 +613,7 @@ class _InspirationPageState extends State<InspirationPage> {
                               setState(() {
                                 selectedAlbums.add(allAlbums[index].name);
                               });
-                          }
+                            }
                           },
                         );
                       }
