@@ -667,31 +667,6 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
               }, 
               text: 'Submit'
             ),
-
-            //TEMPORARY skip button
-            SwitchedColourButton(
-              text: 'Skip - TEMPORARY', 
-              onClick: () async {
-                //update questionnaire complete
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-                prefs.setBool('initial_questionnaires_complete', true);
-
-                //send to tutorial page
-                // if (Globals.group.compareTo('experimental') == 0) {
-                //   Navigator.pushReplacement(
-                //     context, MaterialPageRoute(builder: (BuildContext context) {
-                //     return InitialMoodPage();
-                //     })
-                //   );
-                // } else {
-                //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => MyHomePage(startingPageIndex: 0)));
-                // }
-                Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => WelcomePage()));
-
-                //set notifs
-                await NotificationService.initNotifications();
-              }
-            ),
           ],
         ),
       )

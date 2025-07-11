@@ -520,20 +520,6 @@ class _DemographicsPageState extends State<DemographicsPage> {
                 }
               }, 
             ),
-
-            //TEMPORARY skip button
-            SwitchedColourButton(
-              text: 'Skip - TEMPORARY', 
-              onClick: () async {
-                //update demographics complete
-                SharedPreferences prefs = await SharedPreferences.getInstance(); 
-                prefs.setBool('demographics_complete', true);
-
-                Navigator.pushReplacement(
-                  context, MaterialPageRoute(builder: (BuildContext context) => QuestionnairePage(number: 1,))
-                );
-              }
-            ),
           ],
         ),
       )
