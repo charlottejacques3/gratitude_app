@@ -365,7 +365,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     //study concluded
     else if (widget.number == 2) {
       //log out
-      await AuthService().signout(context: context);
+      // await AuthService().signout(context: context);
 
       //update study complete
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -671,23 +671,22 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
 
             //TEMPORARY skip button
             SwitchedColourButton(
-              text: 'Skip - TEMPORARY', 
+              text: widget.number == 1 ? 'Skip - TEMPORARY' : 'Back to main app', 
               onClick: () async {
+
                 //update questionnaire complete
                 SharedPreferences prefs = await SharedPreferences.getInstance();
                 prefs.setBool('initial_questionnaires_complete', true);
-
-                //send to tutorial page
-                // if (Globals.group.compareTo('experimental') == 0) {
-                //   Navigator.pushReplacement(
-                //     context, MaterialPageRoute(builder: (BuildContext context) {
-                //     return InitialMoodPage();
-                //     })
-                //   );
-                // } else {
-                //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => MyHomePage(startingPageIndex: 0)));
-                // }
-                Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => InitialMoodPage()));
+                Navigator.pushReplacement(
+                  context, MaterialPageRoute(builder: (BuildContext context) {
+                    // return WelcomePage();
+                    if (Globals.group.compareTo('experimental') == 0) {
+                      return InitialMoodPage();
+                    } else {
+                      return MyHomePage(startingPageIndex: 0);
+                    }
+                  })
+                );
 
                 //set notifs
                 await NotificationService.initNotifications();

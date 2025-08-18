@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gratitude_app/authentication/auth_service.dart';
 import 'package:gratitude_app/authentication/login_page.dart';
+import 'package:gratitude_app/init_mood_page.dart';
 import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/resources_page.dart';
 import 'package:gratitude_app/study_pages/questionnaire_page.dart';
@@ -398,16 +399,6 @@ class _SettingsPageState extends State<SettingsPage> {
             InfoButton(
               text: 'Fill Out Final Happiness Questionnaires',
               action: () async {
-                //check if study is over
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-                String? endDay = prefs.getString('end_day');
-                if (endDay != null && DateTime.now().isAfter(DateTime.parse(endDay))) {
-                  prefs.setBool('final_questionnaires_started', true);
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => QuestionnairePage(number: 2,)));
-                }
-
-                //if not show dialog
-                else {
                   showDialog(
                     context: context, 
                     builder: (BuildContext context) => Dialog(
@@ -416,7 +407,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text('The study period is not over yet!',
+                            Text('Are you sure you would like to fill out the final happiness questionnaires?',
                               style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -426,18 +417,44 @@ class _SettingsPageState extends State<SettingsPage> {
                             Text('Please only fill out these questionnaires once the study period has concluded.',
                               textAlign: TextAlign.center,
                             ),
-                            ElevatedButton(
-                              onPressed: () => Navigator.pop(context), 
-                              child: Text('Okay', 
-                                textAlign: TextAlign.center,
-                              )
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: ElevatedButton(
+                                      onPressed: () => Navigator.pop(context), 
+                                      child: Text('No, go back', 
+                                        textAlign: TextAlign.center,
+                                      )
+                                    ),
+                                  ),
+                                ),
+
+                                //confirm opt out
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: ElevatedButton(
+                                      onPressed: () async {
+                                        SharedPreferences prefs = await SharedPreferences.getInstance();
+                                        prefs.setBool('final_questionnaires_started', true);
+                                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => QuestionnairePage(number: 2,)));
+                                      }, 
+                                      child: Text('Yes, continue',
+                                        textAlign: TextAlign.center,
+                                      )
+                                    ),
+                                  ),
+                                )
+                              ],
                             )
                           ],
                         ),
                       )
                     )
                   );
-                }
+                // }
               }
             ),
 
@@ -535,7 +552,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
             //control version
             InfoButton(
-              text: 'Control Version', 
+              text: Globals.group.compareTo('experimental') == 0 ? 'Control Version' : 'Experimental Version', 
               action: () async {
                 SharedPreferences prefs = await SharedPreferences.getInstance();
                 if (Globals.group.compareTo('experimental') == 0) {
@@ -543,12 +560,12 @@ class _SettingsPageState extends State<SettingsPage> {
                   Globals.group = prefs.getString('group')!;
                   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(startingPageIndex: 0)));
                 } else if (Globals.group.compareTo('control') == 0) {
-                  prefs.remove('last_checkin');
-                  await AuthService().signout(context: context);
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));
+                  prefs.setString('group', 'experimental');
+                  Globals.group = prefs.getString('group')!;
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => InitialMoodPage()));
                 }
               }
-            )
+            ),
 
             //account info
             // SizedBox(height: 50,),
@@ -617,17 +634,17 @@ class _SettingsPageState extends State<SettingsPage> {
             // ),
 
             // //log out
-            // ElevatedButton(
-            //   onPressed: () async {
-            //     await AuthService().signout(context: context);
-            //     Navigator.pushAndRemoveUntil(
-            //       context, 
-            //       MaterialPageRoute(builder: (BuildContext context) => const LoginPage()),
-            //       (route) => false
-            //     );
-            //   }, 
-            //   child: Text('Log Out')
-            // ),
+            ElevatedButton(
+              onPressed: () async {
+                await AuthService().signout(context: context);
+                Navigator.pushAndRemoveUntil(
+                  context, 
+                  MaterialPageRoute(builder: (BuildContext context) => const LoginPage()),
+                  (route) => false
+                );
+              }, 
+              child: Text('Log Out')
+            ),
 
             // //delete account (if in the wild study is over)
             // DateTime.now().isAfter(Globals.inTheWildEndDate) ? ElevatedButton(

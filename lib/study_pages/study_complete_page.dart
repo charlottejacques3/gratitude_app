@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:gratitude_app/init_mood_page.dart';
+import 'package:gratitude_app/main.dart';
+import 'package:gratitude_app/utilities/globals.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class StudyCompletePage extends StatefulWidget {
@@ -31,18 +35,23 @@ class _StudyCompletePageState extends State<StudyCompletePage> {
             Text('Please sign up for an interview (details will be provided in an email) if you have not already!',
               textAlign: TextAlign.center,
             ),
-            // ElevatedButton(
-            //   child: Text('Control condition'),
-            //   onPressed: () async {
-            //     SharedPreferences prefs = await SharedPreferences.getInstance();
-            //     prefs.setString('group', 'control');
-            //     Globals.group = prefs.getString('group')!;
-            //     prefs.setBool('study_complete', false);
-            //     prefs.setBool('initial_questionnaires_complete', false);
-            //     prefs.setBool('final_questionnaires_started', false);
-            //     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => QuestionnairePage(number:1)));
-            //   },
-            // )
+            ElevatedButton(
+              child: Text('Back to main app'),
+              onPressed: () async {
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                prefs.setBool('study_complete', false);
+                prefs.setBool('final_questionnaires_started', false);
+                Navigator.pushReplacement(
+                  context, MaterialPageRoute(builder: (BuildContext context) {
+                    if (Globals.group.compareTo('experimental') == 0) {
+                      return InitialMoodPage();
+                    } else {
+                      return MyHomePage(startingPageIndex: 0);
+                    }
+                  })
+                );
+              },
+            )
           ]
         ),
       )
