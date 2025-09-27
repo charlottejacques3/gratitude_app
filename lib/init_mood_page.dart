@@ -21,7 +21,6 @@ class _InitialMoodPageState extends State<InitialMoodPage> {
   @override
   void initState() {
     super.initState();
-    checkinDialog(context);
   }
 
   

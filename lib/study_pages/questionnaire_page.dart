@@ -2,16 +2,12 @@ import 'package:another_flushbar/flushbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:gratitude_app/authentication/auth_service.dart';
 import 'package:gratitude_app/init_mood_page.dart';
 import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/study_pages/study_complete_page.dart';
-import 'package:gratitude_app/utilities/alarm_manager.dart';
 import 'package:gratitude_app/utilities/notification_service.dart';
 import 'package:gratitude_app/utilities/widgets.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:gratitude_app/utilities/globals.dart';
 
 
@@ -334,32 +330,6 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
           }
         })
       );
-
-      //set notifs
-      await NotificationService.initNotifications();
-
-      //set sharedprefs according to given permissions
-      bool notifPermission = await Permission.notification.isGranted;
-      bool alarmPermission = await Permission.scheduleExactAlarm.isGranted;
-      prefs.setBool('notifs_allowed', notifPermission);
-      prefs.setBool('alarms_allowed', alarmPermission);
-      print('NOTIFS: ${prefs.getBool('notifs_allowed')}, ALARMS: ${prefs.getBool('alarms_allowed')}');
-
-      //cancel past alarms to avoid backlog
-      await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
-
-      //schedule the next alarm if notifs allowed
-      if (notifPermission) {
-        await AndroidAlarmManager.oneShot(
-          const Duration(seconds: 5), //schedule 5 seconds later
-          0, 
-          notificationScheduler,
-          rescheduleOnReboot: true,
-          allowWhileIdle: true,
-          exact: alarmPermission,
-          wakeup: true
-        );
-      }
     } 
     
     //study concluded

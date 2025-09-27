@@ -6,32 +6,26 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:gratitude_app/authentication/login_page.dart';
+import 'package:gratitude_app/init_mood_page.dart';
 import 'package:gratitude_app/main.dart';
-import 'package:gratitude_app/study_pages/demographics_page.dart';
 import 'package:gratitude_app/utilities/alarm_manager.dart';
+import 'package:gratitude_app/utilities/notification_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:gratitude_app/utilities/globals.dart' show Globals;
-import 'package:gratitude_app/select_method_page.dart';
 
 class AuthService {
 
   Future<void> signup({required String username, required String password, required BuildContext context}) async {
-    //make sure username is proper format
-    if (username[0] != 'p' || int.tryParse(username.substring(1)) == null) {
-      catchSignupErrors('not-p-user', context);
-    } else {
-
-      try {
-        //create account
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: '$username@mail.com', 
-          password: password
-        );      
-        basicSignUp(context, username);
-      } on FirebaseAuthException catch(e) {
-        catchSignupErrors(e.code, context);
-      }
+    try {
+      //create account
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: '$username@mail.com', 
+        password: password
+      );      
+      basicSignUp(context, username);
+    } on FirebaseAuthException catch(e) {
+      catchSignupErrors(e.code, context);
     }
   }
 
@@ -44,37 +38,13 @@ class AuthService {
         password: password
       );
       
-      setSharedPrefs(username);
-
-      //set sharedprefs according to given permissions
-      bool notifPermission = await Permission.notification.isGranted;
-      bool alarmPermission = await Permission.scheduleExactAlarm.isGranted;
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setBool('notifs_allowed', notifPermission);
-      prefs.setBool('alarms_allowed', alarmPermission);
-      print('NOTIFS: ${prefs.getBool('notifs_allowed')}, ALARMS: ${prefs.getBool('alarms_allowed')}');
-
-      //cancel past alarms to avoid backlog
-      await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
-
-      //schedule the next alarm if notifs allowed
-      if (notifPermission) {
-        await AndroidAlarmManager.oneShot(
-          const Duration(seconds: 5), //schedule 5 seconds later
-          0, 
-          notificationScheduler,
-          rescheduleOnReboot: true,
-          allowWhileIdle: true,
-          exact: alarmPermission,
-          wakeup: true
-        );
-      }
+      setSharedPrefs();
 
       //send to page depending on group
       Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (BuildContext context) {
           if (Globals.group.compareTo('experimental') == 0) {
-            return SelectMethodPage();
+            return InitialMoodPage();
           } else {
             return MyHomePage(startingPageIndex: 0);
           }
@@ -166,37 +136,19 @@ class AuthService {
 
 
   Future<void> basicSignUp(BuildContext context, String username) async {
-    //send to consent form page
+    //send to mood log page
     Navigator.push(
       context, 
-      MaterialPageRoute(builder: (BuildContext context) => const DemographicsPage())//ConsentFormPage())
+      MaterialPageRoute(builder: (BuildContext context) => const InitialMoodPage())//ConsentFormPage())
     );
 
     //sharedprefs
-    setSharedPrefs(username);
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool('consent_complete', false);
-    prefs.setBool('demographics_complete', false);
-    prefs.setBool('initial_questionnaires_complete', false);
-    prefs.setBool('final_questionnaires_started', false);
-    prefs.setBool('asked_photo_permission', false);
+    setSharedPrefs();
   }
 
 
-  Future<void> setSharedPrefs(String username) async {
-    //pick group based on participant number + save to sharedprefs + global variables
-    print('pnumber: ${int.tryParse(username.substring(1))}');
-    
-    int group = 1;//pNumber % 2;//Random().nextInt(2); //0 is control group, 1 is experimental!!
+  Future<void> setSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String groupName = 'control';
-    if (group == 1) {
-      groupName = 'experimental';
-    }
-    prefs.setString('group', groupName);
-    Globals.group = groupName;
-    print('ASSIGNED GROUP: $group');
-    print('GLOBAL VARIABLE: ${Globals.group}');
 
     //save default settings to shared preferences
     if (prefs.getBool('random_notifications') == null || prefs.getInt('random_start_hours') == null || prefs.getInt('random_start_minutes') == null || prefs.getInt('random_end_hours') == null || prefs.getInt('random_end_minutes') == null || prefs.getInt('scheduled_hours') == null || prefs.getInt('scheduled_minutes') == null) {
@@ -208,10 +160,35 @@ class AuthService {
       prefs.setInt('scheduled_hours', 12); //12pm
       prefs.setInt('scheduled_minutes', 0);
     }
-    prefs.setBool('allow_ai', true);
-    prefs.setBool('withdraw', false);
-    prefs.setBool('withdraw_in_crisis', false);
-    prefs.setBool('study_complete', false);
+    prefs.setBool('asked_photo_permission', false);
+    prefs.setString('group', 'experimental');
+    Globals.group = 'experimental';
+
+    //set notifs
+    await NotificationService.initNotifications();
+
+    //set sharedprefs according to given permissions
+    bool notifPermission = await Permission.notification.isGranted;
+    bool alarmPermission = await Permission.scheduleExactAlarm.isGranted;
+    prefs.setBool('notifs_allowed', notifPermission);
+    prefs.setBool('alarms_allowed', alarmPermission);
+    print('NOTIFS: ${prefs.getBool('notifs_allowed')}, ALARMS: ${prefs.getBool('alarms_allowed')}');
+
+    //cancel past alarms to avoid backlog
+    await AndroidAlarmManager.cancel(0) && await AndroidAlarmManager.cancel(1);
+
+    //schedule the next alarm if notifs allowed
+    if (notifPermission) {
+      await AndroidAlarmManager.oneShot(
+        const Duration(seconds: 5), //schedule 5 seconds later
+        0, 
+        notificationScheduler,
+        rescheduleOnReboot: true,
+        allowWhileIdle: true,
+        exact: alarmPermission,
+        wakeup: true
+      );
+    }
   }
 
 

@@ -7,7 +7,6 @@ import 'package:gratitude_app/guiding_pages/main_reframing_page.dart';
 import 'package:gratitude_app/logs_model.dart';
 import 'package:gratitude_app/utilities/alarm_manager.dart';
 import 'package:gratitude_app/utilities/globals.dart';
-import 'package:gratitude_app/utilities/widgets.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
@@ -141,7 +140,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true, dialogTheme: DialogThemeData(backgroundColor: bg),
       ),
-      home: ParticipantGate(), 
+      home: AuthGate(), 
       debugShowCheckedModeBanner: false,
     );
   }
@@ -167,11 +166,6 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     currentPageIndex = widget.startingPageIndex;
-
-    //set checkin for control group 
-    if (Globals.group.compareTo('control') == 0) {
-      checkinDialog(context);
-    }
   }
 
 
