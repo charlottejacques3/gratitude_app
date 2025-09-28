@@ -86,7 +86,7 @@
   //     //   String url = await refFile.getDownloadURL();
 
   //     //   //store to database
-  //     //   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group).child(FirebaseAuth.instance.currentUser!.uid);
+  //     //   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users').child(FirebaseAuth.instance.currentUser!.uid);
   //     //   await dbRef.update({'consent_form': url});
 
   //     // } catch(e) {

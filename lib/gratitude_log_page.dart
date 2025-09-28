@@ -26,7 +26,7 @@ class _GratitudeLogPageState extends State<GratitudeLogPage> {
   
   int nextKey = 2;
   String uid = FirebaseAuth.instance.currentUser!.uid;
-  DatabaseReference dbUserRef = FirebaseDatabase.instance.ref().child(Globals.group)
+  DatabaseReference dbUserRef = FirebaseDatabase.instance.ref().child('users')
                                                           .child(FirebaseAuth.instance.currentUser!.uid);
 
   // bool guided = true; //keeps track of whether they worked through emotions in this session

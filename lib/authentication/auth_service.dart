@@ -40,6 +40,12 @@ class AuthService {
       
       setSharedPrefs();
 
+      //reset allowed albums
+      DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
+                                                          .child(FirebaseAuth.instance.currentUser!.uid)
+                                                          .child('SelectedAlbums');
+      dbRef.remove();
+
       //send to page depending on group
       Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (BuildContext context) {
@@ -144,6 +150,8 @@ class AuthService {
 
     //sharedprefs
     setSharedPrefs();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool('asked_photo_permission', false);
   }
 
 
@@ -160,7 +168,6 @@ class AuthService {
       prefs.setInt('scheduled_hours', 12); //12pm
       prefs.setInt('scheduled_minutes', 0);
     }
-    prefs.setBool('asked_photo_permission', false);
     prefs.setString('group', 'experimental');
     Globals.group = 'experimental';
 
@@ -194,7 +201,7 @@ class AuthService {
 
   Future<void> deleteAccount(BuildContext context) async {
     //delete data
-    DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group).child(FirebaseAuth.instance.currentUser!.uid);
+    DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users').child(FirebaseAuth.instance.currentUser!.uid);
     dbRef.remove();
 
     //delete images

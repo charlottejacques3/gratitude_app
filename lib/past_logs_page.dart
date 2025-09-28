@@ -20,7 +20,7 @@ class PastLogsPage extends StatefulWidget {
 
 class _PastLogsPageState extends State<PastLogsPage> {
 
-  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group)
+  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
                                                           .child(FirebaseAuth.instance.currentUser!.uid);
                                                           // .child('GratitudeLogs');
   StreamSubscription<DatabaseEvent>? logListener;

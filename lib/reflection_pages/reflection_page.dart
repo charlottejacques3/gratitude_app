@@ -22,7 +22,7 @@ class ReflectionPage extends StatefulWidget {
 
 class _ReflectionPageState extends State<ReflectionPage> {
 
-  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group)
+  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
                                                           .child(FirebaseAuth.instance.currentUser!.uid)
                                                           .child('Reflections');
   StreamSubscription<DatabaseEvent>? listener;

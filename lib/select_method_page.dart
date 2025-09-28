@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/main.dart';
-import 'package:gratitude_app/utilities/globals.dart';
 
 
 class SelectMethodPage extends StatefulWidget {
@@ -84,7 +83,7 @@ class NavigatorButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     
-    DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group)
+    DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
                                                             .child(FirebaseAuth.instance.currentUser!.uid)
                                                             .child('Stats');
 

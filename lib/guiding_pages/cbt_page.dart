@@ -5,7 +5,6 @@ import 'package:gratitude_app/guiding_pages/strategies_page.dart';
 import 'package:gratitude_app/logs_model.dart';
 import 'package:gratitude_app/main.dart';
 import 'package:gratitude_app/resources_page.dart';
-import 'package:gratitude_app/utilities/globals.dart';
 import 'package:provider/provider.dart';
 
 
@@ -49,7 +48,7 @@ class _CBTPageState extends State<CBTPage> {
   Set<int> selectedIndexes = {};
   Map<String, dynamic> reframingLogs = {};
   
-   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group)
+   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
                                                           .child(FirebaseAuth.instance.currentUser!.uid)
                                                           .child('NegativeEmotionLogs');
 

@@ -5,7 +5,6 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/utilities/date_functions.dart';
-import 'package:gratitude_app/utilities/globals.dart';
 
 
 class StatsPage extends StatefulWidget {
@@ -17,7 +16,7 @@ class StatsPage extends StatefulWidget {
 
 class _StatsPageState extends State<StatsPage> {
 
-  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group)
+  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
                                                           .child(FirebaseAuth.instance.currentUser!.uid);
   StreamSubscription<DatabaseEvent>? listener;
   List<Map<dynamic, dynamic>> moods = [];

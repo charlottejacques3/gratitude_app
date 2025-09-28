@@ -14,7 +14,7 @@ class InitialMoodPage extends StatefulWidget {
 
 class _InitialMoodPageState extends State<InitialMoodPage> {
 
-  // DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group)
+  // DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
   //                                                         .child(FirebaseAuth.instance.currentUser!.uid);
   int selectedMood = 0;
 

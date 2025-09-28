@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:gratitude_app/utilities/widgets.dart';
-import 'package:gratitude_app/utilities/globals.dart';
 
 
 class NewReflectionPage extends StatefulWidget {
@@ -18,7 +17,7 @@ class NewReflectionPage extends StatefulWidget {
 
 class _NewReflectionPageState extends State<NewReflectionPage> {
   
-  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group)
+  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
                                                           .child(FirebaseAuth.instance.currentUser!.uid)
                                                           .child('Reflections');
   List<PromptWidget> prompts = [];

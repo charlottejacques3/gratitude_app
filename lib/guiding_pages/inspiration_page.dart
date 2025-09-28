@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:gratitude_app/logs_model.dart';
 import 'package:gratitude_app/main.dart';
-import 'package:gratitude_app/utilities/globals.dart';
 import 'package:gratitude_app/utilities/widgets.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:provider/provider.dart';
@@ -28,7 +27,7 @@ class InspirationPage extends StatefulWidget {
 
 class _InspirationPageState extends State<InspirationPage> {
 
-   DatabaseReference dbUserRef = FirebaseDatabase.instance.ref().child(Globals.group)
+   DatabaseReference dbUserRef = FirebaseDatabase.instance.ref().child('users')
                                                           .child(FirebaseAuth.instance.currentUser!.uid);
   StreamSubscription<DatabaseEvent>? listener1;
   StreamSubscription<DatabaseEvent>? listener2;

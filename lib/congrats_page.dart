@@ -21,7 +21,7 @@ class CongratsPage extends StatefulWidget {
 class _CongratsPageState extends State<CongratsPage> {
 
   TextEditingController adviceController = TextEditingController();
-  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group)
+  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
                                                           .child(FirebaseAuth.instance.currentUser!.uid);
   int selectedMood = 0;
 

@@ -301,7 +301,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     }
 
     //save to db
-    DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group).child(FirebaseAuth.instance.currentUser!.uid);
+    DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users').child(FirebaseAuth.instance.currentUser!.uid);
     if (widget.number == 1) {
       await dbRef.update({'HappinessQuestionnairesInitial': data});
     } else if (widget.number == 2) {

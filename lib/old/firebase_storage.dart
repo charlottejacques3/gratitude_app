@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:gratitude_app/utilities/globals.dart';
 
 Future<bool> uploadToFirebase(File file, String filename) async {
   Reference refRoot = FirebaseStorage.instance.ref();
@@ -13,7 +12,7 @@ Future<bool> uploadToFirebase(File file, String filename) async {
   Reference refImageDir = refRoot.child('images').child(uid); //get reference to storage root and the user's folder
   Reference refImage = refImageDir.child(filename); //create a reference for the image to be stored
 
-  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group)
+  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
                                                           .child(FirebaseAuth.instance.currentUser!.uid)
                                                           .child('GratitudeLogs');
 

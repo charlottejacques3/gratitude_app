@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:gratitude_app/guiding_pages/inspiration_page.dart';
 import 'package:gratitude_app/guiding_pages/log_emotions_page.dart';
 import  'dart:math';
-import 'package:gratitude_app/utilities/globals.dart';
 import 'package:gratitude_app/utilities/widgets.dart';
 
 
@@ -20,7 +19,7 @@ class GuidingPage extends StatefulWidget {
 
 class _GuidingPageState extends State<GuidingPage> {
 
-  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child(Globals.group)
+  DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users')
                                                           .child(FirebaseAuth.instance.currentUser!.uid)
                                                           .child('Advice');
   StreamSubscription<DatabaseEvent>? listener;
