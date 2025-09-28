@@ -83,7 +83,21 @@ class _InspirationPageState extends State<InspirationPage> {
                           'Think about a time when things worked out.',
                           'What are you grateful for about your home?',
                           'Who was the last person that helped you?',
-                          'What is your favourite food?'
+                          'What is your favourite food?',
+                          'Who is a person who makes you laugh?',
+                          'Think about an enjoyable or impactful conversation you had recently.',
+                          'What has been the highlight of your week?',
+                          'Think of a challenge you have overcome that has made you grow stronger.',
+                          'Think about a place that is special to you.',
+                          'What is a positive habit you have that makes your life better?',
+                          'Who, or what, makes your life more meaningful?',
+                          'Think of some basic necessities, suhc as food or water, that you are grateful for.',
+                          'Think of a recent event you are grateful for.',
+                          'What is one of your favourite memories?',
+                          'Look at your surroundings and try to notice something beautiful.',
+                          'What is something positive in your life that you often take for granted?',
+                          'What is something you are looking forward to?',
+                          'Think about an impactful piece of advice you have received.'
                           ];
   int selectedPromptIndex = 0;
   bool photoPermission = false;
